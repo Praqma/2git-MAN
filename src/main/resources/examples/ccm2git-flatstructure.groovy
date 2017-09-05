@@ -154,10 +154,9 @@ migrate {
                         println "Empty workspace - skip, but still tag"
 
                     if (exitValue) {
-                        if ( sout.contains('nothing to commit, working directory clean') )
-                            println "Empty workspace - skip, but still tag"
-                        else
+                        if ( ! sout.contains('nothing to commit, working directory clean') ){
                             throw new Exception(cmd_line + ": gave exit code: $exitValue")
+                        }
                     }
                     if (serr.toString().readLines().size() > 0) {
                         throw new Exception(cmd_line + ": standard error contains text lines: " + serr.toString().readLines().size())
