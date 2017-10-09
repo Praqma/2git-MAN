@@ -49,14 +49,16 @@ class AlreadyConverted extends Criteria {
 
         def tag_regex = snapshotRevision + "_" + "[dprtis][eueenq][lblsta]\$"
 
-        boolean convert = true
+        def convert = true
         tags.each { tag ->
             if ( tag ==~ /$tag_regex/ ) {
                 println("Already converted - skip: " + snapshot.identifier + " ~ " + tag_regex )
                 convert = false
-            } else {
-                println ("Not converted - do it: " + snapshot.identifier + " ~ " + tag_regex )
+                return
             }
+        }
+        if ( convert ) {
+            println ("Not converted - do it: " + snapshot.identifier + " ~ " + tag_regex )
         }
         return convert
     }
