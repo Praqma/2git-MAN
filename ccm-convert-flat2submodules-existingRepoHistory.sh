@@ -48,7 +48,21 @@ else
     cd ${repo_name}
 fi
 
-export project_revisions=$(for tag in $(git log --oneline --all --decorate | awk -F"(" '{print $2}' | awk -F")" '{print $1}' | sed -e 's/,//g' | sed -e 's/tag://g' | sed -e 's/HEAD -> master//g'); do echo $tag ; done | grep -v origin/ | grep -v "${repo_name}/${repo_init_tag}$" | grep -v "${repo_init_tag}$" | tac )
+export project_revisions=$(for tag in $(git log --oneline --all --decorate \
+                                    | awk -F"(" '{print $2}' \
+                                    | awk -F")" '{print $1}' \
+                                    | sed -e 's/,//g' \
+                                    | sed -e 's/tag://g' \
+                                    | sed -e 's/HEAD -> master//g' \
+                            ); do \
+                                echo $tag ; \
+                            done \
+                            | grep -v origin/ \
+                            | grep -v ${repo_name}/${repo_init_tag}$ \
+                            | grep -v ${repo_name}/.*_[dprtis][eueenq][lblsta]$ \
+                            | grep -v "${repo_init_tag}$" \
+                            | tac \
+                           )
 
 for project_revision in ${project_revisions}; do
     repo_convert_rev_tag=${project_revision}
@@ -155,10 +169,10 @@ for project_revision in ${project_revisions}; do
 
 
 #    git push origin -f --tag ${repo_convert_rev_tag_wcomponent_wstatus}
-
+set +x
     echo "============================================================================"
     echo " NEXT "
     echo "============================================================================"
-
+set -x
 done
 
