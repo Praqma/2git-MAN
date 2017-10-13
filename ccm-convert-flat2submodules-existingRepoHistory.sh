@@ -13,7 +13,8 @@ export gitignore_file=${5} # FULL PATH
 
 export gitrepo_project_original=${gitrepo_project_original}
 export gitrepo_project_submodule=${gitrepo_project_original}
-export git_remote_repo=ssh://git@git-unisource.md-man.biz:7999/${gitrepo_project_original}/${repo_name}.git
+export git_remote=git-unisource.md-man.biz:7999
+export git_remote_repo=ssh://git@${git_remote}/${gitrepo_project_original}/${repo_name}.git
 
 #initialize repo
 if [ ! -e ${repo_name} ] ; then
@@ -32,12 +33,12 @@ if [ ! -e ${repo_name} ] ; then
     git status
 
     git commit -C "$repo_init_tag" --amend --reset-author
-    git tag -a -m $(git tag -l --format '%(contents)' ${repo_init_tag}) ${repo_name}/${repo_init_tag}
+    git tag -a -m $(git tag -l --format '%(contents)' ${repo_init_tag}) ${repo_name}/${repo_init_tag}/${repo_init_tag}
 
     unset GIT_AUTHOR_DATE
     unset GIT_COMMITTER_DATE
 
-    git reset --hard ${repo_name}/${repo_init_tag}
+    git reset --hard ${repo_name}/${repo_init_tag}/${repo_init_tag}
     git clean -xffd
     pwd
     # we are still in the root repo
@@ -59,15 +60,21 @@ export project_revisions=$(for tag in $(git log --oneline --all --decorate \
                             done \
                             | grep -v origin/ \
                             | grep -v ${repo_name}/${repo_init_tag}$ \
-                            | grep -v ${repo_name}/.*_[dprtis][eueenq][lblsta]$ \
-                            | grep -v "${repo_init_tag}$" \
+                            | grep -v ${repo_name}/${repo_init_tag}/${repo_init_tag}$ \
+                            | grep -v ${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$ \
+                            | grep -v ${repo_init_tag}$ \
                             | tac \
                            )
 
 for project_revision in ${project_revisions}; do
     repo_convert_rev_tag=${project_revision}
 
-    repo_convert_rev_tag_wcomponent_wstatus="${repo_name}/${repo_convert_rev_tag}"
+    #repo_convert_rev_tag=`echo ${project_revision} | awk -F"@@@" '{print $1}' | awk -F"~" '{print $2}'`
+    ccm_baseline_obj_this=$(ccm query "has_project_in_baseline('${repo_name}~$(echo ${repo_convert_rev_tag:: -4} | sed -e 's/xxx/ /g'):project:1') and release='$(ccm query "name='${repo_name}' and version='$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g')' and type='project'" -u -f "%release")'" -u -f "%objectname" | head -1 )
+    ccm_component_release=`ccm attr -show release "${repo_name}~$(echo ${repo_convert_rev_tag:: -4} | sed -e 's/xxx/ /g'):project:1" | sed -e 's/ //g'`
+    ccm_release=$(echo ${ccm_component_release} | cut -d "/" -f 2)
+
+    repo_convert_rev_tag_wcomponent_wstatus="${repo_name}/${ccm_release}/${repo_convert_rev_tag}"
 
     if [ `git describe ${repo_convert_rev_tag_wcomponent_wstatus}` ] ; then
       continue
@@ -81,7 +88,7 @@ for project_revision in ${project_revisions}; do
         git reset --hard ${repo_convert_rev_tag}  || git reset --hard ${repo_submodule_rev_wcomponent_wstatus}
     else
         # we do not have the 'content' tag available - investigate its history if it exists ( e.g. missing in repo )
-        ./ccm-baseline-history-get-root.sh "${repo_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g')"
+        ./ccm-baseline-history-get-root.sh "${repo_name}~$(echo ${repo_convert_rev_tag:: -4} | sed -e 's/xxx/ /g')"
         exit 1
     fi
 
@@ -89,11 +96,9 @@ for project_revision in ${project_revisions}; do
 
     baseline_from_tag_info=$(git show ${repo_convert_rev_tag} | grep "1) ${repo_name}~" | awk -F"~" '{print $2}')
     if [ "${baseline_from_tag_info}X" != "X" ] ; then
-        repo_baseline_rev_tag=$(git tag | grep "${repo_name}/${baseline_from_tag_info}_[dprtis][eueenq][lblsta]$" || echo )
-        repo_baseline_rev_tag_wcomponent_wstatus="${repo_baseline_rev_tag}"
+        repo_baseline_rev_tag_wcomponent_wstatus=$(git tag | grep "${repo_name}/${ccm_release}/${baseline_from_tag_info}_[dprtis][eueenq][lblsta]$" || echo )
     else
-        repo_baseline_rev_tag="init"
-        repo_baseline_rev_tag_wcomponent_wstatus="${repo_name}/${repo_init_tag}"
+        repo_baseline_rev_tag_wcomponent_wstatus="${repo_name}/${repo_init_tag}/${repo_init_tag}"
     fi
 
     # Move the workarea pointer to the 'baseline' tag
@@ -110,7 +115,7 @@ for project_revision in ${project_revisions}; do
         git checkout HEAD .gitmodules || echo ".gitmodules does not exist in current revision"
         if [ ! `git checkout HEAD ${repo_submodule}` ] ; then
                 git rm -rf ${repo_submodule} || rm -rf ${repo_submodule}
-                git submodule add --force afds/${gitrepo_project_submodule}/${repo_submodule}.git
+                git submodule add --force ssh://git@${git_remote}/${gitrepo_project_submodule}/${repo_submodule}.git
         fi
         git submodule update --init --recursive
 
@@ -129,16 +134,16 @@ for project_revision in ${project_revisions}; do
         fi
 
 
-        repo_submodule_rev_wcomponent_wstatus=$(git tag | grep ${repo_submodule}/${repo_submodule_rev}_[dprtis][eueenq][lblsta]$ || echo )
+        repo_submodule_rev_wcomponent_wstatus=$(git tag | grep ${repo_submodule}/.*/${repo_submodule_rev}_[dprtis][eueenq][lblsta]$ || grep_exit=$? )
 
         if [ `git describe ${repo_submodule_rev_wcomponent_wstatus}`  ] ; then
-            # we do have the correct 'content' tag checkout it out
+            # we do have the correct 'content' tag - checkout it out
             git checkout ${repo_submodule_rev_wcomponent_wstatus}
             git clean -xffd
         else
             # we do not have the 'content' tag available - investgate its root
             cd $(dirname $0)
-            ccm-baseline-history-get-root.sh "${repo_submodule}~$(echo ${repo_submodule_rev} | sed -e 's/xxx/ /g')"
+            ccm-baseline-history-get-root.sh "${repo_submodule}~$(echo ${repo_submodule_rev:: -4} | sed -e 's/xxx/ /g')"
             exit 1
         fi
 
