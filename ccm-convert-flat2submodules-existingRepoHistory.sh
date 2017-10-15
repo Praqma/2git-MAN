@@ -107,7 +107,9 @@ for project_revision in ${project_revisions}; do
     git status
 
     for repo_submodule in ${repo_submodules}; do
-        repo_submodule_rev=$(git show ${repo_convert_rev_tag} | grep "    ${repo_submodule}~" | awk -F"~" '{print $2}' | awk -F" " '{print $1}')
+        repo_submodule_rev=$(ccm query "hierarchy_project_members('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:1',none ) and name='${sub_proj_n
+ame}'" -u -f "%version" | sed -s 's/ /xxx/g')
+        #repo_submodule_rev=$(git show ${repo_convert_rev_tag} | grep "    ${repo_submodule}~" | awk -F"~" '{print $2}' | awk -F" " '{print $1}')
         if [ "${repo_submodule_rev}X" == "X" ] ; then
             echo "The submodule does not exit as a project - skip"
             continue
@@ -141,9 +143,9 @@ for project_revision in ${project_revisions}; do
             git checkout ${repo_submodule_rev_wcomponent_wstatus}
             git clean -xffd
         else
-            # we do not have the 'content' tag available - investgate its root
+            # we do not have the 'content' tag available - investigate its root
             cd $(dirname $0)
-            ccm-baseline-history-get-root.sh "${repo_submodule}~$(echo ${repo_submodule_rev:: -4} | sed -e 's/xxx/ /g')"
+            ./ccm-baseline-history-get-root.sh "${repo_submodule}~$(echo ${repo_submodule_rev:: -4} | sed -e 's/xxx/ /g')"
             exit 1
         fi
 
