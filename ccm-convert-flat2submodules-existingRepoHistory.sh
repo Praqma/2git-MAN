@@ -20,7 +20,9 @@ export git_remote_repo=ssh://git@${git_remote}/${gitrepo_project_original}/${rep
 if [ ! -e ${repo_name} ] ; then
     git clone --recursive ${git_remote_repo}
     cd ${repo_name}
+    git checkout -B master ${repo_init_tag}
     git reset --hard ${repo_init_tag}
+    git clean -xffd
 
     export GIT_AUTHOR_DATE=$(git tag -l --format="%(taggerdate:iso8601)" ${repo_init_tag} | awk -F" " '{print $1 " " $2}')
     export GIT_COMMITTER_DATE=${GIT_AUTHOR_DATE}
@@ -34,6 +36,7 @@ if [ ! -e ${repo_name} ] ; then
 
     git commit -C "$repo_init_tag" --amend --reset-author
     git tag -a -m $(git tag -l --format '%(contents)' ${repo_init_tag}) ${repo_name}/${repo_init_tag}/${repo_init_tag}
+    git tag -a -m $(git tag -l --format '%(contents)' ${repo_init_tag}) ${repo_name}/odd_baselines/odd_baselines
 
     unset GIT_AUTHOR_DATE
     unset GIT_COMMITTER_DATE
@@ -49,7 +52,7 @@ else
     cd ${repo_name}
 fi
 
-export project_revisions=$(for tag in $(git log --oneline --all --decorate \
+export project_revisions=$(for tag in $(git log --topo-order --oneline --all --decorate \
                                     | awk -F"(" '{print $2}' \
                                     | awk -F")" '{print $1}' \
                                     | sed -e 's/,//g' \
@@ -59,8 +62,11 @@ export project_revisions=$(for tag in $(git log --oneline --all --decorate \
                                 echo $tag ; \
                             done \
                             | grep -v origin/ \
+                            | grep -v HEAD \
+                            | grep -v master \
                             | grep -v ${repo_name}/${repo_init_tag}$ \
                             | grep -v ${repo_name}/${repo_init_tag}/${repo_init_tag}$ \
+                            | grep -v ${repo_name}/odd_baselines/odd_baselines$ \
                             | grep -v ${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$ \
                             | grep -v ${repo_init_tag}$ \
                             | tac \
@@ -74,18 +80,18 @@ for project_revision in ${project_revisions}; do
     ccm_component_release=`ccm attr -show release "${repo_name}~$(echo ${repo_convert_rev_tag:: -4} | sed -e 's/xxx/ /g'):project:1" | sed -e 's/ //g'`
     ccm_release=$(echo ${ccm_component_release} | cut -d "/" -f 2)
 
+    test "${ccm_release}x" == "x" && exit 1
+
     repo_convert_rev_tag_wcomponent_wstatus="${repo_name}/${ccm_release}/${repo_convert_rev_tag}"
 
     if [ `git describe ${repo_convert_rev_tag_wcomponent_wstatus}` ] ; then
       continue
     fi
 
-    git fetch --tags
-
     # Get the right content
     if [ `git describe ${repo_convert_rev_tag}`  ] ; then
         # we do have the correct 'content' tag checkout it out
-        git reset --hard ${repo_convert_rev_tag}  || git reset --hard ${repo_submodule_rev_wcomponent_wstatus}
+        git reset --hard ${repo_convert_rev_tag}
     else
         # we do not have the 'content' tag available - investigate its history if it exists ( e.g. missing in repo )
         ./ccm-baseline-history-get-root.sh "${repo_name}~$(echo ${repo_convert_rev_tag:: -4} | sed -e 's/xxx/ /g')"
@@ -96,7 +102,10 @@ for project_revision in ${project_revisions}; do
 
     baseline_from_tag_info=$(git show ${repo_convert_rev_tag} | grep "1) ${repo_name}~" | awk -F"~" '{print $2}')
     if [ "${baseline_from_tag_info}X" != "X" ] ; then
-        repo_baseline_rev_tag_wcomponent_wstatus=$(git tag | grep "${repo_name}/${ccm_release}/${baseline_from_tag_info}_[dprtis][eueenq][lblsta]$" || echo )
+        repo_baseline_rev_tag_wcomponent_wstatus=$(git tag | grep "${repo_name}/.*/${baseline_from_tag_info}_[dprtis][eueenq][lblsta]$" || grep_ext_value=$? )
+        if [ "${repo_baseline_rev_tag_wcomponent_wstatus}x" == "x" ] ; then
+            repo_baseline_rev_tag_wcomponent_wstatus="${repo_name}/odd_baselines/odd_baselines"
+        fi
     else
         repo_baseline_rev_tag_wcomponent_wstatus="${repo_name}/${repo_init_tag}/${repo_init_tag}"
     fi
@@ -153,7 +162,8 @@ ame}'" -u -f "%version" | sed -s 's/ /xxx/g')
 
         git push origin -f --tag ${repo_convert_rev_tag_wcomponent_wstatus}
 
-        repo_submodule_rev=""
+        unset repo_submodule_rev
+        unset repo_submodule_rev_wcomponent_wstatus
         cd -
 
     done
@@ -173,6 +183,7 @@ ame}'" -u -f "%version" | sed -s 's/ /xxx/g')
     unset GIT_AUTHOR_DATE
     unset GIT_COMMITTER_DATE
     unset repo_convert_rev_tag_wcomponent_wstatus
+    unset repo_baseline_rev_tag_wcomponent_wstatus
 
 
 #    git push origin -f --tag ${repo_convert_rev_tag_wcomponent_wstatus}
