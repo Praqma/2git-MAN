@@ -16,66 +16,8 @@ export gitrepo_project_submodule=${gitrepo_project_original}
 export git_remote=git-unisource.md-man.biz:7999
 export git_remote_repo=ssh://git@${git_remote}/${gitrepo_project_original}/${repo_name}.git
 
-#initialize repo
-if [ ! -e ${repo_name} ] ; then
-    git clone --recursive ${git_remote_repo}
-    cd ${repo_name}
-    git checkout -B master ${repo_init_tag}
-    git reset --hard ${repo_init_tag} >> /dev/null
-    git clean -xffd
-
-    export GIT_AUTHOR_DATE=$(git tag -l --format="%(taggerdate:iso8601)" ${repo_init_tag} | awk -F" " '{print $1 " " $2}')
-    export GIT_COMMITTER_DATE=${GIT_AUTHOR_DATE}
-
-    test "${gitignore_file}x" != "x" && test ! -e ${gitignore_file} && echo "${gitignore_file} does not exist.. Current dir:" && pwd && echo " .. Consider full path.." && exit 1
-    test "${gitignore_file}x" != "x" && test -e ${gitignore_file} && cp ${gitignore_file} ./.gitignore
-
-    git status
-    git add -A .
-    git status
-
-    git commit -C "$repo_init_tag" --amend --reset-author
-    git tag -a -m $(git tag -l --format '%(contents)' ${repo_init_tag}) ${repo_name}/${repo_init_tag}/${repo_init_tag}
-
-    unset GIT_AUTHOR_DATE
-    unset GIT_COMMITTER_DATE
-
-    git reset --hard ${repo_name}/${repo_init_tag}/${repo_init_tag} >> /dev/null
-    git clean -xffd
-    pwd
-    # we are still in the root repo
-else
-    echo "Already cloned and initialized"
-    echo "Reset all tags to remote"
-    grep "${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$" |  xargs git tag --delete
-    git fetch --tags
-    pwd
-    cd ${repo_name}
-fi
-
-set +x
-export project_revisions=$(for tag in $(git log --topo-order --oneline --all --decorate \
-                                    | awk -F"(" '{print $2}' \
-                                    | awk -F")" '{print $1}' \
-                                    | sed -e 's/,//g' \
-                                    | sed -e 's/tag://g' \
-                                    | sed -e 's/HEAD -> master//g' \
-                            ); do \
-                                echo $tag ; \
-                            done \
-                            | grep -v origin/ \
-                            | grep -v HEAD \
-                            | grep -v master \
-                            | grep -v ${repo_name}/${repo_init_tag}$ \
-                            | grep -v ${repo_name}/${repo_init_tag}/${repo_init_tag}$ \
-                            | grep -v ${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$ \
-                            | grep -v ${repo_init_tag}$ \
-                            | tac \
-                           )
-set -x
-echo "${project_revisions}"
-for project_revision in ${project_revisions}; do
-    repo_convert_rev_tag=${project_revision}
+function convert_revision(){
+    repo_convert_rev_tag=$1
     ccm_repo_convert_rev_tag=${repo_convert_rev_tag:: -4}
 
     ccm_baseline_obj_this=$(ccm query "has_project_in_baseline('${repo_name}~$(echo ${ccm_repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:1') and release='$(ccm query "name='${repo_name}' and version='$(echo ${ccm_repo_convert_rev_tag} | sed -e 's/xxx/ /g')' and type='project'" -u -f "%release")'" -u -f "%objectname" | head -1 )
@@ -84,7 +26,7 @@ for project_revision in ${project_revisions}; do
 
     test "${ccm_release}x" == "x" && exit 1
 
-    repo_convert_rev_tag_wcomponent_wstatus="${repo_name}/${ccm_release}/${repo_convert_rev_tag}"
+    local repo_convert_rev_tag_wcomponent_wstatus="${repo_name}/${ccm_release}/${repo_convert_rev_tag}"
 
     if [ `git describe ${repo_convert_rev_tag_wcomponent_wstatus}` ] ; then
       continue
@@ -93,7 +35,7 @@ for project_revision in ${project_revisions}; do
     # Get the right content
     if [ `git describe ${repo_convert_rev_tag}`  ] ; then
         # we do have the correct 'content' tag checkout it out
-        git reset --hard ${repo_convert_rev_tag} >> /dev/null
+        git reset -q --hard ${repo_convert_rev_tag}
     else
         # we do not have the 'content' tag available - investigate its history if it exists ( e.g. missing in repo )
         ./ccm-baseline-history-get-root.sh "${repo_name}~$(echo ${ccm_repo_convert_rev_tag} | sed -e 's/xxx/ /g')"
@@ -102,11 +44,22 @@ for project_revision in ${project_revisions}; do
 
     git clean -xffd >> /dev/null
 
-    baseline_from_tag_info=$(git show ${repo_convert_rev_tag} | grep "1) ${repo_name}~" | awk -F"~" '{print $2}')
+    local baseline_from_tag_info=$(git show ${repo_convert_rev_tag} | grep "1) ${repo_name}~" | awk -F"~" '{print $2}')
     if [ "${baseline_from_tag_info}X" != "X" ] ; then
-        repo_baseline_rev_tag_wcomponent_wstatus=$(git tag | grep "${repo_name}/.*/${baseline_from_tag_info}_[dprtis][eueenq][lblsta]$" || grep_ext_value=$? )
+        local repo_baseline_rev_tag_wcomponent_wstatus=$(git tag | grep "${repo_name}/.*/${baseline_from_tag_info}_[dprtis][eueenq][lblsta]$" || grep_ext_value=$? )
         if [ "${repo_baseline_rev_tag_wcomponent_wstatus}x" == "x" ] ; then
-            exit 1
+            #find the original tag and convert it first
+            baseline_from_tag_info_wstatus=$(git tag | grep "${baseline_from_tag_info}_[dprtis][eueenq][lblsta]$")
+            if [ "${baseline_from_tag_info_wstatus}x" != "x" ]; then
+                convert_revision ${baseline_from_tag_info_wstatus}
+                local baseline_from_tag_info=$(git show ${repo_convert_rev_tag} | grep "1) ${repo_name}~" | awk -F"~" '{print $2}')
+                local repo_baseline_rev_tag_wcomponent_wstatus=$(git tag | grep "${repo_name}/.*/${baseline_from_tag_info}_[dprtis][eueenq][lblsta]$" || grep_ext_value=$? )
+                if [ "${repo_baseline_rev_tag_wcomponent_wstatus}x" == "x" ] ; then
+                    local repo_baseline_rev_tag_wcomponent_wstatus="${repo_name}/${repo_init_tag}/${repo_init_tag}"
+                fi
+            else
+                exit 1
+            fi
         fi
     else
         repo_baseline_rev_tag_wcomponent_wstatus="${repo_name}/${repo_init_tag}/${repo_init_tag}"
@@ -176,7 +129,7 @@ for project_revision in ${project_revisions}; do
     export GIT_AUTHOR_DATE=$(git tag -l --format="%(taggerdate:iso8601)" ${repo_convert_rev_tag} | awk -F" " '{print $1 " " $2}')
     export GIT_COMMITTER_DATE=${GIT_AUTHOR_DATE}
 
-    git commit -C ${repo_convert_rev_tag} --reset-author >> /dev/null || ( echo "Empty commit.." )
+    git commit -q -C ${repo_convert_rev_tag} --reset-author || ( echo "Empty commit.." )
 
     git tag -l --format '%(contents)' ${repo_convert_rev_tag} > ./tag_meta_data.txt
     git tag -a -F ./tag_meta_data.txt ${repo_convert_rev_tag_wcomponent_wstatus}
@@ -194,5 +147,71 @@ set +x
     echo " NEXT "
     echo "============================================================================"
 set -x
+}
+
+#initialize repo
+if [ ! -e ${repo_name} ] ; then
+    git clone --recursive ${git_remote_repo}
+    cd ${repo_name}
+    git checkout -B master ${repo_init_tag}
+    git reset -q --hard ${repo_init_tag}
+    git clean -xffd
+
+    export GIT_AUTHOR_DATE=$(git tag -l --format="%(taggerdate:iso8601)" ${repo_init_tag} | awk -F" " '{print $1 " " $2}')
+    export GIT_COMMITTER_DATE=${GIT_AUTHOR_DATE}
+
+    test "${gitignore_file}x" != "x" && test ! -e ${gitignore_file} && echo "${gitignore_file} does not exist.. Current dir:" && pwd && echo " .. Consider full path.." && exit 1
+    test "${gitignore_file}x" != "x" && test -e ${gitignore_file} && cp ${gitignore_file} ./.gitignore
+
+    git status
+    git add -A .
+    git status
+
+    git commit -C "$repo_init_tag" --amend --reset-author
+    git tag -a -m $(git tag -l --format '%(contents)' ${repo_init_tag}) ${repo_name}/${repo_init_tag}/${repo_init_tag}
+
+    unset GIT_AUTHOR_DATE
+    unset GIT_COMMITTER_DATE
+
+    git reset -q --hard ${repo_name}/${repo_init_tag}/${repo_init_tag}
+    git clean -xffd
+    pwd
+    # we are still in the root repo
+else
+    echo "Already cloned and initialized"
+    echo "Reset all tags to remote"
+    cd ${repo_name}
+    git tag | grep "${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$" |  xargs git tag --delete
+    git fetch --tags
+    pwd
+fi
+
+set +x
+export project_revisions=$(for tag in $(git log --topo-order --oneline --all --decorate \
+                                    | awk -F"(" '{print $2}' \
+                                    | awk -F")" '{print $1}' \
+                                    | sed -e 's/,//g' \
+                                    | sed -e 's/tag://g' \
+                                    | sed -e 's/HEAD -> master//g' \
+                            ); do \
+                                echo $tag ; \
+                            done \
+                            | grep -v origin/ \
+                            | grep -v HEAD \
+                            | grep -v master \
+                            | grep -v ${repo_name}/${repo_init_tag}$ \
+                            | grep -v ${repo_name}/${repo_init_tag}/${repo_init_tag}$ \
+                            | grep -v ${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$ \
+                            | grep -v ${repo_init_tag}$ \
+                            | tac \
+                           )
+set -x
+echo "${project_revisions}"
+
+
+for project_revision in ${project_revisions}; do
+    repo_convert_rev_tag=${project_revision}
+    convert_revision ${repo_convert_rev_tag}
+
 done
 
