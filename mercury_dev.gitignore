@@ -1,0 +1,39 @@
+# Third party folders - all of this should probably in artefact-manager (if relevant for any HEAD)
+boost_1_39_0/
+boost_1_38_0/
+ACE_wrappers/
+third_party_libs/
+DevExp/
+steema/
+zlib128/
+zlib125/
+zlib/
+cminpack*/
+make_util/doxygen
+make_util/cppcheck
+msxml/
+
+# The files below may either be re-added to head or resolved from arteface-repo
+manual_source/
+*.pdf
+*.dat
+*.zip
+*.pdb
+*.exe
+*.dll
+*.mbf
+sqlite*/
+
+# Old "large" files not needed for "HEAD"
+cb2010/lib/cg32.lib
+hhi2238_data*.cpp
+test/basic_auto_tdc_algorithm_wrapper_test/source/basic_auto_tdc_algorithm_wrapper_test_data.cpp
+test/basic_auto_tdc_algorithm_wrapper_test/source/basic_auto_tdc_algorithm_wrapper_test_data.cpp
+test/basic_auto_tdc_algorithm_wrapper_test/source/basic_auto_tdc_algorithm_wrapper_test_data_4T50_cyl_1_zero_diag.cpp
+test/basic_auto_tdc_algorithm_wrapper_test/source/basic_auto_tdc_algorithm_wrapper_test_data_devetron_2011_13_10.cpp
+test/basic_auto_tdc_algorithm_wrapper_test/source/basic_auto_tdc_algorithm_wrapper_test_data_perfect.cpp
+test/basic_auto_tdc_algorithm_wrapper_test/source/basic_auto_tdc_algorithm_wrapper_test_data_tilen.cpp
+test/pressure_data_utility/
+test/test_data_model/old_pmi_databases/HYUNDA_AA2335/HYUNDA_AA2353.cpp
+test/visual_zero_diagram_ask_test
+tools/1510_db_to_1202_db/test/gui_test/

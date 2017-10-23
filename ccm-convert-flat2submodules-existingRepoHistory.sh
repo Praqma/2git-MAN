@@ -29,7 +29,12 @@ function convert_revision(){
     local repo_convert_rev_tag_wcomponent_wstatus="${repo_name}/${ccm_release}/${repo_convert_rev_tag}"
 
     if [ `git describe ${repo_convert_rev_tag_wcomponent_wstatus}` ] ; then
-      continue
+        set +x
+            echo "============================================================================"
+            echo " NEXT "
+            echo "============================================================================"
+        set -x
+        continue
     fi
 
     # Get the right content
@@ -62,7 +67,7 @@ function convert_revision(){
             fi
         fi
     else
-        repo_baseline_rev_tag_wcomponent_wstatus="${repo_name}/${repo_init_tag}/${repo_init_tag}"
+        local repo_baseline_rev_tag_wcomponent_wstatus="${repo_name}/${repo_init_tag}/${repo_init_tag}"
     fi
 
     # Move the workarea pointer to the 'baseline' tag
@@ -212,6 +217,4 @@ echo "${project_revisions}"
 for project_revision in ${project_revisions}; do
     repo_convert_rev_tag=${project_revision}
     convert_revision ${repo_convert_rev_tag}
-
 done
-
