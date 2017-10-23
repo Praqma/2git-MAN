@@ -211,7 +211,6 @@ export project_revisions=$(for tag in $(git log --topo-order --oneline --all --d
                             | tac \
                            )
 set -x
-echo "${project_revisions}"
 
 
 for project_revision in ${project_revisions}; do
