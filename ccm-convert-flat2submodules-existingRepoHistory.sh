@@ -156,9 +156,9 @@ set -x
 
 #initialize repo
 if [ ! -e ${repo_name} ] ; then
-    git clone --recursive ${git_remote_repo}
+    git clone --recursive -b master ${git_remote_repo}
     cd ${repo_name}
-    git checkout -B master ${repo_init_tag}
+    git branch -a
     git reset -q --hard ${repo_init_tag}
     git clean -xffd
 
