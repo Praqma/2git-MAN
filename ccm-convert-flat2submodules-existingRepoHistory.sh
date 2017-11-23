@@ -206,7 +206,7 @@ export project_revisions=$(for tag in $(git log --topo-order --oneline --all --d
                             | grep -v master \
                             | grep -v ${repo_name}/${repo_init_tag}$ \
                             | grep -v ${repo_name}/${repo_init_tag}/${repo_init_tag}$ \
-                            | grep -v ${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$ \
+                            | grep -v .*/.*/.*_[dprtis][eueenq][lblsta]$ \
                             | grep -v ${repo_init_tag}$ \
                             | tac \
                            )
