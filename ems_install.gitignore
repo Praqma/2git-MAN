@@ -1,0 +1,15 @@
+*.exe
+*.dll
+*.pdb
+*.pdf
+*.vsd
+*.docx
+*.pptx
+*.zip
+*.dbp
+
+*.manbw-spaf
+/wix311/
+/ems_test_package/
+/ems_ui/
+/pmi/PMI/
