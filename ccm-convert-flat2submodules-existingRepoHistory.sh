@@ -87,7 +87,7 @@ function convert_revision(){
         git checkout HEAD .gitmodules || echo ".gitmodules does not exist in current revision"
         if [ ! `git checkout HEAD ${repo_submodule}` ] ; then
                 git rm -rf ${repo_submodule} || rm -rf ${repo_submodule}
-                git submodule add --force ssh://git@${git_remote}/${gitrepo_project_submodule}/${repo_submodule}.git
+                git submodule add --force ../../${gitrepo_project_submodule}/${repo_submodule}.git
         fi
         git submodule update --init --recursive
 
