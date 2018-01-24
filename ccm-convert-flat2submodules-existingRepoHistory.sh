@@ -49,7 +49,8 @@ function convert_revision(){
 
     git clean -xffd >> /dev/null
 
-    local baseline_from_tag_info=$(git show ${repo_convert_rev_tag} | grep "1) ${repo_name}~" | awk -F"~" '{print $2}')
+    local baseline_from_tag_info=$(ccm query "is_baseline_project_of('HMI_devel~$(echo ${repo_convert_rev_tag:: -4}| sed -e 's/xxx/ /g'):project:1') " \
+                                    -u -f "%version" | sed -e 's/ /xxx/g' )
     if [ "${baseline_from_tag_info}X" != "X" ] ; then
         local repo_baseline_rev_tag_wcomponent_wstatus=$(git tag | grep "${repo_name}/.*/${baseline_from_tag_info}_[dprtis][eueenq][lblsta]$" || grep_ext_value=$? )
         if [ "${repo_baseline_rev_tag_wcomponent_wstatus}x" == "x" ] ; then

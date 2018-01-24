@@ -1,5 +1,5 @@
 #!/bin/bash
-#set -x # får shell til at displaye kommandoer
+#set -x
 
 export PATH="/c/Program Files (x86)/IBM/Rational/Synergy/7.2.1/bin:${PATH}"
 
