@@ -74,6 +74,7 @@ function convert_revision(){
     # Move the workarea pointer to the 'baseline' tag
     git reset --mixed ${repo_baseline_rev_tag_wcomponent_wstatus} >> /dev/null
     git checkout HEAD .gitignore
+    git checkout HEAD .gitmodules || echo ".gitmodules does not exist in current revision"
 
     for repo_submodule in ${repo_submodules}; do
         repo_submodule_rev=$(ccm query " \
@@ -85,7 +86,6 @@ function convert_revision(){
             echo "The submodule does not exit as a project - skip"
             continue
         fi
-        git checkout HEAD .gitmodules || echo ".gitmodules does not exist in current revision"
         if [ ! `git checkout HEAD ${repo_submodule}` ] ; then
                 git rm -rf ${repo_submodule} || rm -rf ${repo_submodule}
                 git submodule add --force ../../${gitrepo_project_submodule}/${repo_submodule}.git
