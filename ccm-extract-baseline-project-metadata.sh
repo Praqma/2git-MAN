@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
+set -e
 
 ccm_project_name=$1
 repo_convert_rev_tag=$2
+repo_convert_instance=$3
 
 test "${ccm_project_name}x" == "x"      && ( echo "'ccm_project_name' not set - exit"       && exit 1 )
 test "${repo_convert_rev_tag}x" == "x"  && ( echo "'repo_convert_rev_tag' not set - exit"   && exit 1 )
+test "${repo_convert_instance}x" == "x"  && ( echo "'repo_convert_rev_tag' not set - exit"   && exit 1 )
 
-ccm_baseline_obj_this=$(ccm query "has_project_in_baseline('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:1') and release='$(ccm query "name='${ccm_project_name}' and version='$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g')' and type='project'" -u -f "%release")'" -u -f "%objectname" | head -1 )
+ccm_baseline_obj_this=$(ccm query "has_project_in_baseline('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${repo_convert_instance}') and release='$(ccm query "name='${ccm_project_name}' and version='$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g')' and type='project'" -u -f "%release")'" -u -f "%objectname" | head -1 )
 
 if [ "${ccm_baseline_obj_this}X" != "X" ]; then
     echo > ./tag_meta_data.txt
@@ -20,7 +23,7 @@ if [ "${ccm_baseline_obj_this}X" != "X" ]; then
     echo "---------------------------------------------------------" >> ./tag_meta_data.txt
     echo "Project baseline:"                                         >> ./tag_meta_data.txt
     echo "---------------------------------------------------------" >> ./tag_meta_data.txt
-    ccm query "is_baseline_project_of('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:1')" -f "%displayname" >> ./tag_meta_data.txt || echo "  <none>" >> ./tag_meta_data.txt
+    ccm query "is_baseline_project_of('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${repo_convert_instance}')" -f "%displayname" >> ./tag_meta_data.txt || echo "  <none>" >> ./tag_meta_data.txt
     echo >> ./tag_meta_data.txt
 
     echo >> ./tag_meta_data.txt
@@ -69,26 +72,26 @@ else
     echo "---------------------------------------------------------" >> ./tag_meta_data.txt
     echo "Project baseline:"                                         >> ./tag_meta_data.txt
     echo "---------------------------------------------------------" >> ./tag_meta_data.txt
-    ccm query "is_baseline_project_of('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:1')" -f "%displayname"  >> ./tag_meta_data.txt || echo "  <none>" >> ./tag_meta_data.txt
+    ccm query "is_baseline_project_of('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${repo_convert_instance}')" -f "%displayname"  >> ./tag_meta_data.txt || echo "  <none>" >> ./tag_meta_data.txt
     echo >> ./tag_meta_data.txt
 
     echo >> ./tag_meta_data.txt
     echo "---------------------------------------------------------" >> ./tag_meta_data.txt
     echo "Master Change Requests (MCR):"                             >> ./tag_meta_data.txt
     echo "---------------------------------------------------------" >> ./tag_meta_data.txt
-    ccm query "has_associatedImpl(has_associated_task(is_task_in_folder_of(is_folder_in_rp_of('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:1'))))" -f "%displayname %resolver %release %problem_synopsis" >> ./tag_meta_data.txt  || echo "<none>" >> ./tag_meta_data.txt
+    ccm query "has_associatedImpl(has_associated_task(is_task_in_folder_of(is_folder_in_rp_of('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${repo_convert_instance}'))))" -f "%displayname %resolver %release %problem_synopsis" >> ./tag_meta_data.txt  || echo "<none>" >> ./tag_meta_data.txt
     echo >> ./tag_meta_data.txt
 
     echo "---------------------------------------------------------" >> ./tag_meta_data.txt
     echo "Related/Integrated Implementation Change Requests(ICR):"   >> ./tag_meta_data.txt
     echo "---------------------------------------------------------" >> ./tag_meta_data.txt
-    ccm query "has_associated_task(is_task_in_folder_of(is_folder_in_rp_of('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:1')))" -f "%displayname %resolver %release %problem_synopsis"  >> ./tag_meta_data.txt  || echo "<none>" >> ./tag_meta_data.txt
+    ccm query "has_associated_task(is_task_in_folder_of(is_folder_in_rp_of('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${repo_convert_instance}')))" -f "%displayname %resolver %release %problem_synopsis"  >> ./tag_meta_data.txt  || echo "<none>" >> ./tag_meta_data.txt
     echo >> ./tag_meta_data.txt
 
     echo "---------------------------------------------------------" >> ./tag_meta_data.txt
     echo "Tasks integrated in project:"                              >> ./tag_meta_data.txt
     echo "---------------------------------------------------------" >> ./tag_meta_data.txt
-    ccm query "is_task_in_folder_of(is_folder_in_rp_of('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:1'))" -f "%displayname %{create_time[dateformat='yyyy-M-dd HH:MM:SS']} %resolver %status %release %task_synopsis"  >> ./tag_meta_data.txt || echo "<none>" >> ./tag_meta_data.txt
+    ccm query "is_task_in_folder_of(is_folder_in_rp_of('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${repo_convert_instance}'))" -f "%displayname %{create_time[dateformat='yyyy-M-dd HH:MM:SS']} %resolver %status %release %task_synopsis"  >> ./tag_meta_data.txt || echo "<none>" >> ./tag_meta_data.txt
     echo >> ./tag_meta_data.txt
 
     echo >> ./tag_meta_data.txt

@@ -20,12 +20,15 @@ class MetaBaseline extends Extraction {
         def result = [:]
 
         def snapshotName = snapshot.identifier.split("@@@")[0].split("~")[0]
-        def snapshotRevision = snapshot.identifier.split("@@@")[0].split("~")[1]
-        def baselineRevision = snapshot.identifier.split("@@@")[1].split("~")[1]
+        def snapshotRevision = snapshot.identifier.split("@@@")[0].split("~")[1].split(":")[0]
+        def snapshotInstance = snapshot.identifier.split("@@@")[0].split("~")[1].split(":")[2]
+        def baselineRevision = snapshot.identifier.split("@@@")[1].split("~")[1].split(":")[0]
+        def baselineInstance = snapshot.identifier.split("@@@")[1].split("~")[1].split(":")[2]
 
         result['snapshot'] = snapshot.identifier.split("@@@")[0]
         result['snapshotName'] = snapshotName
         result['snapshotRevision'] = snapshotRevision
+        result['snapshotInstance'] = snapshotInstance
 
         def project_revision_with_spaces = snapshot.identifier.split("@@@")[0].replaceAll("xxx"," ")
 
@@ -49,7 +52,8 @@ class MetaBaseline extends Extraction {
             cmd_line = "bash --login " +
                     System.getProperty("user.dir") + File.separator + "ccm-get-status-from-baseline-or-project.sh " +
                     "$snapshotName " +
-                    "$baselineRevision"
+                    "$baselineRevision " +
+                    "$baselineInstance"
             log.info(cmd_line)
             cmd = cmd_line.execute(envVars, new File(workspace))
             cmd.waitForProcessOutput(sout, serr)
@@ -78,7 +82,8 @@ class MetaBaseline extends Extraction {
         cmd_line = "bash --login " +
                 System.getProperty("user.dir") + File.separator + "ccm-get-create-time-of-project.sh " +
                 "$snapshotName " +
-                "$snapshotRevision"
+                "$snapshotRevision " +
+                "$snapshotInstance"
         log.info "'" + cmd_line + "'"
         cmd = cmd_line.execute(envVars,new File(workspace))
         cmd.waitForProcessOutput(sout, serr)
@@ -104,7 +109,8 @@ class MetaBaseline extends Extraction {
         cmd_line = "bash --login " +
                 System.getProperty("user.dir") + File.separator + "ccm-get-status-from-baseline-or-project.sh " +
                 "$snapshotName " +
-                "$snapshotRevision"
+                "$snapshotRevision " +
+                "$snapshotInstance"
         log.info(cmd_line)
         cmd = cmd_line.execute(envVars,new File(workspace))
         cmd.waitForProcessOutput(sout, serr)
@@ -131,7 +137,8 @@ class MetaBaseline extends Extraction {
         cmd_line = "bash --login " +
                 System.getProperty("user.dir") + File.separator + "ccm-extract-baseline-project-metadata.sh " +
                 "$snapshotName " +
-                "$snapshotRevision"
+                "$snapshotRevision " +
+                "$snapshotInstance"
         log.info(cmd_line)
         cmd = cmd_line.execute(envVars,new File(workspace))
         cmd.waitForProcessOutput(sout, serr)

@@ -1,6 +1,6 @@
 #!/bin/bash
-#set -x # f�r shell til at displaye kommandoer
-
+#set -x #
+set -e
 
 #export PATH="/c/Program Files (x86)/IBM/Rational/Synergy/7.2.1/bin:${PATH}"
 #export PATH="/mnt/synergy/ccm721/bin/ccm:${PATH}"
@@ -12,47 +12,26 @@ if [ "${query_type}X" == "X" ] ; then
    export query_type="all_static"
 fi
 
-#UNTIL_SUBPROJECT=$3
-#BASELINE_SUBPROJECT=$4 #"ems_bus~1_20131002"
-
 if [ "${BASELINE_SUBPROJECT}X" != "X" ]; then
-	SUBPROJECT_NAME=`echo ${BASELINE_SUBPROJECT} | awk -F"~" '{print $1}'`
-fi
-
-#rm -rf $OUTPUTFILE
-#touch $OUTPUTFILE
-
-if [ "no" == "yes" ]; then
-until [ "${BASELINE_PROJECT}X" == "X" -o "$BASELINE_PROJECT" == "$UNTIL_PROJECT" ] ; do
-#	ccm rp -sh folders $BASELINE_PROJECT -u -f "%displayname" >> $OUTPUTFILE
-    BASELINE_PROJECT=`printf "${BASELINE_PROJECT}" | sed -e 's/xxx/ /g' `
-	query="is_baseline_project_of('${BASELINE_PROJECT}:project:1')"
-	BASELINE_PROJECT=`ccm query "is_baseline_project_of('${BASELINE_PROJECT}:project:1')" -u -f "%name~%version" | sed -e 's/ /xxx/g'`
-	bl_print=`printf "${BASELINE_PROJECT}" | awk -F"~" '{print $2}'`
-	if [ "${BASELINE_PROJECT}X" != "X" ] ; then
-		printf "${BASELINE_PROJECT} -> "
-	fi
-done
-printf "void\n"
-printf "$BASELINE_PROJECT"
-exit 0
+	SUBPROJECT_NAME=`echo ${BASELINE_SUBPROJECT} | awk -F"~|:" '{print $1}'`
 fi
 
 handle_baseline2(){
-  local CURRENT_PROJECT=$1
-	local inherited_string_local=$2
-	proj_name=`printf "${CURRENT_PROJECT}" | sed -e 's/xxx/ /g' | awk -F"~" '{print $1}'`
-    proj_version=`printf "${CURRENT_PROJECT}" | sed -e 's/xxx/ /g' | awk -F"~" '{print $2}'`
+    local CURRENT_PROJECT=$1
+    local inherited_string_local=$2
+	proj_name=`printf "${CURRENT_PROJECT}" | sed -e 's/xxx/ /g' | awk -F"~|:" '{print $1}'`
+    proj_version=`printf "${CURRENT_PROJECT}" | sed -e 's/xxx/ /g' | awk -F"~|:" '{print $2}'`
+    proj_instance=`printf "${CURRENT_PROJECT}" | sed -e 's/xxx/ /g' | awk -F"~|:" '{print $4}'`
 if [ "${query_type}X" == "all_staticX" ] ; then
     # All status versions
-    query="has_baseline_project('${proj_name}~${proj_version}:project:1') and ( status='integrate' or status='test' or status='sqa' or status='released' )"
+    query="has_baseline_project('${proj_name}~${proj_version}:project:${proj_instance}') and ( status='integrate' or status='test' or status='sqa' or status='released' )"
 fi
 if [ "${query_type}X" == "released_in_baselinesX" ] ; then
     # static projects but leave out non-released that is not in use as a baseline
-	query="has_baseline_project('${proj_name}~${proj_version}:project:1') and ( status='released' ) or \
-        (is_baseline_project_of(has_baseline_project(has_baseline_project('${proj_name}~${proj_version}:project:1') and ( status='integrate' or status='test' or status='sqa' or status='released' ))))"
+	query="has_baseline_project('${proj_name}~${proj_version}:project:${proj_instance}') and ( status='released' ) or \
+        (is_baseline_project_of(has_baseline_project(has_baseline_project('${proj_name}~${proj_version}:project:${proj_instance}') and ( status='integrate' or status='test' or status='sqa' or status='released' ))))"
 fi
-    local SUCCESSOR_PROJECTS=`ccm query "${query}" -u -f "%name~%version" | sed -e 's/ /xxx/g'`
+    local SUCCESSOR_PROJECTS=`ccm query "${query}" -u -f "%objectname" | sed -e 's/ /xxx/g'`
     for SUCCESSOR_PROJECT in ${SUCCESSOR_PROJECTS} ; do
 		local inherited_string="${inherited_string_local} -> \"${BASELINE_PROJECT}\""
 		printf "$SUCCESSOR_PROJECT@@@$CURRENT_PROJECT\n" >> ${projects_file}
@@ -62,7 +41,7 @@ fi
 
 #   set -x
 init_project_name=`printf "${BASELINE_PROJECT}" | awk -F"~" '{print $1}'`
-bl_version=`printf "${BASELINE_PROJECT}" | awk -F"~" '{print $2}'`
+instance=`printf "${BASELINE_PROJECT}" | awk -F"~|:" '{print $4}' `
 
 export projects_file="./projects.txt"
 #rm -f ${projects_file}
@@ -73,8 +52,8 @@ if [ "${use_cached_project_list}X" == "trueX" ]; then
   fi
 fi
 
-echo "$BASELINE_PROJECT@@@${init_project_name}~init" > ${projects_file}
 inherited_string="\"${BASELINE_PROJECT}\""
+echo "$BASELINE_PROJECT@@@${init_project_name}~init:project:${instance}" > ${projects_file}
 handle_baseline2 ${BASELINE_PROJECT} ${inherited_string}
 cat ${projects_file}
 #rm -f ${projects_file}

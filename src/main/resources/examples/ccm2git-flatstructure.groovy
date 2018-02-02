@@ -5,26 +5,35 @@ package examples
 def ccm_delimiter='~'
 
 def ccm_project
-if ( !start_project?.trim()) {
-    println "start_project not set"
+def ccm_revision
+def ccm_name4part
+def ccm_instance
+if ( !start_project?.trim() || !start_project.contains(':') || !start_project.contains(ccm_delimiter) ) {
+    println "start_project not set correctly \n" +
+            "Provide the start_project=<projectname>~<revision>:project:<instance>"
     System.exit(1)
 } else {
-    if ( !start_project.contains(ccm_delimiter) ){
-        println "start_project does not contain a ${ccm_delimiter}\n" +
-                "Provide the start_project=<projectname>~<revision>"
-        System.exit(1)
-    } else {
-        ccm_project = start_project.split(ccm_delimiter)[0]
-        ccm_revision = start_project.split(ccm_delimiter)[1]
+    ccm_name4part = start_project.trim()
+    ccm_project = start_project.split(ccm_delimiter)[0]
+    ccm_revision = start_project.split(ccm_delimiter)[1].split(':')[0]
+    ccm_instance = start_project.split(ccm_delimiter)[1].split(':')[2]
 
-        if ( !ccm_revision || start_project.contains(':') ) {
-            println "start_project does contains ':' \n" +
-                    "Provide the start_project=<projectname>~<revision>"
-            System.exit(1)
-        }
-    }
     if ( ! ccm_project ) {
         println "Could not extract ccm_project name from start_project"
+        System.exit(1)
+    }
+    if ( !ccm_revision || ccm_revision.contains(':') || ccm_revision.contains('~') ) {
+        println "ccm_revision contains ':' \n" +
+                "Provide the start_project=<projectname>~<revision>:project:<instance>"
+        System.exit(1)
+    }
+    if ( !ccm_instance || ccm_instance.contains(':') || ccm_instance.contains('~') ) {
+        println "ccm_instance contains ':' or '~' \n" +
+                "Provide the start_project=<projectname>~<revision>:project:<instance>"
+        System.exit(1)
+    }
+    if ( !ccm_name4part.contains(':') || !ccm_name4part.contains(ccm_delimiter) ) {
+        println "Provide the start_project=<projectname>~<revision>:project:<instance>"
         System.exit(1)
     }
 }
@@ -73,6 +82,8 @@ if(!my_workspace_file.exists()) my_workspace_file.mkdirs()
 source('ccm') {
     workspace "${my_workspace}/ccm_wa"
     revision start_project
+    proj_instance ccm_instance
+    name4part ccm_name4part
     ccm_addr ccm_addr_cli
     ccm_home ccm_home_cli
     system_path system_path2

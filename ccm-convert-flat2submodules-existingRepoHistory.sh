@@ -7,7 +7,8 @@ export repo_name=${1}
 export repo_init_tag=${2}
 export repo_submodules=${3}
 export gitrepo_project_original=${4}
-export gitignore_file=${5} # FULL PATH
+export project_instance=${5}
+export gitignore_file=${6} # FULL PATH
 
 #export project_revisions=`cat ${1}`
 
@@ -43,13 +44,13 @@ function convert_revision(){
         git reset -q --hard ${repo_convert_rev_tag}
     else
         # we do not have the 'content' tag available - investigate its history if it exists ( e.g. missing in repo )
-        ./ccm-baseline-history-get-root.sh "${repo_name}~$(echo ${ccm_repo_convert_rev_tag} | sed -e 's/xxx/ /g')"
+        ./ccm-baseline-history-get-root.sh "${repo_name}~${ccm_repo_convert_rev_tag}:project:${project_instance}"
         exit 1
     fi
 
     git clean -xffd >> /dev/null
 
-    local baseline_from_tag_info=$(ccm query "is_baseline_project_of('${repo_name}~$(echo ${repo_convert_rev_tag:: -4}| sed -e 's/xxx/ /g'):project:1') " \
+    local baseline_from_tag_info=$(ccm query "is_baseline_project_of('${repo_name}~$(echo ${repo_convert_rev_tag:: -4}| sed -e 's/xxx/ /g'):project:${project_instance}') " \
                                     -u -f "%version" | sed -e 's/ /xxx/g' )
     if [ "${baseline_from_tag_info}X" != "X" ] ; then
         local repo_baseline_rev_tag_wcomponent_wstatus=$(git tag | grep "${repo_name}/.*/${baseline_from_tag_info}_[dprtis][eueenq][lblsta]$" || grep_ext_value=$? )
@@ -64,6 +65,8 @@ function convert_revision(){
                     local repo_baseline_rev_tag_wcomponent_wstatus="${repo_name}/${repo_init_tag}/${repo_init_tag}"
                 fi
             else
+                echo "ERROR: Dont know why we ended here - something is not right!!"
+                echo "The baseline tag that is needed for the conversion of tag: ${repo_convert_rev_tag:: -4} cannot even find the tag unconverted: ${baseline_from_tag_info}"
                 exit 1
             fi
         fi
@@ -77,17 +80,19 @@ function convert_revision(){
     git checkout HEAD .gitmodules || echo ".gitmodules does not exist in current revision"
 
     for repo_submodule in ${repo_submodules}; do
-        repo_submodule_rev=$(ccm query " \
+        local repo_submodule_rev_inst=$(ccm query " \
                                    hierarchy_project_members(\
-                                       '${ccm_project_name}~$(echo ${ccm_repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:1',none \
+                                       '${ccm_project_name}~$(echo ${ccm_repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${project_instance}',none \
                                    ) \
-                                   and name='${repo_submodule}'" -u -f "%version" | sed -s 's/ /xxx/g')
-        if [ "${repo_submodule_rev}X" == "X" ] ; then
+                                   and name='${repo_submodule}'" -u -f "%version:%instance" | sed -s 's/ /xxx/g')
+        if [ "${repo_submodule_rev_inst}X" == "X" ] ; then
             echo "The submodule does not exit as a project - skip"
             continue
         fi
+        local repo_submodule_rev=$(echo ${repo_submodule_rev_inst} | awk -F ":" '{print $1}')
+        local repo_submodule_inst=$(echo ${repo_submodule_rev_inst} | awk -F ":" '{print $2}') # not used currently - for debugging per
         if [ ! `git checkout HEAD ${repo_submodule}` ] ; then
-                git rm -rf ${repo_submodule} || rm -rf ${repo_submodule}
+                git rm -rf ${repo_submodule} || ( rm -rf ${repo_submodule} ; rm -rf .git/modules/repo_submodule
                 git submodule add --force ../../${gitrepo_project_submodule}/${repo_submodule}.git
         fi
         git submodule update --init --recursive
@@ -101,7 +106,8 @@ function convert_revision(){
             # we already have the correct tag, so just set it and move on..
             git checkout ${repo_convert_rev_tag_wcomponent_wstatus}
             git clean -xffd
-            repo_submodule_rev=""
+            unset repo_submodule_rev
+            unset repo_submodule_inst
             cd -
             continue
         fi
@@ -127,6 +133,7 @@ function convert_revision(){
 
         unset repo_submodule_rev
         unset repo_submodule_rev_wcomponent_wstatus
+        unset repo_submodule_inst
         cd -
 
     done
@@ -147,7 +154,7 @@ function convert_revision(){
     unset repo_baseline_rev_tag_wcomponent_wstatus
 
 
-#    git push origin -f --tag ${repo_convert_rev_tag_wcomponent_wstatus}
+    git push origin -f --tag ${repo_convert_rev_tag_wcomponent_wstatus}
 set +x
     echo "============================================================================"
     echo " NEXT "

@@ -12,6 +12,8 @@ import toGit.migration.sources.ccm.context.CcmExtractionsContext
 class CCMSource implements MigrationSource {
 
     String revision
+    String proj_instance
+    String name4part
     String ccm_addr
     String ccm_home
     String system_path
@@ -24,7 +26,7 @@ class CCMSource implements MigrationSource {
 
         // Build the CCM project conversion list
         def sout = new StringBuilder(), serr = new StringBuilder()
-        def cmd_line = "bash --login " + System.getProperty("user.dir") + File.separator + "ccm-baseline-history.sh $revision"
+        def cmd_line = "bash --login " + System.getProperty("user.dir") + File.separator + "ccm-baseline-history.sh $name4part"
         println cmd_line
 
         def envVars = System.getenv().collect { k, v -> "$k=$v" }
@@ -53,22 +55,25 @@ class CCMSource implements MigrationSource {
             codeFile.delete()
         }
         codeFile.mkdir()
+        //Get the revision without instance
+        def project_revision_for_ws=project.split(":")[0]
 
-        if ( new File(workspace + "/code/" + project).exists()){
+        if ( new File(workspace + "/code/" + project_revision_for_ws).exists()){
             println "CM/Synergy checkout: Skipping project revision: ${project} - already exists"
         } else {
             def sout = new StringBuilder(), serr = new StringBuilder()
 
-            def project_revision_with_spaces = project.replaceAll("xxx"," ")
 
-            def file_tmp = new File(workspace + "/code/" + project + "_tmp")
+
+            def file_tmp = new File(workspace + "/code/" + project_revision_for_ws + "_tmp")
             if ( file_tmp.exists() ){
-                println workspace + "/code/" + project + "_tmp exist - Delete it "
+                println workspace + "/code/" + project_revision_for_ws + "_tmp exist - Delete it "
                 file_tmp.deleteDir()
             }
 
             def envVars = System.getenv().collect { k, v -> "$k=$v" }
-            def cmd_line = ["ccm", "copy_to_file_system", "-p", "${project}_tmp", "-r", "${project_revision_with_spaces}:project:1"]
+            def project_revision_with_spaces = project.replaceAll("xxx"," ")
+            def cmd_line = ["ccm", "copy_to_file_system", "-p", "${project_revision_for_ws}_tmp", "-r", "${project_revision_with_spaces}"]
             println "'" + cmd_line + "'"
             def cmd = cmd_line.execute(envVars,codeFile)
             cmd.waitForProcessOutput(sout, serr)
@@ -85,7 +90,7 @@ class CCMSource implements MigrationSource {
                 throw new Exception("ccm copy_to_file_system standard error contains text lines: " + serr.toString().readLines().size() )
             }
 
-            FileUtils.moveDirectory(new File(workspace + "/code/" + project + "_tmp"), new File(workspace + "/code/" + project))
+            FileUtils.moveDirectory(new File(workspace + "/code/" + project_revision_for_ws + "_tmp"), new File(workspace + "/code/" + project_revision_for_ws))
 
         }
 
