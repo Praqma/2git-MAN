@@ -92,7 +92,7 @@ function convert_revision(){
         local repo_submodule_rev=$(echo ${repo_submodule_rev_inst} | awk -F ":" '{print $1}')
         local repo_submodule_inst=$(echo ${repo_submodule_rev_inst} | awk -F ":" '{print $2}') # not used currently - for debugging per
         if [ ! `git checkout HEAD ${repo_submodule}` ] ; then
-                git rm -rf ${repo_submodule} || ( rm -rf ${repo_submodule} ; rm -rf .git/modules/repo_submodule
+                git rm -rf ${repo_submodule} || ( rm -rf ${repo_submodule} ; rm -rf .git/modules/repo_submodule )
                 git submodule add --force ../../${gitrepo_project_submodule}/${repo_submodule}.git
         fi
         git submodule update --init --recursive
