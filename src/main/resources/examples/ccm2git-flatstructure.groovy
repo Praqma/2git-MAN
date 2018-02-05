@@ -132,7 +132,7 @@ migrate {
                 }
 
                 // Copy checked out into Git repository
-                copy("$source.workspace/code/\$snapshot/\$snapshotName", target.workspace)
+                copy("$source.workspace/code/\${snapshotName}~\${snapshotRevision}/\$snapshotName", target.workspace)
 
                 custom {
                     println "First level files in: $target.workspace"

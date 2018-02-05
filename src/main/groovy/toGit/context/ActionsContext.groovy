@@ -32,7 +32,9 @@ class ActionsContext implements Context, HasActions {
                 def expandedSource = new SimpleTemplateEngine().createTemplate(source).make(extractionMap).toString()
                 def expandedTarget = new SimpleTemplateEngine().createTemplate(target).make(extractionMap).toString()
                 def sourceDir = new File(expandedSource)
+                if (! sourceDir.exists() ) throw new Exception ("ERROR: Source directory:" + sourceDir + " does not exist")
                 def targetDir = new File(expandedTarget)
+                if (! targetDir.exists() ) throw new Exception ("ERROR: Target directory:" + targetDir + " does not exist")
                 log.info ("Copy from: $expandedSource")
                 log.info ("To: $expandedTarget")
                 sourceDir.listFiles().each { file ->

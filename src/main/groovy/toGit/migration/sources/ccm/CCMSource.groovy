@@ -89,7 +89,7 @@ class CCMSource implements MigrationSource {
             if ( serr.toString().readLines().size() > 0 ){
                 throw new Exception("ccm copy_to_file_system standard error contains text lines: " + serr.toString().readLines().size() )
             }
-
+            println "Move from: " + workspace + "/code/" + project_revision_for_ws + "_tmp" + " to: " + workspace + "/code/" + project_revision_for_ws
             FileUtils.moveDirectory(new File(workspace + "/code/" + project_revision_for_ws + "_tmp"), new File(workspace + "/code/" + project_revision_for_ws))
 
         }
