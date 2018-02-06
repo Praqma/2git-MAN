@@ -32,7 +32,7 @@ function convert_revision(){
     if [ `git describe ${repo_convert_rev_tag_wcomponent_wstatus}` ] ; then
         set +x
             echo "============================================================================"
-            echo " NEXT "
+            echo " BEGIN: $repo_convert_rev_tag_wcomponent_wstatus"
             echo "============================================================================"
         set -x
         continue
@@ -148,18 +148,20 @@ function convert_revision(){
     git tag -a -F ./tag_meta_data.txt ${repo_convert_rev_tag_wcomponent_wstatus}
     rm -f ./tag_meta_data.txt
 
+
+    git push origin -f --tag ${repo_convert_rev_tag_wcomponent_wstatus}
+
+set +x
+    echo "============================================================================"
+    echo " DONE: $repo_convert_rev_tag_wcomponent_wstatus"
+    echo "============================================================================"
+set -x
+
     unset GIT_AUTHOR_DATE
     unset GIT_COMMITTER_DATE
     unset repo_convert_rev_tag_wcomponent_wstatus
     unset repo_baseline_rev_tag_wcomponent_wstatus
 
-
-    git push origin -f --tag ${repo_convert_rev_tag_wcomponent_wstatus}
-set +x
-    echo "============================================================================"
-    echo " NEXT "
-    echo "============================================================================"
-set -x
 }
 
 #initialize repo
