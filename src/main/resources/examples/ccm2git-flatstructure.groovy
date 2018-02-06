@@ -162,7 +162,7 @@ migrate {
                     println "Exit code: " + exitValue
 
                     if ( sout.contains('nothing to commit, working directory clean') )
-                        println "Empty workspace - skip, but still tag"
+                        println "Nothing commit - skip, but still tag"
 
                     if (exitValue) {
                         if ( ! sout.contains('nothing to commit, working directory clean') ){

@@ -21,8 +21,8 @@ function convert_revision(){
     repo_convert_rev_tag=$1
     ccm_repo_convert_rev_tag=${repo_convert_rev_tag:: -4}
 
-    ccm_baseline_obj_this=$(ccm query "has_project_in_baseline('${repo_name}~$(echo ${ccm_repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:1') and release='$(ccm query "name='${repo_name}' and version='$(echo ${ccm_repo_convert_rev_tag} | sed -e 's/xxx/ /g')' and type='project'" -u -f "%release")'" -u -f "%objectname" | head -1 )
-    ccm_component_release=`ccm attr -show release "${repo_name}~$(echo ${ccm_repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:1" | sed -e 's/ //g'`
+    ccm_baseline_obj_this=$(ccm query "has_project_in_baseline('${repo_name}~$(echo ${ccm_repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${project_instance}') and release='$(ccm query "name='${repo_name}' and version='$(echo ${ccm_repo_convert_rev_tag} | sed -e 's/xxx/ /g')' and type='project'" -u -f "%release")'" -u -f "%objectname" | head -1 )
+    ccm_component_release=`ccm attr -show release "${repo_name}~$(echo ${ccm_repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${project_instance}" | sed -e 's/ //g'`
     ccm_release=$(echo ${ccm_component_release} | cut -d "/" -f 2)
 
     test "${ccm_release}x" == "x" && exit 1
