@@ -1,54 +1,59 @@
-# New ignores for git and artifactory world
-*.pdf
-*.dat
-*.zip
-*.pdb
+# New ignores for git and artifactory world (sorted)
+*.eds
+*.EDS
 *.exe
 *.dll
-*.mbf
-*.lib
-*.EDS
-*.eds
-*.sdf
-*.xls
 *.doc
 *.docx
+*.mbf
+*.lib
+*.pdb
+*.pdf
+*.sdf
+*.xls
+*.zip
 /.gradle/
 /.idea/
 *.iml
 
-/boost_*/
-/vs2012rt/
-/devexpress/
-/Steema/
-/Install/
-/sqlite*/
-/make_util/jenkins/findGhostTasks.exe
-/make_util/jenkins/RunFindGhostTasks.cmd
-/make_util/jenkins/releases.txt
-/make_util/jenkins/curl.exe
-/DDS/
-/ACE_wrappers/
-/documents/
-/MEPSTrans/
-/make_util/cppcheck/
-/make_util/doxygen/
-/donkey_dev/
-/eds_classic/
-/eds_util/
-/edscfg/
-/eds_cfg/
-/tools/ChangeDevExpressDefaultFont/
-/tools/read-event-channels-from-hmi-file/
-/ems_ui/source/graphics/
-/tools/TardisVSIX/
-/ems_feature_licenses_service/source/ems_feature_licenses_rest_api/packages
-/ems_ui/tools/test_package/
-test_data/
+# Specific files NOT ignored - but handled in some other way:
+# .asc
 
-# Large files not i "HEAD"
-test/boundschecker_cfg/util.cpp
-tools/eds_config/generated/edscfg_create_interface_ecs_1205_2_5.cpp
-tools/eds_config/generated/edscfg_create_interface_ecs_1001_1_1.cpp
-tools/eds_config/generated/edscfg_create_interface_ecs_1109_2_x.cpp
-ems_main/tools/ecr_edit/EmsEditForm.resx
+# submodules (sorted)
+/aether/
+/appframe/
+/arcedit/
+/bes2/
+/bes3_to_bes2_interface/
+/cppunit-1.12.1/
+/dau/
+/dse/
+/ecs_ercs_interface/
+/firebird/
+/firebird4bes/
+/gnuc/
+/gui/
+/hmi_bat/
+/hmidev/
+/Inspect/
+/ldcl/
+/lint/
+/make2/
+/mb-gcc/
+/Modbus/
+/MOP2_Core/
+/scu/
+
+# gigant-directories (sorted)
+/ccu_mrk2/tp/nodetest/
+/dau/sw/util/
+/dse/tools/
+/ecu/tp/nodetest/
+/ecu/tp/unittest_dse/SelfControllingHPS/
+/gi/c/Documentation/
+/gi/TestWall/
+MOP2/DatabaseFiles/
+
+# Single Large files not i "HEAD" (sorted)
+me/gi/TestWall/SeqZap/All SD s in all States Report GITests 2012-11-15 13.14.47 Detailed Browsable Report.html
+me/eicu/Lyngsoe/UCS2100/tools/gd/EAD Trend20050411.log
