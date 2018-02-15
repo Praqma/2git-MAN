@@ -6,6 +6,7 @@
 *.doc
 *.docx
 *.mbf
+*.mdb
 *.lib
 *.pdb
 *.pdf
@@ -20,29 +21,31 @@
 # .asc
 
 # submodules (sorted)
-/aether/
-/appframe/
-/arcedit/
-/bes2/
-/bes3_to_bes2_interface/
+#/aether/
+#/appframe/
+#/arcedit/
+#/bes2/
+#/bes3_to_bes2_interface/
+#/dau/
+#/dse/
+#/ecs_ercs_interface/
+#/firebird/
+#/firebird4bes/
+#/gnuc/
+#/gui/
+#/hmi_bat/
+#/hmidev/
+#/Inspect/
+#/ldcl/
+#/lint/
+#/make2/
+#/mb-gcc/
+#/Modbus/
+#/MOP2_Core/
+#/scu/
+
+# Historical directories to be removed
 /cppunit-1.12.1/
-/dau/
-/dse/
-/ecs_ercs_interface/
-/firebird/
-/firebird4bes/
-/gnuc/
-/gui/
-/hmi_bat/
-/hmidev/
-/Inspect/
-/ldcl/
-/lint/
-/make2/
-/mb-gcc/
-/Modbus/
-/MOP2_Core/
-/scu/
 
 # gigant-directories (sorted)
 /ccu_mrk2/tp/nodetest/
@@ -52,8 +55,8 @@
 /ecu/tp/unittest_dse/SelfControllingHPS/
 /gi/c/Documentation/
 /gi/TestWall/
-MOP2/DatabaseFiles/
+/MOP2/DatabaseFiles/
 
 # Single Large files not i "HEAD" (sorted)
-me/gi/TestWall/SeqZap/All SD s in all States Report GITests 2012-11-15 13.14.47 Detailed Browsable Report.html
-me/eicu/Lyngsoe/UCS2100/tools/gd/EAD Trend20050411.log
+/gi/TestWall/SeqZap/All SD s in all States Report GITests 2012-11-15 13.14.47 Detailed Browsable Report.html
+/eicu/Lyngsoe/UCS2100/tools/gd/EAD Trend20050411.log
