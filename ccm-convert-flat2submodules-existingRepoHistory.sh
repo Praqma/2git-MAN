@@ -56,7 +56,7 @@ function convert_revision(){
         local repo_baseline_rev_tag_wcomponent_wstatus=$(git tag | grep "${repo_name}/.*/${baseline_from_tag_info}_[dprtis][eueenq][lblsta]$" || grep_ext_value=$? )
         if [ "${repo_baseline_rev_tag_wcomponent_wstatus}x" == "x" ] ; then
             #find the original tag and convert it first
-            baseline_from_tag_info_wstatus=$(git tag | grep "${baseline_from_tag_info}_[dprtis][eueenq][lblsta]$")
+            baseline_from_tag_info_wstatus=$(git tag | grep "^${baseline_from_tag_info}_[dprtis][eueenq][lblsta]$")
             if [ "${baseline_from_tag_info_wstatus}x" != "x" ]; then
                 convert_revision ${baseline_from_tag_info_wstatus}
                 local baseline_from_tag_info=$(git show ${repo_convert_rev_tag} | grep "1) ${repo_name}~" | awk -F"~" '{print $2}')
