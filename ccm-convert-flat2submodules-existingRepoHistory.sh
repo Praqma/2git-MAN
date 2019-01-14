@@ -93,10 +93,9 @@ function convert_revision(){
         local repo_submodule_inst=$(echo ${repo_submodule_rev_inst} | awk -F ":" '{print $2}') # not used currently - for debugging per
         if [ ! `git checkout HEAD ${repo_submodule}` ] ; then
                 git rm -rf ${repo_submodule} || ( rm -rf ${repo_submodule} ; rm -rf .git/modules/repo_submodule )
-                git submodule add --force ../../${gitrepo_project_submodule}/${repo_submodule}.git
+                git submodule add --force ../../${gitrepo_project_submodule}/${repo_submodule}.git || git submodule add --force ../../${gitrepo_project_submodule}/${repo_submodule}.git
         fi
         git submodule update --init --recursive
-
 
         cd ${repo_submodule}
 
@@ -220,9 +219,16 @@ export project_revisions=$(for tag in $(git log --topo-order --oneline --all --d
                             | grep -v ${repo_init_tag}$ \
                             | tac \
                            )
+
+echo "Found project revisions/tags:"
+rm -f project_tags.txt
+for project_revision in ${project_revisions}; do
+    echo $project_revision >> project_tags.txt
+done
+cat ./project_tags.txt
 set -x
 
-
+echo "Do the conversions"
 for project_revision in ${project_revisions}; do
     repo_convert_rev_tag=${project_revision}
     convert_revision ${repo_convert_rev_tag}
