@@ -50,7 +50,8 @@ function convert_revision(){
 
     git clean -xffd >> /dev/null
 
-    local baseline_from_tag_info=$(ccm query "is_baseline_project_of('${repo_name}~$(echo ${repo_convert_rev_tag:: -4}| sed -e 's/xxx/ /g'):project:${project_instance}') " \
+    #NOTE: The next line is suppressing the support for having a baseline project with a different name than is being converted: ( and name='${repo_name}' )
+    local baseline_from_tag_info=$(ccm query "is_baseline_project_of('${repo_name}~$(echo ${repo_convert_rev_tag:: -4}| sed -e 's/xxx/ /g'):project:${project_instance}') and name='${repo_name}'" \
                                     -u -f "%version" | sed -e 's/ /xxx/g' )
     if [ "${baseline_from_tag_info}X" != "X" ] ; then
         local repo_baseline_rev_tag_wcomponent_wstatus=$(git tag | grep "${repo_name}/.*/${baseline_from_tag_info}_[dprtis][eueenq][lblsta]$" || grep_ext_value=$? )
