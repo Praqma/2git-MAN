@@ -1,9 +1,6 @@
 #!/bin/bash
 #set -x
 
-export PATH="/c/Program Files (x86)/IBM/Rational/Synergy/7.2.1/bin:${PATH}"
-export CCM_HOME="/c/Program Files (x86)/IBM/Rational/Synergy/7.2.1"
-
 BASELINE_PROJECT=$1
 UNTIL_PROJECT=$2
 
