@@ -96,7 +96,7 @@ function convert_revision(){
                 git rm -rf ${repo_submodule} || ( rm -rf ${repo_submodule} ; rm -rf .git/modules/${repo_submodule} )
                 git submodule add --force ../${repo_submodule}.git || git submodule add --force ../${repo_submodule}.git
         fi
-        git submodule update --init --recursive
+        git submodule update --init --recursive ${repo_submodule}
 
         cd ${repo_submodule}
 
