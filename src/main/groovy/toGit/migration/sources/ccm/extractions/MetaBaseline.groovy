@@ -49,7 +49,7 @@ class MetaBaseline extends Extraction {
             result['baselineRevision_wstatus'] = baselineRevision
         } else {
 
-            cmd_line = "bash --login " +
+            cmd_line = "bash " +
                     System.getProperty("user.dir") + File.separator + "ccm-get-status-from-baseline-or-project.sh " +
                     "$snapshotName " +
                     "$baselineRevision " +
@@ -78,7 +78,7 @@ class MetaBaseline extends Extraction {
         }
 
         // Get the baseline date from project
-         cmd_line = "bash --login " +
+         cmd_line = "bash " +
                 System.getProperty("user.dir") + File.separator + "ccm-get-create-time-of-project.sh " +
                 "$snapshotName " +
                 "$snapshotRevision " +
@@ -105,7 +105,7 @@ class MetaBaseline extends Extraction {
         serr = new StringBuilder()
 
         // get baseline or project baseline status from
-        cmd_line = "bash --login " +
+        cmd_line = "bash " +
                 System.getProperty("user.dir") + File.separator + "ccm-get-status-from-baseline-or-project.sh " +
                 "$snapshotName " +
                 "$snapshotRevision " +
@@ -133,7 +133,7 @@ class MetaBaseline extends Extraction {
 
 
         // Build the CCM project meta data for later commit
-        cmd_line = "bash --login " +
+        cmd_line = "bash " +
                 System.getProperty("user.dir") + File.separator + "ccm-extract-baseline-project-metadata.sh " +
                 "$snapshotName " +
                 "$snapshotRevision " +

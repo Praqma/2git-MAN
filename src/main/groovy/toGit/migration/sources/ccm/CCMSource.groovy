@@ -26,7 +26,7 @@ class CCMSource implements MigrationSource {
 
         // Build the CCM project conversion list
         def sout = new StringBuilder(), serr = new StringBuilder()
-        def cmd_line = "bash --login " + System.getProperty("user.dir") + File.separator + "ccm-baseline-history.sh $name4part"
+        def cmd_line = "bash " + System.getProperty("user.dir") + File.separator + "ccm-baseline-history.sh $name4part"
         println cmd_line
 
         def envVars = System.getenv().collect { k, v -> "$k=$v" }
