@@ -19,23 +19,29 @@ export git_remote_repo=ssh://git@${git_remote}/${gitrepo_project_original}/${rep
 
 function convert_revision(){
     repo_convert_rev_tag=$1
+    set +x
+
     ccm_repo_convert_rev_tag=${repo_convert_rev_tag:: -4}
 
     ccm_baseline_obj_this=$(ccm query "has_project_in_baseline('${repo_name}~$(echo ${ccm_repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${project_instance}') and release='$(ccm query "name='${repo_name}' and version='$(echo ${ccm_repo_convert_rev_tag} | sed -e 's/xxx/ /g')' and type='project'" -u -f "%release")'" -u -f "%objectname" | head -1 )
     ccm_component_release=`ccm attr -show release "${repo_name}~$(echo ${ccm_repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${project_instance}" | sed -e 's/ //g'`
     ccm_release=$(echo ${ccm_component_release} | cut -d "/" -f 2)
 
-    test "${ccm_release}x" == "x" && exit 1
+    test "${ccm_release}x" == "x" && ( echo "Release is empty!!" &&  exit 1)
 
     local repo_convert_rev_tag_wcomponent_wstatus="${repo_name}/${ccm_release}/${repo_convert_rev_tag}"
 
     if [ `git describe ${repo_convert_rev_tag_wcomponent_wstatus}` ] ; then
-        set +x
+            echo "============================================================================"
+            echo " Already done - skip: $repo_convert_rev_tag_wcomponent_wstatus"
+            echo "============================================================================"
+        set -x
+        continue
+    else
             echo "============================================================================"
             echo " BEGIN: $repo_convert_rev_tag_wcomponent_wstatus"
             echo "============================================================================"
         set -x
-        continue
     fi
 
     # Get the right content
@@ -92,7 +98,7 @@ function convert_revision(){
         fi
         local repo_submodule_rev=$(echo ${repo_submodule_rev_inst} | awk -F ":" '{print $1}')
         local repo_submodule_inst=$(echo ${repo_submodule_rev_inst} | awk -F ":" '{print $2}') # not used currently - for debugging per
-        if [ ! `git checkout HEAD ${repo_submodule}` ] ; then
+        if [ ! `git checkout HEAD ${repo_submodule} || git checkout HEAD ${repo_submodule}` ] ; then
                 git rm -rf ${repo_submodule} || ( rm -rf ${repo_submodule} ; rm -rf .git/modules/${repo_submodule} )
                 git submodule add --force ../${repo_submodule}.git || git submodule add --force ../${repo_submodule}.git
         fi
