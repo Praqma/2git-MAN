@@ -21,6 +21,20 @@ function convert_revision(){
     repo_convert_rev_tag=$1
     set +x
 
+    repo_convert_rev_tag_wcomponent_wstatus=`git tag | grep "${repo_name}/.*/${repo_convert_rev_tag}$" || grep_ext_value=$?`
+
+    if [[ "${repo_convert_rev_tag_wcomponent_wstatus}" == "" ]] ; then
+            echo "============================================================================"
+            echo " BEGIN: $repo_convert_rev_tag_wcomponent_wstatus"
+            echo "============================================================================"
+        set -x
+    else
+            echo "============================================================================"
+            echo " Already done - skip: $repo_convert_rev_tag_wcomponent_wstatus"
+            echo "============================================================================"
+        set -x
+        continue
+    fi
     ccm_repo_convert_rev_tag=${repo_convert_rev_tag:: -4}
 
     ccm_baseline_obj_this=$(ccm query "has_project_in_baseline('${repo_name}~$(echo ${ccm_repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${project_instance}') and release='$(ccm query "name='${repo_name}' and version='$(echo ${ccm_repo_convert_rev_tag} | sed -e 's/xxx/ /g')' and type='project'" -u -f "%release")'" -u -f "%objectname" | head -1 )
@@ -30,19 +44,6 @@ function convert_revision(){
     test "${ccm_release}x" == "x" && ( echo "Release is empty!!" &&  exit 1)
 
     local repo_convert_rev_tag_wcomponent_wstatus="${repo_name}/${ccm_release}/${repo_convert_rev_tag}"
-
-    if [ `git describe ${repo_convert_rev_tag_wcomponent_wstatus}` ] ; then
-            echo "============================================================================"
-            echo " Already done - skip: $repo_convert_rev_tag_wcomponent_wstatus"
-            echo "============================================================================"
-        set -x
-        continue
-    else
-            echo "============================================================================"
-            echo " BEGIN: $repo_convert_rev_tag_wcomponent_wstatus"
-            echo "============================================================================"
-        set -x
-    fi
 
     # Get the right content
     if [ `git describe ${repo_convert_rev_tag}`  ] ; then
