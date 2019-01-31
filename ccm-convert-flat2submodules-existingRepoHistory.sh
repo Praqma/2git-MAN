@@ -19,19 +19,20 @@ export git_remote_repo=ssh://git@${git_remote}/${gitrepo_project_original}/${rep
 
 function convert_revision(){
     repo_convert_rev_tag=$1
-    set +x
 
     repo_convert_rev_tag_wcomponent_wstatus=`git tag | grep "${repo_name}/.*/${repo_convert_rev_tag}$" || grep_ext_value=$?`
 
     if [[ "${repo_convert_rev_tag_wcomponent_wstatus}" == "" ]] ; then
+        set +x
             echo "============================================================================"
-            echo " BEGIN: $repo_convert_rev_tag_wcomponent_wstatus"
+            echo " BEGIN: ${repo_convert_rev_tag}"
             echo "============================================================================"
         set -x
     else
-            echo "============================================================================"
-            echo " Already done - skip: $repo_convert_rev_tag_wcomponent_wstatus"
-            echo "============================================================================"
+        set +x
+            echo "====================================================================================================="
+            echo " Already done - skip: ${repo_convert_rev_tag} - > ${repo_convert_rev_tag_wcomponent_wstatus}"
+            echo "====================================================================================================="
         set -x
         continue
     fi
