@@ -20,9 +20,9 @@ export git_remote_repo=ssh://git@${git_remote}/${gitrepo_project_original}/${rep
 function convert_revision(){
     repo_convert_rev_tag=$1
 
-    repo_convert_rev_tag_wcomponent_wstatus=`git tag | grep "${repo_name}/.*/${repo_convert_rev_tag}$" || grep_ext_value=$?`
+    local tag_to_convert=`git tag | grep "${repo_name}/.*/${repo_convert_rev_tag}$" || grep_ext_value=$?`
 
-    if [[ "${repo_convert_rev_tag_wcomponent_wstatus}" == "" ]] ; then
+    if [[ "${tag_to_convert}" == "" ]] ; then
         set +x
             echo "============================================================================"
             echo " BEGIN: ${repo_convert_rev_tag}"
@@ -31,7 +31,7 @@ function convert_revision(){
     else
         set +x
             echo "====================================================================================================="
-            echo " Already done - skip: ${repo_convert_rev_tag} - > ${repo_convert_rev_tag_wcomponent_wstatus}"
+            echo " Already done - skip: ${repo_convert_rev_tag} > ${tag_to_convert}"
             echo "====================================================================================================="
         set -x
         continue
@@ -100,9 +100,11 @@ function convert_revision(){
         fi
         local repo_submodule_rev=$(echo ${repo_submodule_rev_inst} | awk -F ":" '{print $1}')
         local repo_submodule_inst=$(echo ${repo_submodule_rev_inst} | awk -F ":" '{print $2}') # not used currently - for debugging per
-        if [ ! `git checkout HEAD ${repo_submodule} || git checkout HEAD ${repo_submodule}` ] ; then
-                git rm -rf ${repo_submodule} || ( rm -rf ${repo_submodule} ; rm -rf .git/modules/${repo_submodule} )
-                git submodule add --force ../${repo_submodule}.git || git submodule add --force ../${repo_submodule}.git
+        git checkout HEAD ${repo_submodule} || checkout_exit=$?
+        if [ ! `echo ${checkout_exit}` ] ; then
+                ls -la ${repo_submodule}
+                git rm -rf ${repo_submodule} || ( rm -rf ${repo_submodule} && rm -rf .git/modules/${repo_submodule} )
+                git checkout HEAD ${repo_submodule} || git submodule add --force ../${repo_submodule}.git || git submodule add --force ../${repo_submodule}.git
         fi
         git submodule update --init --recursive ${repo_submodule}
 
