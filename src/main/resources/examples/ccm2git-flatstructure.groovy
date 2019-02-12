@@ -221,6 +221,8 @@ migrate {
                     }
                 }
 
+                cmd 'du -sBM .git > ../${snapshotName}~${snapshotRevision}@git_size.txt', target.workspace
+                cmd 'cat ../${snapshotName}~${snapshotRevision}@git_size.txt', target.workspace
             }
         }
     }
