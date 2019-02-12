@@ -92,7 +92,7 @@ source('ccm') {
 target('git', repository_name) {
     workspace "${my_workspace}/repo/" + ccm_project
     user 'Claus Schneider(Praqma)'
-    email 'claus.schneider-ext@man.eu'
+    email 'claus.schneider-ext@man-es.com'
     remote "ssh://git@${git_server_path_this}/${ccm_project}.git"
     longPaths true
     ignore ""
@@ -146,12 +146,18 @@ migrate {
 
                 custom { project ->
                     def sout = new StringBuilder(), serr = new StringBuilder()
-                    def cmd_line = 'git commit -m "' + project.snapshotRevision + '"'
+                    def cmd_line = ['git', 'commit', '-m', project.snapshotRevision ]
                     println cmd_line
 
+                    def email_domain = '@man-es.com'
                     def envVars = System.getenv().collect { k, v -> "$k=$v" }
                     envVars.add('GIT_COMMITTER_DATE=' + project.snapshot_commiter_date)
                     envVars.add('GIT_AUTHOR_DATE=' + project.snapshot_commiter_date)
+                    println("project.snapshotOwner:" + project.snapshotOwner)
+                    if ( project.snapshotOwner != null ){
+                        envVars.add('GIT_AUTHOR_NAME=' + project.snapshotOwner )
+                        envVars.add('GIT_AUTHOR_EMAIL=' + project.snapshotOwner + email_domain)
+                    }
                     def cmd = cmd_line.execute(envVars, new File(target.workspace))
                     cmd.waitForProcessOutput(sout, serr)
                     def exitValue = cmd.exitValue()
@@ -190,9 +196,15 @@ migrate {
                     def cmd_line = "git tag -F tag_meta_data.txt " + project.snapshotRevision + "_" + project.snapshot_status
                     println cmd_line
 
+                    def email_domain = '@man-es.com'
                     def envVars = System.getenv().collect { k, v -> "$k=$v" }
                     envVars.add('GIT_COMMITTER_DATE=' + project.snapshot_commiter_date)
                     envVars.add('GIT_AUTHOR_DATE=' + project.snapshot_commiter_date)
+                    println("project.snapshotOwner:" + project.snapshotOwner)
+                    if ( project.snapshotOwner != null ){
+                        envVars.add('GIT_COMMITTER_NAME=' + project.snapshotOwner )
+                        envVars.add('GIT_COMMITTER_EMAIL=' + project.snapshotOwner + email_domain)
+                    }
                     def cmd = cmd_line.execute(envVars,new File(target.workspace))
                     cmd.waitForProcessOutput(sout, serr)
                     def exitValue = cmd.exitValue()
@@ -209,8 +221,6 @@ migrate {
                     }
                 }
 
-                cmd 'du -sh .git >> ../git_sizes.txt', target.workspace
-                cmd 'tail -1 ../git_sizes.txt', target.workspace
             }
         }
     }

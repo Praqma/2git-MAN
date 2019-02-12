@@ -45,10 +45,11 @@ class MetaBaseline extends Extraction {
 
         // get baseline or project baseline status of the baseline revision
         if ( baselineRevision ==~ /init/ ) {
+            // run this sections of we are pointing to init
             result['baselineRevision'] = baselineRevision
             result['baselineRevision_wstatus'] = baselineRevision
         } else {
-
+            // run this sections of we are pointing to any revision other than init alias an already converted
             cmd_line = "bash " +
                     System.getProperty("user.dir") + File.separator + "ccm-get-status-from-baseline-or-project.sh " +
                     "$snapshotName " +
@@ -76,6 +77,23 @@ class MetaBaseline extends Extraction {
             sout = new StringBuilder()
             serr = new StringBuilder()
         }
+        // get the owner of the project revision
+        cmd_line = ["ccm", "attr", "-show", "owner", "${project_revision_with_spaces}"]
+        println "'" + cmd_line + "'"
+        cmd = cmd_line.execute(envVars,new File(workspace))
+        cmd.waitForProcessOutput(sout, serr)
+        exitValue = cmd.exitValue()
+        println "Exit code: " + exitValue
+        println "Standard out:"
+        println "'" + sout.toString().trim() + "'"
+        if ( exitValue ){
+            println "Standard error:"
+            println "'" + serr + "'"
+            throw new Exception("Get owner gave an non-0 exit code" )
+        }
+        result['snapshotOwner'] = sout.toString().trim()
+        sout = new StringBuilder()
+        serr = new StringBuilder()
 
         // Get the baseline date from project
          cmd_line = "bash " +

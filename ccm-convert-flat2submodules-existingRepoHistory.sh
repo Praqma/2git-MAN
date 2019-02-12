@@ -151,6 +151,8 @@ function convert_revision(){
 
     export GIT_AUTHOR_DATE=$(git tag -l --format="%(taggerdate:iso8601)" ${repo_convert_rev_tag} | awk -F" " '{print $1 " " $2}')
     export GIT_COMMITTER_DATE=${GIT_AUTHOR_DATE}
+    export GIT_COMMITTER_NAME=$(git tag -l --format="%(taggername)" ${repo_convert_rev_tag} )
+    export GIT_COMMITTER_EMAIL=$(git tag -l --format="%(taggeremail)" ${repo_convert_rev_tag} )
 
     git commit -q -C ${repo_convert_rev_tag} --reset-author || ( echo "Empty commit.." )
 
@@ -169,6 +171,8 @@ set -x
 
     unset GIT_AUTHOR_DATE
     unset GIT_COMMITTER_DATE
+    unset GIT_COMMITTER_NAME
+    unset GIT_COMMITTER_EMAIL
     unset repo_convert_rev_tag_wcomponent_wstatus
     unset repo_baseline_rev_tag_wcomponent_wstatus
 
