@@ -17,6 +17,7 @@ class CCMSource implements MigrationSource {
     String ccm_addr
     String ccm_home
     String system_path
+    String jiraProjectKey
 
 
     @Override

@@ -10,9 +10,11 @@ class MetaBaseline extends Extraction {
     final static log = LoggerFactory.getLogger(this.class)
 
     String workspace
+    String jiraProjectKey
 
-    MetaBaseline(String ccm_workspace) {
+    MetaBaseline(String ccm_workspace, String jiraProjectKey) {
         this.workspace = ccm_workspace
+        this.jiraProjectKey = jiraProjectKey
     }
 
     @Override
@@ -155,7 +157,9 @@ class MetaBaseline extends Extraction {
                 System.getProperty("user.dir") + File.separator + "ccm-extract-baseline-project-metadata.sh " +
                 "$snapshotName " +
                 "$snapshotRevision " +
-                "$snapshotInstance"
+                "$snapshotInstance " +
+                "$jiraProjectKey " +
+                "tag"
         log.info(cmd_line)
         cmd = cmd_line.execute(envVars,new File(workspace))
         cmd.waitForProcessOutput(sout, serr)
@@ -173,8 +177,36 @@ class MetaBaseline extends Extraction {
             log.error "Exit code: " + exitValue
             throw new Exception( cmd_line + ": standard error contains text lines: " + serr.toString().readLines().size() )
         }
-        result['baseline_info'] = sout
+        result['baseline_tag_info'] = sout
 
+        sout = new StringBuilder()
+        serr = new StringBuilder()
+
+        cmd_line = "bash " +
+                System.getProperty("user.dir") + File.separator + "ccm-extract-baseline-project-metadata.sh " +
+                "$snapshotName " +
+                "$snapshotRevision " +
+                "$snapshotInstance " +
+                "$jiraProjectKey " +
+                "commit"
+        log.info(cmd_line)
+        cmd = cmd_line.execute(envVars,new File(workspace))
+        cmd.waitForProcessOutput(sout, serr)
+        exitValue = cmd.exitValue()
+        log.info "stdout lines count: " + sout.toString().readLines().size()
+        if ( exitValue ){
+            log.error "Standard error:"
+            log.error "'" + serr + "'"
+            log.error "Exit code: " + exitValue
+            throw new Exception( cmd_line + ": gave exit code: $exitValue" )
+        }
+        if ( serr.toString().readLines().size() > 0 ){
+            log.error "Standard error:"
+            log.error "'" + serr + "'"
+            log.error "Exit code: " + exitValue
+            throw new Exception( cmd_line + ": standard error contains text lines: " + serr.toString().readLines().size() )
+        }
+        result['baseline_commit_info'] = sout
         return result
     }
 }

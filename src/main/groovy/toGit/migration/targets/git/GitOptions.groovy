@@ -8,6 +8,8 @@ class GitOptions {
     String remote = ''
     String initCommitDate = "1970-01-01 00:00"
 
+    String jiraProjectKey = ""
+
     boolean defaultSetup = true
     boolean longPaths = false
 }

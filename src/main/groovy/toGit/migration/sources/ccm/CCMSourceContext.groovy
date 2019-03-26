@@ -40,4 +40,8 @@ class CCMSourceContext implements Context, SourceContext {
     void system_path (String system_path){
         source.system_path = system_path
     }
+
+    void jiraProjectKey (String jiraProjectKey){
+        source.jiraProjectKey = jiraProjectKey
+    }
 }

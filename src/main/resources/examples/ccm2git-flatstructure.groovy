@@ -66,12 +66,18 @@ if ( !my_workspace_root ) {
 
 def git_server_path_this
 if ( !git_server_path ){
-    git_server_path_this = "dtdkcphlx0231.md-man.biz:7991/scarp"
+    System.exit(1)
 } else {
     git_server_path_this = git_server_path
 }
 
-
+def jira_project_key_this
+if ( !jiraProjectKey ) {
+    println "Please set jiraProjectKey variable\n"
+    System.exit(1)
+} else {
+    jiraProjectKeyThis = jiraProjectKey
+}
 
 def my_workspace_file = new File(my_workspace)
 if(!my_workspace_file.exists()) my_workspace_file.mkdirs()
@@ -87,6 +93,7 @@ source('ccm') {
     ccm_addr ccm_addr_cli
     ccm_home ccm_home_cli
     system_path system_path2
+    jiraProjectKey jiraProjectKeyThis
 }
 
 target('git', repository_name) {
@@ -105,7 +112,7 @@ migrate {
                 AlreadyConverted(target.workspace)
             }
             extractions {
-                baselineProperties(source.workspace)
+                baselineProperties(source.workspace, source.jiraProjectKey)
             }
             actions {
 
@@ -146,8 +153,16 @@ migrate {
 
                 custom { project ->
                     def sout = new StringBuilder(), serr = new StringBuilder()
-                    def cmd_line = ['git', 'commit', '-m', project.snapshotRevision ]
+
+                    new File(target.workspace + File.separator + ".." + File.separator + "commit_meta_data.txt").withWriter { out ->
+                        project.baseline_commit_info.each {
+                            out.println it
+                        }
+                    }
+                    def cmd_line = ['git', 'commit', '--file', "../commit_meta_data.txt" ]
                     println cmd_line
+
+
 
                     def email_domain = '@man-es.com'
                     def envVars = System.getenv().collect { k, v -> "$k=$v" }
@@ -185,15 +200,15 @@ migrate {
 
                 // The file for tag info is generated during MetaDataExtraction
                 custom { project ->
-                    new File(target.workspace + File.separator + "tag_meta_data.txt").withWriter { out ->
-                        project.baseline_info.each {
+                    new File(target.workspace + File.separator + ".." + File.separator + "tag_meta_data.txt").withWriter { out ->
+                        project.baseline_tag_info.each {
                             out.println it
                         }
                     }
                 }
                 custom { project ->
                     def sout = new StringBuilder(), serr = new StringBuilder()
-                    def cmd_line = "git tag -F tag_meta_data.txt " + project.snapshotRevision + "_" + project.snapshot_status
+                    def cmd_line = "git tag -F ../tag_meta_data.txt " + project.snapshotRevision + "_" + project.snapshot_status
                     println cmd_line
 
                     def email_domain = '@man-es.com'

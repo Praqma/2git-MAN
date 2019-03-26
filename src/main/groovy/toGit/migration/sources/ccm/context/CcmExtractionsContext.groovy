@@ -12,8 +12,8 @@ trait CcmExtractionsContext implements Context {
      * Extracts a CoolBaseline property
      * @param map A map of values to extract and keys to map them to.
      */
-    void baselineProperties(String ccm_workspace) {
-        extractions.add(new MetaBaseline(ccm_workspace))
+    void baselineProperties(String ccm_workspace, String jiraProjectKey) {
+        extractions.add(new MetaBaseline(ccm_workspace, jiraProjectKey))
         log.debug("Added 'baselineProperties' criteria.")
     }
 }
