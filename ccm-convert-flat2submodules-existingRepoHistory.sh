@@ -65,7 +65,7 @@ function convert_revision(){
         local repo_baseline_rev_tag_wcomponent_wstatus=$(git tag | grep "${repo_name}/.*/${baseline_from_tag_info}_[dprtis][eueenq][lblsta]$" || grep_ext_value=$? )
         if [ "${repo_baseline_rev_tag_wcomponent_wstatus}x" == "x" ] ; then
             #find the original tag and convert it first
-            baseline_from_tag_info_wstatus=$(git tag | grep "^${baseline_from_tag_info}_[dprtis][eueenq][lblsta]$")
+            baseline_from_tag_info_wstatus=$(git tag | grep "^${baseline_from_tag_info}_[dprtis][eueenq][lblsta]$" || grep_ext_value=$?)
             if [ "${baseline_from_tag_info_wstatus}x" != "x" ]; then
                 convert_revision ${baseline_from_tag_info_wstatus}
                 local baseline_from_tag_info=$(git show ${repo_convert_rev_tag} | grep "1) ${repo_name}~" | awk -F"~" '{print $2}')
@@ -76,7 +76,7 @@ function convert_revision(){
             else
                 echo "ERROR: Dont know why we ended here - something is not right!!"
                 echo "The baseline tag that is needed for the conversion of tag: ${repo_convert_rev_tag:: -4} cannot even find the tag unconverted: ${baseline_from_tag_info}"
-                exit 1
+                return 1
             fi
         fi
     else
@@ -149,12 +149,22 @@ function convert_revision(){
     done
     git add -A . >> /dev/null
 
-    export GIT_AUTHOR_DATE=$(git tag -l --format="%(taggerdate:iso8601)" ${repo_convert_rev_tag} | awk -F" " '{print $1 " " $2}')
-    export GIT_COMMITTER_DATE=${GIT_AUTHOR_DATE}
-    export GIT_COMMITTER_NAME=$(git tag -l --format="%(taggername)" ${repo_convert_rev_tag} )
-    export GIT_COMMITTER_EMAIL=$(git tag -l --format="%(taggeremail)" ${repo_convert_rev_tag} )
+    export GIT_COMMITTER_DATE=$(git log -1 --format='%cd' ${repo_convert_rev_tag}) && [[ -z ${GIT_COMMITTER_DATE} ]] && return 1
+    export GIT_COMMITTER_NAME=$(git log -1 --format='%cn' ${repo_convert_rev_tag} ) && [[ -z ${GIT_COMMITTER_NAME} ]] && return 1
+    export GIT_COMMITTER_EMAIL=$(git log -1 --format='%ce' ${repo_convert_rev_tag} ) && [[ -z ${GIT_COMMITTER_EMAIL} ]] && return 1
+
+    export GIT_AUTHOR_DATE=$(git log -1 --format='%ad' ${repo_convert_rev_tag} ) && [[ -z ${GIT_AUTHOR_DATE} ]] && return 1
+    export GIT_AUTHOR_NAME=$(git log -1 --format='%an' ${repo_convert_rev_tag} ) && [[ -z ${GIT_AUTHOR_NAME} ]] && return 1
+    export GIT_AUTHOR_EMAIL=$(git log -1 --format='%ae' ${repo_convert_rev_tag} ) && [[ -z ${GIT_AUTHOR_EMAIL} ]] && return 1
 
     git commit -q -C ${repo_convert_rev_tag} --reset-author || ( echo "Empty commit.." )
+#--author "${GIT_AUTHOR_NAME} <${GIT_AUTHOR_EMAIL}>"
+
+    # reset the committer to get the correct set for the commiting the tag. There is no author of the tag
+    export GIT_AUTHOR_DATE=$(git tag -l --format="%(taggerdate:iso8601)" ${repo_convert_rev_tag} | awk -F" " '{print $1 " " $2}') && [[ -z ${GIT_AUTHOR_DATE} ]] && return 1
+    export GIT_COMMITTER_DATE=${GIT_AUTHOR_DATE}
+    export GIT_COMMITTER_NAME=$(git tag -l --format="%(taggername)" ${repo_convert_rev_tag} ) && [[ -z ${GIT_COMMITTER_NAME} ]] && return 1
+    export GIT_COMMITTER_EMAIL=$(git tag -l --format="%(taggeremail)" ${repo_convert_rev_tag} ) && [[ -z ${GIT_COMMITTER_EMAIL} ]] && return 1
 
     git tag -l --format '%(contents)' ${repo_convert_rev_tag} > ./tag_meta_data.txt
     git tag -a -F ./tag_meta_data.txt ${repo_convert_rev_tag_wcomponent_wstatus}
@@ -170,6 +180,8 @@ set +x
 set -x
 
     unset GIT_AUTHOR_DATE
+    unset GIT_AUTHOR_NAME
+    unset GIT_AUTHOR_EMAIL
     unset GIT_COMMITTER_DATE
     unset GIT_COMMITTER_NAME
     unset GIT_COMMITTER_EMAIL
@@ -236,7 +248,7 @@ export project_revisions=$(for tag in $(git log --topo-order --oneline --all --d
                            )
 
 echo "Found project revisions/tags:"
-rm -f project_tags.txt
+rm -f project_tags.txt && touch project_tags.txt
 for project_revision in ${project_revisions}; do
     echo $project_revision >> project_tags.txt
 done
