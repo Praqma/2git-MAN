@@ -8,14 +8,13 @@ set -e
 ccm_project_name=$1
 repo_convert_rev_tag=$2
 repo_convert_instance=$3
+require_baseline_object="false"
 
 [[ -z $4 ]] && ( echo "Please set parameter 4 to Jira Project Key - exit 1" && exit 1 )
 jira_project_key=$4
 
 [[ -z $5 ]] && ( echo "Please set parameter 5 to 'commit' or 'tag' - exit 1" && exit 1 )
 target_type=$5
-
-require_baseline_object="true"
 
 jira_task_to_jira_issue_base=9000000
 
@@ -194,12 +193,18 @@ else
     done
     unset IFS
 
-    echo >> ${output_file}
-    ccm query "is_task_in_folder_of(is_folder_in_rp_of('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${repo_convert_instance}'))" > /dev/null 2>&1
-    echo "Tasks integrated in project (verbosed):"                   >> ${output_file}
-    ccm task -sh info -v @ >> ./tag_meta_data.txt || echo "<none>"   >> ${output_file}
-    echo >> ./tag_meta_data.txt
-    echo >> ${output_file}
+    if [[ $extract_data_ccm_task_verbosed_level == "true" ]]; then
+        echo >> ${output_file}
+        echo "Tasks integrated in baseline and/or project (verbosed):"                   >> ${output_file}
+        integrated_tasks=$(ccm query "is_task_in_folder_of(is_folder_in_rp_of('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${repo_convert_instance}'))" || ( [[ $? == 6 ]] && echo "none" ))
+        if [[ ${integrated_tasks} == "none" ]]; then
+            echo "<none>"           >> ${output_file}
+        else
+            ccm task -sh info -v @  >> ${output_file}
+        fi
+        echo >> ${output_file}
+    fi
+
 fi
 if [[ "$debug" == "true" ]]; then
     echo "debug mode - do not verbose output_file and delete it"
