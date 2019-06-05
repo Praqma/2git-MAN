@@ -1,25 +1,38 @@
 #!/bin/bash
-[[ $debug == "TRUE" ]] && ( set -x && debug="true" )
+if [[ $debug == "TRUE" ]]; then
+    set -x
+    export debug="true"
+fi
 set -e
 
 BASELINE_PROJECT=$1
 UNTIL_PROJECT=$2
 
+use_wildcard="" # *
+
 handle_baseline2(){
     local CURRENT_PROJECT=$1
     local inherited_string_local=$2
-	proj_name=`printf "${CURRENT_PROJECT}" | sed -e 's/xxx/ /g' | awk -F"~|:" '{print $1}'`
-    proj_version=`printf "${CURRENT_PROJECT}" | sed -e 's/xxx/ /g' | awk -F"~|:" '{print $2}'`
-    proj_instance=`printf "${CURRENT_PROJECT}" | sed -e 's/xxx/ /g' | awk -F"~|:" '{print $4}'`
+
+    if [[ "${use_wildcard}" == "*" ]]; then
+        proj_name=`printf "${CURRENT_PROJECT}" | sed -e 's/xxx/ /g' | awk -F"~|:" '{print $1}'`
+        proj_version=`printf "${CURRENT_PROJECT}" | sed -e 's/xxx/ /g' | awk -F"~|:" '{print $2}'`
+        proj_instance=`printf "${CURRENT_PROJECT}" | sed -e 's/xxx/ /g' | awk -F"~|:" '{print $4}'`
+        query="has_baseline_project(name match '${proj_name}*' and version='${proj_version}' and type='project' and instance='${proj_instance}') and ( status='integrate' or status='test' or status='sqa' or status='released' )"
+    else
+        query="has_baseline_project('${CURRENT_PROJECT}') and ( status='integrate' or status='test' or status='sqa' or status='released' )"
+    fi
 
     # All status versions
-    query="has_baseline_project(name match '${proj_name}*' and version='${proj_version}' and type='project' and instance='${proj_instance}') and ( status='integrate' or status='test' or status='sqa' or status='released' )"
     local SUCCESSOR_PROJECTS=`ccm query "${query}" -u -f "%objectname" | sed -e 's/ /xxx/g'`
     [[ $debug == "true" ]] && printf "_________________________\n$SUCCESSOR_PROJECTS\n"
     for SUCCESSOR_PROJECT in ${SUCCESSOR_PROJECTS} ; do
         local inherited_string="${inherited_string_local} -> ${CURRENT_PROJECT}"
         [[ $debug == "true" ]] && printf "${inherited_string}\n"
-        grep "$SUCCESSOR_PROJECT@@@$CURRENT_PROJECT" ${projects_file} && continue # Next if already for some odd reason exists - seen in firebird~BES-SW-0906-1.8:project:2
+        if [[ `grep "$SUCCESSOR_PROJECT@@@$CURRENT_PROJECT" ${projects_file}` ]]; then
+             echo "ALREADY include in project file - continue"
+             continue # Next if already for some odd reason exists - seen in firebird~BES-SW-0906-1.8:project:2
+        fi
         printf "$SUCCESSOR_PROJECT@@@$CURRENT_PROJECT\n" >> ${projects_file}
         handle_baseline2 ${SUCCESSOR_PROJECT} "${inherited_string}"
     done
