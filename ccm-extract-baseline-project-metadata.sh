@@ -133,25 +133,31 @@ if [ "${ccm_baseline_obj_this}X" != "X" ]; then
             echo "Dirty tasks integrated in baseline: ( listed in baseline, but has not effect as it's objects are behind the baseline project )"                             >> ${output_file}
             IFS=$'\n\r'
             loop_number=1
-            for task_number_attrs in $(ccm query "${query2}')" -u -f "%objectname@@@%task_number@@@%{create_time[dateformat='yyyy-MM-dd HH:MM:SS']}@@@%resolver@@@%status@@@%release" || ( [[ $? == 6 ]] && echo "none" ) ) ; do
+            for task_number_attrs in $(ccm query "${query2}" -u -f "%objectname@@@%task_number@@@%{create_time[dateformat='yyyy-MM-dd HH:MM:SS']}@@@%resolver@@@%status@@@%release" || ( [[ $? == 6 ]] && echo "none" ) ) ; do
                 handle_task_attrs "$task_number_attrs"
                 loop_number=$((loop_number + 1))
             done
             unset IFS
         fi
+        if [[ $extract_data_ccm_task_verbosed_level == "true" ]]; then
+            echo >> ${output_file}
+            echo "Tasks integrated in baseline and/or project (verbosed):"                   >> ${output_file}
+            if [[ ${query2} == "" ]]; then
+                query3="${query1}"
+            else
+                query3="${query1} or ${query2}"
+            fi
+
+            integrated_tasks=$(ccm query "${query3}" || ( [[ $? == 6 ]] && echo "none" ))
+            if [[ ${integrated_tasks} == "none" ]]; then
+                echo "<none>"           >> ${output_file}
+            else
+                ccm task -sh info -v @  >> ${output_file}
+            fi
+            echo >> ${output_file}
+        fi
     fi
 
-    if [[ $extract_data_ccm_task_verbosed_level == "true" ]]; then
-        echo >> ${output_file}
-        echo "Tasks integrated in baseline and/or project (verbosed):"                   >> ${output_file}
-        integrated_tasks=$(ccm query "is_task_in_baseline_of('${ccm_baseline_obj_this}')" || ( [[ $? == 6 ]] && echo "none" ))
-        if [[ ${integrated_tasks} == "none" ]]; then
-            echo "<none>"           >> ${output_file}
-        else
-            ccm task -sh info -v @  >> ${output_file}
-        fi
-        echo >> ${output_file}
-    fi
 
 else
     [[ "${require_baseline_object}" == "true" ]] && ( echo "ERROR: It is expected to have a baseline object due to configuration: require_baseline_object=true for this database: ${ccm_current_db}" && exit 2 )
@@ -176,7 +182,7 @@ else
     ccm query "is_task_in_folder_of(is_folder_in_rp_of('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${repo_convert_instance}'))" -f "%displayname %{create_time[dateformat='yyyy-M-dd HH:MM:SS']} %resolver %status %release %task_synopsis"  >> ${output_file} || echo "<none>" >> ${output_file}
     IFS=$'\n\r'
     loop_number=1
-    for task_number_attrs in $(ccm query "is_task_in_folder_of(is_folder_in_rp_of('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${repo_convert_instance}'))" -u -f "%objectname@@@%task_number@@@%{create_time[dateformat='yyyy-MM-dd HH:MM:SS']}@@@%resolver@@@%status@@@%release" | tail -n +2) ; do
+    for task_number_attrs in $(ccm query "status!='task_automatic' and (is_task_in_folder_of(is_folder_in_rp_of('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${repo_convert_instance}')) or is_task_in_rp_of('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${repo_convert_instance}'))" -u -f "%objectname@@@%task_number@@@%{create_time[dateformat='yyyy-MM-dd HH:MM:SS']}@@@%resolver@@@%status@@@%release" | tail -n +2) ; do
         #         1      2      3      4      5      6
         regex='^(.+)@@@(.+)@@@(.+)@@@(.+)@@@(.+)@@@(.+)$'
         [[ $task_number_attrs =~ $regex ]] || exit 1
@@ -196,7 +202,7 @@ else
     if [[ $extract_data_ccm_task_verbosed_level == "true" ]]; then
         echo >> ${output_file}
         echo "Tasks integrated in baseline and/or project (verbosed):"                   >> ${output_file}
-        integrated_tasks=$(ccm query "is_task_in_folder_of(is_folder_in_rp_of('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${repo_convert_instance}'))" || ( [[ $? == 6 ]] && echo "none" ))
+        integrated_tasks=$(ccm query "status!='task_automatic' and (is_task_in_folder_of(is_folder_in_rp_of('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${repo_convert_instance}')) or is_task_in_rp_of('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${repo_convert_instance}'))" || ( [[ $? == 6 ]] && echo "none" ))
         if [[ ${integrated_tasks} == "none" ]]; then
             echo "<none>"           >> ${output_file}
         else
