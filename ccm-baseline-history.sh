@@ -5,8 +5,7 @@ if [[ $debug == "TRUE" ]]; then
 fi
 set -e
 
-BASELINE_PROJECT=$1
-UNTIL_PROJECT=$2
+BASELINE_PROJECT="$1"
 
 use_wildcard="" # *
 
@@ -20,7 +19,8 @@ handle_baseline2(){
         proj_instance=`printf "${CURRENT_PROJECT}" | sed -e 's/xxx/ /g' | awk -F"~|:" '{print $4}'`
         query="has_baseline_project(name match '${proj_name}*' and version='${proj_version}' and type='project' and instance='${proj_instance}') and ( status='integrate' or status='test' or status='sqa' or status='released' )"
     else
-        query="has_baseline_project('${CURRENT_PROJECT}') and ( status='integrate' or status='test' or status='sqa' or status='released' )"
+        ccm_proj_obj_string=`printf "${CURRENT_PROJECT}" | sed -e 's/xxx/ /g'`
+        query="has_baseline_project('${ccm_proj_obj_string}') and ( status='integrate' or status='test' or status='sqa' or status='released' )"
     fi
 
     # All status versions
@@ -34,7 +34,7 @@ handle_baseline2(){
              continue # Next if already for some odd reason exists - seen in firebird~BES-SW-0906-1.8:project:2
         fi
         printf "$SUCCESSOR_PROJECT@@@$CURRENT_PROJECT\n" >> ${projects_file}
-        handle_baseline2 ${SUCCESSOR_PROJECT} "${inherited_string}"
+        handle_baseline2 "${SUCCESSOR_PROJECT}" "${inherited_string}"
     done
 }
 
