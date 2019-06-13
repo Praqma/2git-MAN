@@ -29,7 +29,7 @@ elif [[ $target_type == "commit" ]] ; then
     extract_data_story_level="true"
     extract_data_ccm_task_level="true"
     extract_data_ccm_task_handle_dirtytasks_separately="false"
-    extract_data_ccm_task_verbosed_level="true"
+    extract_data_ccm_task_verbosed_level="false"
 else
     echo "Parameter 5 is not set to 'commit' or 'tag' - exit 1" && exit 1
 fi
@@ -183,18 +183,7 @@ else
     IFS=$'\n\r'
     loop_number=1
     for task_number_attrs in $(ccm query "status!='task_automatic' and (is_task_in_folder_of(is_folder_in_rp_of('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${repo_convert_instance}')) or is_task_in_rp_of('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${repo_convert_instance}'))" -u -f "%objectname@@@%task_number@@@%{create_time[dateformat='yyyy-MM-dd HH:MM:SS']}@@@%resolver@@@%status@@@%release" | tail -n +2) ; do
-        #         1      2      3      4      5      6
-        regex='^(.+)@@@(.+)@@@(.+)@@@(.+)@@@(.+)@@@(.+)$'
-        [[ $task_number_attrs =~ $regex ]] || exit 1
-        task_objectname=${BASH_REMATCH[1]}
-        task_number=${BASH_REMATCH[2]}
-        task_create_time=${BASH_REMATCH[3]}
-        task_resolver=${BASH_REMATCH[4]}
-        task_status=${BASH_REMATCH[5]}
-        task_release=${BASH_REMATCH[6]}
-        task_synopsis=$(ccm attr -show task_synopsis ${task_objectname})
-        jira_subtask_issue_number=$(($jira_task_to_jira_issue_base + $task_number))
-        printf "$loop_number) ${jira_project_key}-${jira_subtask_issue_number} $task_create_time $task_resolver $task_status $task_release %s\n" $task_synopsis >> ${output_file}
+        handle_task_attrs "$task_number_attrs"
         loop_number=$((loop_number + 1))
     done
     unset IFS
