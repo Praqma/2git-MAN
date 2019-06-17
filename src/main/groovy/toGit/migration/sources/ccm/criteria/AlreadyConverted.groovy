@@ -47,7 +47,7 @@ class AlreadyConverted extends Criteria {
     boolean appliesTo(Snapshot snapshot) {
         def snapshotRevision = snapshot.identifier.split("@@@")[0].split("~")[1].split(":")[0]
 
-        def tag_regex = snapshotRevision + "_" + "[dprtis][eueenq][lblsta]\$"
+        def tag_regex = snapshotRevision.replace('+','\\+') + "_" + "[dprtis][eueenq][lblsta]\$"
 
         def convert = true
         tags.each { tag ->
