@@ -109,7 +109,7 @@ function convert_revision(){
                 git checkout HEAD ${repo_submodule} || git submodule add --force ../${repo_submodule}.git || git submodule add --force ../${repo_submodule}.git
         fi
         git clean -xffd
-        git submodule update --init --recursive ${repo_submodule} || ( git rm -rf ${repo_submodule} --cached && git submodule update --init --recursive ${repo_submodule} )
+        git submodule update --init --recursive --force ${repo_submodule} || ( git rm -rf ${repo_submodule} --cached && git submodule update --init --recursive --force ${repo_submodule} )
 
         cd ${repo_submodule}
 
