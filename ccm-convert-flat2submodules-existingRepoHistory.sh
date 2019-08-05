@@ -113,11 +113,12 @@ function convert_revision(){
 
         cd ${repo_submodule}
 
-        git fetch --tags
-
-        if [ `git describe ${repo_convert_rev_tag_wcomponent_wstatus}` ] ; then
+        if [[ ! `git describe ${repo_convert_rev_tag_wcomponent_wstatus}` ]] ; then
+            # it was not found try and fetch to make 100% sure for whatever reason it is not here..
+            git fetch --tags
+        fi
+        if [[ `git describe ${repo_convert_rev_tag_wcomponent_wstatus}` ]] ; then
             # we already have the correct tag, so just set it and move on..
-            git clean -xffd
             git reset --hard ${repo_convert_rev_tag_wcomponent_wstatus}
             git clean -xffd
             unset repo_submodule_rev
@@ -126,11 +127,10 @@ function convert_revision(){
             continue
         fi
 
-
         repo_submodule_rev_wcomponent_wstatus=$(git tag | grep ${repo_submodule}/.*/${repo_submodule_rev}_[dprtis][eueenq][lblsta]$ || grep_exit=$? )
 
         if [ `git describe ${repo_submodule_rev_wcomponent_wstatus}`  ] ; then
-            # we do have the correct 'content' tag - checkout it out
+            # we do have the correct 'content' tag - reset hard to it and make sure we are clean..
             git clean -xffd
             git reset --hard HEAD
             git reset --hard ${repo_submodule_rev_wcomponent_wstatus}
