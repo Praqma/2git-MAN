@@ -100,12 +100,15 @@ function convert_revision(){
         local repo_submodule_inst=$(echo ${repo_submodule_rev_inst} | awk -F ":" '{print $2}') # not used currently - for debugging per
 
         checkout_exit=0
+        git clean -xffd
         git checkout HEAD ${repo_submodule} || checkout_exit=$?
         if [[ ${checkout_exit} -ne 0 ]] ; then
                 ls -la ${repo_submodule}
                 git rm -rf ${repo_submodule}  || ( rm -rf ${repo_submodule} && rm -rf .git/modules/${repo_submodule} )
+                git clean -xffd
                 git checkout HEAD ${repo_submodule} || git submodule add --force ../${repo_submodule}.git || git submodule add --force ../${repo_submodule}.git
         fi
+        git clean -xffd
         git submodule update --init --recursive ${repo_submodule} || ( git rm -rf ${repo_submodule} --cached && git submodule update --init --recursive ${repo_submodule} )
 
         cd ${repo_submodule}
@@ -114,7 +117,8 @@ function convert_revision(){
 
         if [ `git describe ${repo_convert_rev_tag_wcomponent_wstatus}` ] ; then
             # we already have the correct tag, so just set it and move on..
-            git checkout ${repo_convert_rev_tag_wcomponent_wstatus}
+            git clean -xffd
+            git reset --hard ${repo_convert_rev_tag_wcomponent_wstatus}
             git clean -xffd
             unset repo_submodule_rev
             unset repo_submodule_inst
@@ -127,7 +131,9 @@ function convert_revision(){
 
         if [ `git describe ${repo_submodule_rev_wcomponent_wstatus}`  ] ; then
             # we do have the correct 'content' tag - checkout it out
-            git checkout ${repo_submodule_rev_wcomponent_wstatus}
+            git clean -xffd
+            git reset --hard HEAD
+            git reset --hard ${repo_submodule_rev_wcomponent_wstatus}
             git clean -xffd
         else
             # we do not have the 'content' tag available - investigate its root
