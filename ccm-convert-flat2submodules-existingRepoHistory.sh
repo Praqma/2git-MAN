@@ -103,7 +103,7 @@ function convert_revision(){
         git clean -xffd
         git checkout HEAD ${repo_submodule} || checkout_exit=$?
         if [[ ${checkout_exit} -ne 0 ]] ; then
-                ls -la ${repo_submodule}
+                ls -la ${repo_submodule} || ls_la_exit=$? # just for info / debug
                 git rm -rf ${repo_submodule}  || ( rm -rf ${repo_submodule} && rm -rf .git/modules/${repo_submodule} )
                 git clean -xffd
                 git checkout HEAD ${repo_submodule} || git submodule add --force ../${repo_submodule}.git || git submodule add --force ../${repo_submodule}.git
