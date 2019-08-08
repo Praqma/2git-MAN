@@ -235,6 +235,7 @@ fi
 
 set +x
 export project_revisions=$(for tag in $(git log --topo-order --oneline --all --decorate \
+                                    | grep -e '(tag: ' \
                                     | awk -F"(" '{print $2}' \
                                     | awk -F")" '{print $1}' \
                                     | sed -e 's/,//g' \
