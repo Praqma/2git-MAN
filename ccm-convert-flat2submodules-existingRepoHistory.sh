@@ -215,7 +215,7 @@ if [ ! -e ${repo_name} ] ; then
     git status
 
     git commit -C "$repo_init_tag" --amend --reset-author
-    git tag -a -m $(git tag -l --format '%(contents)' ${repo_init_tag}) ${repo_name}/${repo_init_tag}/${repo_init_tag}
+    git tag -f -a -m $(git tag -l --format '%(contents)' ${repo_init_tag}) ${repo_name}/${repo_init_tag}/${repo_init_tag}
 
     unset GIT_AUTHOR_DATE
     unset GIT_COMMITTER_DATE
