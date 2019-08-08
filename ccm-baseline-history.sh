@@ -30,7 +30,18 @@ handle_baseline2(){
         local inherited_string="${inherited_string_local} -> ${CURRENT_PROJECT}"
         [[ $debug == "true" ]] && printf "${inherited_string}\n"
         if [[ `grep "$SUCCESSOR_PROJECT@@@$CURRENT_PROJECT" ${projects_file}` ]]; then
-             echo "ALREADY include in project file - continue"
+             echo "ALREADY include in project file - continue" >&2
+             continue # Next if already for some odd reason exists - seen in firebird~BES-SW-0906-1.8:project:2
+        fi
+        ccm_proj_obj_string=`printf "${SUCCESSOR_PROJECT}" | sed -e 's/xxx/ /g'`
+        proj_name=`printf "${SUCCESSOR_PROJECT}" | sed -e 's/xxx/ /g' | awk -F"~|:" '{print $1}'`
+        proj_version=`printf "${SUCCESSOR_PROJECT}" | sed -e 's/xxx/ /g' | awk -F"~|:" '{print $2}'`
+        proj_instance=`printf "${SUCCESSOR_PROJECT}" | sed -e 's/xxx/ /g' | awk -F"~|:" '{print $4}'`
+        ccm_baseline_obj_and_status_this=$(ccm query "has_project_in_baseline('${ccm_proj_obj_string}') and release='$(ccm query "name='${proj_name}' and version='$(echo ${proj_version} | sed -e 's/xxx/ /g')' and type='project'" -u -f "%release")'" -u -f "%objectname@@@%status" | head -1 )
+        ccm_baseline_obj=$(echo ${ccm_baseline_obj_and_status_this} | awk -F"@@@" '{print $1}')
+        ccm_baseline_status=$(echo ${ccm_baseline_obj_and_status_this} | awk -F"@@@" '{print $2}')
+        if [[ ${ccm_baseline_status} == "test_baseline" ]] ; then
+             echo "Related Baseline Object is in test status: ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_this} - skip" >&2
              continue # Next if already for some odd reason exists - seen in firebird~BES-SW-0906-1.8:project:2
         fi
         printf "$SUCCESSOR_PROJECT@@@$CURRENT_PROJECT\n" >> ${projects_file}
