@@ -1,15 +1,16 @@
 #!/bin/bash
-if [[ $debug == "TRUE" ]]; then
-    set -x
-    export debug="true"
-fi
-set -e
 
+set -e
+#set -x
+set -u
 BASELINE_PROJECT="$1"
 
 use_wildcard="" # *
 
-handle_baseline2(){
+# Load functions
+source ${BASH_SOURCE%/*}/_ccm-functions.sh || source ./_ccm-functions.sh
+
+find_project_baseline_to_convert(){
     local CURRENT_PROJECT=$1
     local inherited_string_local=$2
 
@@ -25,27 +26,21 @@ handle_baseline2(){
 
     # All status versions
     local SUCCESSOR_PROJECTS=`ccm query "${query}" -u -f "%objectname" | sed -e 's/ /xxx/g'`
-    [[ $debug == "true" ]] && printf "_________________________\n$SUCCESSOR_PROJECTS\n"
+    [[ ${debug:-} == "true" ]] && printf "_________________________\n$SUCCESSOR_PROJECTS\n"
     for SUCCESSOR_PROJECT in ${SUCCESSOR_PROJECTS} ; do
         local inherited_string="${inherited_string_local} -> ${CURRENT_PROJECT}"
-        [[ $debug == "true" ]] && printf "${inherited_string}\n"
+        [[ ${debug:-} == "true" ]] && printf "${inherited_string}\n"
         if [[ `grep "$SUCCESSOR_PROJECT@@@$CURRENT_PROJECT" ${projects_file}` ]]; then
              echo "ALREADY include in project file - continue" >&2
              continue # Next if already for some odd reason exists - seen in firebird~BES-SW-0906-1.8:project:2
         fi
-        ccm_proj_obj_string=`printf "${SUCCESSOR_PROJECT}" | sed -e 's/xxx/ /g'`
-        proj_name=`printf "${SUCCESSOR_PROJECT}" | sed -e 's/xxx/ /g' | awk -F"~|:" '{print $1}'`
-        proj_version=`printf "${SUCCESSOR_PROJECT}" | sed -e 's/xxx/ /g' | awk -F"~|:" '{print $2}'`
-        proj_instance=`printf "${SUCCESSOR_PROJECT}" | sed -e 's/xxx/ /g' | awk -F"~|:" '{print $4}'`
-        ccm_baseline_obj_and_status_this=$(ccm query "has_project_in_baseline('${ccm_proj_obj_string}') and release='$(ccm query "name='${proj_name}' and version='$(echo ${proj_version} | sed -e 's/xxx/ /g')' and type='project'" -u -f "%release")'" -u -f "%objectname@@@%status" | head -1 )
-        ccm_baseline_obj=$(echo ${ccm_baseline_obj_and_status_this} | awk -F"@@@" '{print $1}')
-        ccm_baseline_status=$(echo ${ccm_baseline_obj_and_status_this} | awk -F"@@@" '{print $2}')
-        if [[ ${ccm_baseline_status} == "test_baseline" ]] ; then
-             echo "Related Baseline Object is in test status: ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_this} - skip" >&2
-             continue # Next if already for some odd reason exists - seen in firebird~BES-SW-0906-1.8:project:2
+        find_n_set_baseline_obj_attrs_from_project "${SUCCESSOR_PROJECT}"
+        if [[ ${ccm_baseline_status:-} == "test_baseline" ]] ; then
+            echo "Related Baseline Object is in test status: ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_release_this} - skip" >&2
+            continue
         fi
         printf "$SUCCESSOR_PROJECT@@@$CURRENT_PROJECT\n" >> ${projects_file}
-        handle_baseline2 "${SUCCESSOR_PROJECT}" "${inherited_string}"
+        find_project_baseline_to_convert "${SUCCESSOR_PROJECT}" "${inherited_string}"
     done
 }
 
@@ -54,7 +49,7 @@ instance=`printf "${BASELINE_PROJECT}" | awk -F"~|:" '{print $4}' `
 
 export projects_file="./projects.txt"
 #rm -f ${projects_file}
-if [ "${use_cached_project_list}X" == "trueX" ]; then
+if [ "${use_cached_project_list:-}X" == "trueX" ]; then
   if [ -e ${projects_file} ] ; then
     cat ${projects_file}
     exit 0
@@ -64,7 +59,7 @@ fi
 inherited_string="${BASELINE_PROJECT}"
 echo "$BASELINE_PROJECT@@@${init_project_name}~init:project:${instance}" > ${projects_file}
 
-handle_baseline2 ${BASELINE_PROJECT} ${inherited_string}
-if [[ $debug != "true" ]]; then
+find_project_baseline_to_convert ${BASELINE_PROJECT} ${inherited_string}
+if [[ ${debug:-} != "true" ]]; then
     cat ${projects_file}
 fi

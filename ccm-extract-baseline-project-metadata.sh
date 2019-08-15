@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 set -e
+set -u
 
-[[ "$debug" == "true" ]] && set -x
-#set -u
+[[ "${debug:-}" == "true" ]] && set -x
 
+# Load functions
+source ${BASH_SOURCE%/*}/_ccm-functions.sh || source ./_ccm-functions.sh
 
 ccm_project_name=$1
 repo_convert_rev_tag=$2
@@ -85,9 +87,10 @@ function handle_task_attrs {
     fi
 }
 
-ccm_baseline_obj_this=$(ccm query "has_project_in_baseline('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${repo_convert_instance}') and release='$(ccm query "name='${ccm_project_name}' and version='$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g')' and type='project'" -u -f "%release")'" -u -f "%objectname" | head -1 )
-if [ "${ccm_baseline_obj_this}X" != "X" ]; then
-    ccm baseline -show info -v "${ccm_baseline_obj_this}"            >> ${output_file}
+find_n_set_baseline_obj_attrs_from_project "${ccm_project_name}~${repo_convert_rev_tag}:project:${repo_convert_instance}"
+
+if [[ "${ccm_baseline_obj}X" != "X" ]]; then
+    ccm baseline -show info -v "${ccm_baseline_obj}"            >> ${output_file}
     echo >> ${output_file}
 
     printf "Project baseline:"                                         >> ${output_file}
@@ -96,28 +99,28 @@ if [ "${ccm_baseline_obj_this}X" != "X" ]; then
     if [[ $extract_data_epic_level == "true" ]]; then
         echo >> ${output_file}
         echo "${epic_level_header}:"                                    >> ${output_file}
-        ccm query "has_${epic_level_epic2story_relation}(has_associated_task((is_task_in_baseline_of('${ccm_baseline_obj_this}') or is_dirty_task_in_baseline_of('${ccm_baseline_obj_this}'))))" -f "${jira_project_key}-%problem_number %resolver %${epic_level_release_attr} %problem_synopsis" >> ${output_file} || echo "<none>" >> ${output_file}
+        ccm query "has_${epic_level_epic2story_relation}(has_associated_task((is_task_in_baseline_of('${ccm_baseline_obj}') or is_dirty_task_in_baseline_of('${ccm_baseline_obj}'))))" -f "${jira_project_key}-%problem_number %resolver %${epic_level_release_attr} %problem_synopsis" >> ${output_file} || echo "<none>" >> ${output_file}
     fi
 
     if [[ $extract_data_story_level == "true" ]]; then
         echo >> ${output_file}
         echo "Fully integrated ${story_level_header}:"                   >> ${output_file}
-        ccm baseline -show fully_included_change_requests -groupby "${epic_level_release_attr}: %${epic_level_release_attr}"  -f "${jira_project_key}-%problem_number %resolver %${epic_level_release_attr} %problem_synopsis" "${ccm_baseline_obj_this}" >> ${output_file}  || echo "<none>" >> ${output_file}
+        ccm baseline -show fully_included_change_requests -groupby "${epic_level_release_attr}: %${epic_level_release_attr}"  -f "${jira_project_key}-%problem_number %resolver %${epic_level_release_attr} %problem_synopsis" "${ccm_baseline_obj}" >> ${output_file}  || echo "<none>" >> ${output_file}
 
         echo >> ${output_file}
         echo "Partially integrated ${story_level_header}:"               >> ${output_file}
-        ccm baseline -show partially_included_change_requests -groupby "${epic_level_release_attr}: %${epic_level_release_attr}" -f "${jira_project_key}-%problem_number %resolver %${epic_level_release_attr} %problem_synopsis" "${ccm_baseline_obj_this}" >> ${output_file}  || echo "<none>" >> ${output_file}
+        ccm baseline -show partially_included_change_requests -groupby "${epic_level_release_attr}: %${epic_level_release_attr}" -f "${jira_project_key}-%problem_number %resolver %${epic_level_release_attr} %problem_synopsis" "${ccm_baseline_obj}" >> ${output_file}  || echo "<none>" >> ${output_file}
     fi
 
     if [[ $extract_data_ccm_task_level == "true" ]]; then
         echo >> ${output_file}
         if [[ ${extract_data_ccm_task_handle_dirtytasks_separately} == "true" ]]; then
             echo "Tasks integrated in baseline:"                             >> ${output_file}
-            query1="is_task_in_baseline_of('${ccm_baseline_obj_this}')"
-            query2="is_dirtytask_in_baseline_of('${ccm_baseline_obj_this}')"
+            query1="is_task_in_baseline_of('${ccm_baseline_obj}')"
+            query2="is_dirtytask_in_baseline_of('${ccm_baseline_obj}')"
         else
             echo "All tasks integrated in baseline:"                             >> ${output_file}
-            query1="is_task_in_baseline_of('${ccm_baseline_obj_this}') or is_dirty_task_in_baseline_of('${ccm_baseline_obj_this}')"
+            query1="is_task_in_baseline_of('${ccm_baseline_obj}') or is_dirty_task_in_baseline_of('${ccm_baseline_obj}')"
         fi
 
         IFS=$'\n\r'
@@ -188,7 +191,7 @@ else
     done
     unset IFS
 
-    if [[ $extract_data_ccm_task_verbosed_level == "true" ]]; then
+    if [[ ${extract_data_ccm_task_verbosed_level:-} == "true" ]]; then
         echo >> ${output_file}
         echo "Tasks integrated in baseline and/or project (verbosed):"                   >> ${output_file}
         integrated_tasks=$(ccm query "status!='task_automatic' and (is_task_in_folder_of(is_folder_in_rp_of('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${repo_convert_instance}')) or is_task_in_rp_of('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${repo_convert_instance}'))" || ( [[ $? == 6 ]] && echo "none" ))
@@ -201,7 +204,7 @@ else
     fi
 
 fi
-if [[ "$debug" == "true" ]]; then
+if [[ "${debug:-}" == "true" ]]; then
     echo "debug mode - do not verbose output_file and delete it"
 else
     cat ${output_file}
