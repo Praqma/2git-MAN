@@ -150,7 +150,7 @@ function convert_revision(){
         git tag -f -a -m "Please see tag in master repo for info: ${repo_convert_rev_tag_wcomponent_wstatus}" \
                             ${repo_convert_rev_tag_wcomponent_wstatus}
 
-        git push origin -f --tag ${repo_convert_rev_tag_wcomponent_wstatus}
+        git push origin -f ${repo_convert_rev_tag_wcomponent_wstatus}
 
         unset repo_submodule_rev
         unset repo_submodule_rev_wcomponent_wstatus
@@ -182,7 +182,7 @@ function convert_revision(){
     rm -f ./tag_meta_data.txt
 
 
-    git push origin -f --tag ${repo_convert_rev_tag_wcomponent_wstatus}
+    git push origin -f ${repo_convert_rev_tag_wcomponent_wstatus}
 
 set +x
     echo "============================================================================"
