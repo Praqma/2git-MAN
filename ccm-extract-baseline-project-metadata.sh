@@ -87,7 +87,7 @@ function handle_task_attrs {
     fi
 }
 
-find_n_set_baseline_obj_attrs_from_project "${ccm_project_name}~${repo_convert_rev_tag}:project:${repo_convert_instance}"
+find_n_set_baseline_obj_attrs_from_project "${ccm_project_name}~${repo_convert_rev_tag}:project:${repo_convert_instance}" "verbose_false"
 
 if [[ "${ccm_baseline_obj}X" != "X" ]]; then
     ccm baseline -show info -v "${ccm_baseline_obj}"            >> ${output_file}
