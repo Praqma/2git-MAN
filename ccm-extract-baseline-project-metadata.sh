@@ -22,7 +22,7 @@ jira_task_to_jira_issue_base=9000000
 
 if [[ $target_type == "tag" ]] ; then
     extract_data_epic_level="true"
-    extract_data_story_level="false"
+    extract_data_story_level="true"
     extract_data_ccm_task_level="false"
     extract_data_ccm_task_handle_dirtytasks_separately="false"
     extract_data_ccm_task_verbosed_level="false"
@@ -86,15 +86,23 @@ function handle_task_attrs {
         printf "%-5s %-15s %-10s %-6s %-9s %-30s %s\n" " $loop_number)" "${jira_project_key}-${jira_subtask_issue_number}" "$task_create_time" "$task_resolver" "$task_status" "$task_release" "$task_synopsis" >> ${output_file}
     fi
 }
-
-find_n_set_baseline_obj_attrs_from_project "${ccm_project_name}~${repo_convert_rev_tag}:project:${repo_convert_instance}" "verbose_false"
+exit_code="0"
+find_n_set_baseline_obj_attrs_from_project "${ccm_project_name}~${repo_convert_rev_tag}:project:${repo_convert_instance}" "verbose_false" || exit_code=$?
+if [[ "${exit_code}" != "0" ]] ; then
+    echo "ERROR: Project not found: ${ccm_project_name}~${repo_convert_rev_tag}:project:${repo_convert_instance}"
+    exit ${exit_code}
+fi
 
 if [[ "${ccm_baseline_obj}X" != "X" ]]; then
-    ccm baseline -show info -v "${ccm_baseline_obj}"            >> ${output_file}
-    echo >> ${output_file}
+    printf "Project: ${ccm_project_name}~${repo_convert_rev_tag}:project:${repo_convert_instance} <-> Baseline object: ${ccm_baseline_obj}\n\n"                 >> ${output_file}
+    ccm baseline -show info "${ccm_baseline_obj}" -f " Build: %build\n Description: %description\n Release: %release\n Purpose: %purpose\n"                     >> ${output_file}
 
-    printf "Project baseline:"                                         >> ${output_file}
-    ccm query "is_baseline_project_of('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${repo_convert_instance}')" -u -f "%displayname" >> ${output_file} || echo "  <none>" >> ${output_file}
+    ccm baseline -show projects "${ccm_baseline_obj}" -f "%objectname %release %owner %{create_time[dateformat='yyyy-MM-dd HH:MM:SS']} Baseline: -> %baseline"  >> ${output_file}
+
+    printf "\nAll baseline objects related to project: ${ccm_project_name}~${repo_convert_rev_tag}:project:${repo_convert_instance}\n"                           >> ${output_file}
+    ccm query "has_project_in_baseline('${ccm_project_name}~${repo_convert_rev_tag}:project:${repo_convert_instance}')" \
+                                                                                                        -sby create_time -f "%objectname %release %create_time" >> ${output_file}
+    echo >> ${output_file}
 
     if [[ $extract_data_epic_level == "true" ]]; then
         echo >> ${output_file}
@@ -164,9 +172,7 @@ if [[ "${ccm_baseline_obj}X" != "X" ]]; then
 
 else
     [[ "${require_baseline_object}" == "true" ]] && ( echo "ERROR: It is expected to have a baseline object due to configuration: require_baseline_object=true for this database: ${ccm_current_db}" && exit 2 )
-    echo > ${output_file}
-    echo "NO BASELINE OBJECT ASSOCIATED WITH THIS PROJECT VERSION"  >> ${output_file}
-    echo >> ${output_file}
+    printf "Project: ${ccm_project_name}~${repo_convert_rev_tag}:project:${repo_convert_instance} <-> Baseline object: NONE\n\n"                                >> ${output_file}
 
     echo "Project baseline:"                                         >> ${output_file}
     ccm query "is_baseline_project_of('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${repo_convert_instance}')" -f "%displayname"  >> ${output_file} || echo "  <none>" >> ${output_file}
