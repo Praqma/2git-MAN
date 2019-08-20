@@ -100,7 +100,7 @@ if [[ "${ccm_baseline_obj}X" != "X" ]]; then
     ccm baseline -show projects "${ccm_baseline_obj}" -f "%objectname %release %owner %{create_time[dateformat='yyyy-MM-dd HH:MM:SS']} Baseline: -> %baseline"  >> ${output_file}
 
     printf "\nAll baseline objects related to project: ${ccm_project_name}~${repo_convert_rev_tag}:project:${repo_convert_instance}\n"                           >> ${output_file}
-    ccm query "has_project_in_baseline('${ccm_project_name}~${repo_convert_rev_tag}:project:${repo_convert_instance}')" \
+    ccm query "has_project_in_baseline('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${repo_convert_instance}')" \
                                                                                                         -sby create_time -f "%objectname %release %create_time" >> ${output_file}
     echo >> ${output_file}
 
