@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -e
-#set -x
+[[ ${debug:-} == "true" ]] && set -x
 set -u
 BASELINE_PROJECT="$1"
 
@@ -34,10 +34,21 @@ find_project_baseline_to_convert(){
              echo "ALREADY include in project file - continue" >&2
              continue # Next if already for some odd reason exists - seen in firebird~BES-SW-0906-1.8:project:2
         fi
-        find_n_set_baseline_obj_attrs_from_project "${SUCCESSOR_PROJECT}"
+        exit_code="0"
+        find_n_set_baseline_obj_attrs_from_project "${SUCCESSOR_PROJECT}" "verbose_true" || exit_code=$?
+        if [[ "${exit_code}" != "0" ]] ; then
+            echo "ERROR: Project not found: ${SUCCESSOR_PROJECT}"
+            exit ${exit_code}
+        fi
         if [[ ${ccm_baseline_status:-} == "test_baseline" ]] ; then
-            echo "Related Baseline Object is in test status: ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_release_this} - skip" >&2
-            continue
+            # Figure out if the project
+            project_baseline_childs=$(ccm query "has_baseline_project('$(echo ${SUCCESSOR_PROJECT} | sed -e 's/xxx/ /g')') and ( status='integrate' or status='test' or status='sqa' or status='released' )" -u -f "%objectname" | head -1 )
+            if [[ "${project_baseline_childs:-}" != "" ]]; then
+                echo "Related Baseline Object is in test status: ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_release_this} - but at least in use as baseline of project: ${project_baseline_childs} - accept" >&2
+            else
+                echo "Related Baseline Object is in test status: ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_release_this} - skip" >&2
+                continue
+            fi
         fi
         printf "$SUCCESSOR_PROJECT@@@$CURRENT_PROJECT\n" >> ${projects_file}
         find_project_baseline_to_convert "${SUCCESSOR_PROJECT}" "${inherited_string}"
