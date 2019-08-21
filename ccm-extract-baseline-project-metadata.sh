@@ -93,7 +93,7 @@ if [[ "${exit_code}" != "0" ]] ; then
     exit ${exit_code}
 fi
 
-if [[ "${ccm_baseline_obj}X" != "X" ]]; then
+if [[ "${ccm_baseline_obj:-}" != "" ]]; then
     printf "Project: ${ccm_project_name}~${repo_convert_rev_tag}:project:${repo_convert_instance} <-> Baseline object: ${ccm_baseline_obj}\n\n"                 >> ${output_file}
     ccm baseline -show info "${ccm_baseline_obj}" -f " Build: %build\n Description: %description\n Release: %release\n Purpose: %purpose\n"                     >> ${output_file}
 
