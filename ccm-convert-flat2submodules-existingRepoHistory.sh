@@ -40,9 +40,9 @@ function convert_revision(){
     ccm_repo_convert_rev_tag=${repo_convert_rev_tag:: -4}
 
     exit_code="0"
-    find_n_set_baseline_obj_attrs_from_project "${ccm_project_name}~${repo_convert_rev_tag}:project:${repo_convert_instance}" "verbose_false" || exit_code=$?
+    find_n_set_baseline_obj_attrs_from_project "${ccm_project_name}~${ccm_repo_convert_rev_tag}:project:${project_instance}" "verbose_false" || exit_code=$?
     if [[ "${exit_code}" != "0" ]] ; then
-        echo "ERROR: Project not found: ${ccm_project_name}~$(echo ${ccm_repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${repo_convert_instance}"
+        echo "ERROR: Project not found: ${ccm_project_name}~$(echo ${ccm_repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${project_instance}"
         exit ${exit_code}
     fi
     ccm_component_release=${project_release} # inherited from function find_n_set_baseline_obj_attrs_from_project
