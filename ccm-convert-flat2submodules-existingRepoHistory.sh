@@ -105,6 +105,7 @@ function convert_revision(){
     git checkout HEAD .gitmodules || echo ".gitmodules does not exist in current revision"
 
     for repo_submodule in ${repo_submodules}; do
+        [[ ${repo_submodule} == ${repo_name} ]] && echo "Submodule name is identical to this repo - continue" && continue # happens if root project is added possible subprojects
         local repo_submodule_rev_inst=$(ccm query " \
                                    hierarchy_project_members(\
                                        '${repo_name}~$(echo ${ccm_repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${project_instance}',none \
