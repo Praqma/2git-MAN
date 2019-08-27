@@ -40,18 +40,18 @@ function convert_revision(){
     ccm_repo_convert_rev_tag=${repo_convert_rev_tag:: -4}
 
     exit_code="0"
-    find_n_set_baseline_obj_attrs_from_project "${ccm_project_name}~${ccm_repo_convert_rev_tag}:project:${project_instance}" "verbose_true" || exit_code=$?
+    find_n_set_baseline_obj_attrs_from_project "${repo_name}~${ccm_repo_convert_rev_tag}:project:${project_instance}" "verbose_true" || exit_code=$?
     if [[ "${exit_code}" != "0" ]] ; then
-        echo "ERROR: Project not found: ${ccm_project_name}~$(echo ${ccm_repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${project_instance}"
+        echo "ERROR: Project not found: ${repo_name}~$(echo ${ccm_repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${project_instance}"
         exit ${exit_code}
     fi
     if [[ ${ccm_baseline_status:-} == "test_baseline" ]] ; then
         # Figure out if the project should be converted in anyway or skipped
-        project_baseline_childs=$(ccm query "has_baseline_project('$(echo ${ccm_project_name}~${ccm_repo_convert_rev_tag}:project:${project_instance} | sed -e 's/xxx/ /g')') and ( status='integrate' or status='test' or status='sqa' or status='released' )" -u -f "%objectname" | head -1 )
+        project_baseline_childs=$(ccm query "has_baseline_project('$(echo ${repo_name}~${ccm_repo_convert_rev_tag}:project:${project_instance} | sed -e 's/xxx/ /g')') and ( status='integrate' or status='test' or status='sqa' or status='released' )" -u -f "%objectname" | head -1 )
         if [[ "${project_baseline_childs:-}" != "" ]]; then
-            echo "Related Baseline Object is in test status: ${ccm_project_name}~${ccm_repo_convert_rev_tag}:project:${project_instance}: ${ccm_baseline_obj_and_status_release_this} - but at least in use as baseline of project: ${project_baseline_childs} - accept" >&2
+            echo "Related Baseline Object is in test status: ${repo_name}~${ccm_repo_convert_rev_tag}:project:${project_instance}: ${ccm_baseline_obj_and_status_release_this} - but at least in use as baseline of project: ${project_baseline_childs} - accept" >&2
         else
-            echo "Related Baseline Object is in test status: ${ccm_project_name}~${ccm_repo_convert_rev_tag}:project:${project_instance}: ${ccm_baseline_obj_and_status_release_this} - skip" >&2
+            echo "Related Baseline Object is in test status: ${repo_name}~${ccm_repo_convert_rev_tag}:project:${project_instance}: ${ccm_baseline_obj_and_status_release_this} - skip" >&2
             continue
         fi
     fi
