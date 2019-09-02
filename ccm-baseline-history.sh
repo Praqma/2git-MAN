@@ -44,9 +44,19 @@ find_project_baseline_to_convert(){
             # Figure out if the project
             project_baseline_childs=$(ccm query "has_baseline_project('$(echo ${SUCCESSOR_PROJECT} | sed -e 's/xxx/ /g')') and ( status='integrate' or status='test' or status='sqa' or status='released' )" -u -f "%objectname" | head -1 )
             if [[ "${project_baseline_childs:-}" != "" ]]; then
-                echo "Related Baseline Object is in test status: ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_release_this} - but at least in use as baseline of project: ${project_baseline_childs} - accept" >&2
+                echo "ACCEPT: Related Baseline Object is in test status: ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_release_this} - but at least in use as baseline of project: ${project_baseline_childs}" >&2
             else
-                echo "Related Baseline Object is in test status: ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_release_this} - skip" >&2
+                echo "SKIP: Related Baseline Object is in test status: ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_release_this} - but is leaf in history" >&2
+                continue
+            fi
+        fi
+        regex_revision_contains_History='^.*\.History.*$'
+        if [[ ${proj_version:-} =~ ${regex_revision_contains_History} ]] ; then
+            project_baseline_childs=$(ccm query "has_baseline_project('$(echo ${SUCCESSOR_PROJECT} | sed -e 's/xxx/ /g')') and ( status='integrate' or status='test' or status='sqa' or status='released' )" -u -f "%objectname" | head -1 )
+            if [[ "${project_baseline_childs:-}" != "" ]]; then
+                echo "ACCEPT: Project revision contains 'History': ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_release_this} - but is in use as baseline of project: ${project_baseline_childs}" >&2
+            else
+                echo "SKIP: Project revision contains 'History': ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_release_this} - and is leaf in project baseline history" >&2
                 continue
             fi
         fi
