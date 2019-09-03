@@ -183,12 +183,11 @@ migrate {
                     println "'" + serr + "'"
                     println "Exit code: " + exitValue
 
-                    if ( sout.contains('nothing to commit, working directory clean') )
-                        println "Nothing commit - skip, but still tag"
-
                     if (exitValue) {
-                        if ( ! sout.contains('nothing to commit, working directory clean') ){
+                        if ( ! sout.contains('nothing to commit, working tree clean') ){
                             throw new Exception(cmd_line + ": gave exit code: $exitValue")
+                        } else {
+                            println "Nothing commit - skip, but still tag"
                         }
                         if (serr.toString().readLines().size() > 0) {
                             throw new Exception(cmd_line + ": standard error contains text lines: " + serr.toString().readLines().size())
