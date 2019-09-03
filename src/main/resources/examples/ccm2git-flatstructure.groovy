@@ -150,6 +150,7 @@ migrate {
 
                 // Commit everything
                 cmd 'git add --chmod=+x -A .', target.workspace
+                cmd 'git add -A .', target.workspace
 
                 custom { project ->
                     def sout = new StringBuilder(), serr = new StringBuilder()
