@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-find_n_set_baseline_obj_attrs_from_project(){
+function find_n_set_baseline_obj_attrs_from_project(){
     local ccm_project_4part=$1
     local verbose="true"
     [[ ${2:-} == "verbose_false" ]] && local verbose="false"
