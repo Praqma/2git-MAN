@@ -11,16 +11,18 @@ source ${BASH_SOURCE%/*}/_ccm-functions.sh || source ./_ccm-functions.sh
 export repo_name=${1}
 export repo_init_tag=${2}
 export repo_submodules=${3}
-[[ submodule_update_mode:-} == "" ]] && export submodule_update_mode="update-index" # or directory which is old style
+[[ ${submodule_update_mode:-} == "" ]] && export submodule_update_mode="update-index" # or directory which is old style
 
 export gitrepo_project_original=${4}
 export project_instance=${5}
 export gitignore_file=${6} # FULL PATH
 
 declare -A repo_submodules_map
-for repo_submodule_from_map in $(echo "${repo_submodules}"); do
-     repo_submodules_map["${repo_submodule_from_map}"]="${repo_submodule_from_map}"
+for repo_submodule_from_param in $(echo "${repo_submodules}"); do
+     repo_submodule_raw_name=$(echo ${repo_submodule_from_param} | awk -F ":" '{print $1}')
+     repo_submodules_map["${repo_submodule_from_param}"]="${repo_submodule_raw_name}"
 done
+unset repo_submodule_raw_name
 unset repo_submodule_from_map
 
 #export project_revisions=`cat ${1}`
@@ -35,16 +37,17 @@ function convert_revision(){
 
     set +x
     if [[ "${tag_to_convert}" == "" ]] ; then
-            echo "============================================================================"
-            echo " BEGIN: ${repo_convert_rev_tag}"
-            echo "============================================================================"
+        echo "============================================================================"
+        echo " BEGIN: ${repo_convert_rev_tag}"
+        echo "============================================================================"
+        [[ ${debug:-} == "true" ]] && set -x
     else
-            echo "====================================================================================================="
-            echo " Already done - skip: ${repo_convert_rev_tag} -> ${tag_to_convert}"
-            echo "====================================================================================================="
+        echo "====================================================================================================="
+        echo " Already done - skip: ${repo_convert_rev_tag} -> ${tag_to_convert}"
+        echo "====================================================================================================="
+        [[ ${debug:-} == "true" ]] && set -x
         return
     fi
-    [[ ${debug:-} == "true" ]] && set -x
     local ccm_repo_convert_rev_tag=${repo_convert_rev_tag:: -4}
 
     local exit_code="0"
@@ -56,8 +59,6 @@ function convert_revision(){
     local ccm_release=$(echo ${project_release} | cut -d "/" -f 2) # inherited from function find_n_set_baseline_obj_attrs_from_project
 
     [[ "${ccm_release:-}" == "x" ]] && ( echo "Release is empty!!" &&  exit 1)
-
-    local repo_convert_rev_tag_wcomponent_wstatus="${repo_name}/${ccm_release}/${repo_convert_rev_tag}"
 
     # Get the right content
     if [ `git describe ${repo_convert_rev_tag}`  ] ; then
@@ -74,15 +75,16 @@ function convert_revision(){
     #NOTE: The next line is suppressing the support for having a baseline project with a different name than is being converted: ( and name='${repo_name}' )
     local baseline_from_tag_info=$(ccm query "is_baseline_project_of('${repo_name}~$(echo ${ccm_repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${project_instance}') and name='${repo_name}'" \
                                     -u -f "%version" | sed -e 's/ /xxx/g' ) || return 1
-    local repo_baseline_rev_tag_wcomponent_wstatus=""
     if [[ "${baseline_from_tag_info}" != "" ]] ; then
         local repo_baseline_rev_tag_wcomponent_wstatus=$(git tag | grep ^${repo_name}/.*/${baseline_from_tag_info}_[dprtis][eueenq][lblsta]$ || grep_ext_value=$? )
         if [ "${repo_baseline_rev_tag_wcomponent_wstatus}x" == "x" ] ; then
             #find the original tag and convert it first
-            baseline_from_tag_info_wstatus=$(git tag | grep "^${baseline_from_tag_info}_[dprtis][eueenq][lblsta]$" || grep_ext_value=$?)
-            if [[ "${baseline_from_tag_info_wstatus}" != "" ]]; then
-                echo "INFO: RECURSIVE action - Wait with ${ccm_repo_convert_rev_tag} / baseline_from_tag_info_wstatus is empty hence the order of tags of the single commit is listed in the wrong order"
-                convert_revision ${baseline_from_tag_info_wstatus}
+            local repo_baseline_orig_tag_wstatus=$(git tag | grep "^${baseline_from_tag_info}_[dprtis][eueenq][lblsta]$" || grep_ext_value=$?)
+            if [[ "${repo_baseline_orig_tag_wstatus}" != "" ]]; then
+                echo "INFO: RECURSIVE action - Wait with ${ccm_repo_convert_rev_tag} / baseline_from_tag_info_wstatus is empty hence the order of tags of the single commit is listed in the wrong order of tags on same commit"
+                convert_revision ${repo_baseline_orig_tag_wstatus}
+                # reset it to make sure the recursive have not reset it
+                local repo_baseline_rev_tag_wcomponent_wstatus=$(git tag | grep ^${repo_name}/.*/${baseline_from_tag_info}_[dprtis][eueenq][lblsta]$ || grep_ext_value=$? )
                 set +x
                 echo "============================================================================"
                 echo " CONTINUE: ${repo_convert_rev_tag}"
@@ -98,10 +100,26 @@ function convert_revision(){
         local repo_baseline_rev_tag_wcomponent_wstatus="${repo_name}/${repo_init_tag}/${repo_init_tag}"
     fi
 
+    local repo_convert_rev_tag_wcomponent_wstatus="${repo_name}/${ccm_release}/${repo_convert_rev_tag}"
+
+    # Get the right content
+    if [ `git describe ${repo_convert_rev_tag}`  ] ; then
+        # we do have the correct 'content' tag checkout it out
+        pwd
+        git clean -xffd || git clean -xffd || git clean -xffd # It can happen that the first clean fails, but more tries can fix it
+        git reset -q --hard ${repo_convert_rev_tag} || git reset -q --hard ${repo_convert_rev_tag}
+    else
+        # we do not have the 'content' tag available - investigate its history if it exists ( e.g. missing in repo )
+        ./ccm-baseline-history-get-root.sh "${repo_name}~${ccm_repo_convert_rev_tag}:project:${project_instance}"
+        exit 1
+    fi
+
+    [[ ${repo_baseline_rev_tag_wcomponent_wstatus} == "" ]] &&  exit 1
     # Move the workarea pointer to the 'baseline' tag
     git reset --mixed ${repo_baseline_rev_tag_wcomponent_wstatus} >> /dev/null
-    git ls-files "*.sh" | xargs git update-index --add --chmod=+x
-    git ls-files "*.exe" | xargs git update-index --add --chmod=+x
+    git add -A . # just add here so execute bit can be manipulated in staged
+    git ls-files "*.sh" | xargs -d '\n' git update-index --add --chmod=+x
+    git ls-files "*.exe" | xargs -d '\n' git update-index --add --chmod=+x
 
     git checkout HEAD .gitignore
     rm -f .gitmodules # make sure we have a clean start for every revision - do not use the .gitmodules as we also need to be able to remove some
@@ -194,13 +212,6 @@ function convert_revision(){
                     continue
                 fi
 
-                # Look for the "rel" tag first
-                repo_submodule_rev_wcomponent_wstatus=$(git tag | grep ${repo_submodule}/.*/${repo_submodule_rev}_rel$ || grep_exit=$? )
-                # Look then for the "pub" tag
-                [[ ${repo_submodule_rev_wcomponent_wstatus} == "" ]] && repo_submodule_rev_wcomponent_wstatus=$(git tag | grep ${repo_submodule}/.*/${repo_submodule_rev}_pub$ || grep_exit=$? )
-                # Accept what is there of remaining
-                [[ ${repo_submodule_rev_wcomponent_wstatus} == "" ]] && repo_submodule_rev_wcomponent_wstatus=$(git tag | grep ${repo_submodule}/.*/${repo_submodule_rev}_[dprtis][eueenq][lblsta]$ || grep_exit=$? )
-
                 if [ `git describe ${repo_submodule_rev_wcomponent_wstatus}`  ] ; then
                     # we do have the correct 'content' tag - reset hard to it and make sure we are clean..
                     git clean -xffd
@@ -232,7 +243,7 @@ function convert_revision(){
 
     done
     cd ${root_dir}
-    git add  --chmod=+x -A . >> /dev/null
+    git add -A . >> /dev/null
 
     export GIT_COMMITTER_DATE=$(git log -1 --format='%cd' ${repo_convert_rev_tag}) && [[ -z ${GIT_COMMITTER_DATE} ]] && return 1
     export GIT_COMMITTER_NAME=$(git log -1 --format='%cn' ${repo_convert_rev_tag} ) && [[ -z ${GIT_COMMITTER_NAME} ]] && return 1
@@ -315,7 +326,9 @@ if [ ! -e ${repo_name} ] ; then
     git add -A .
     git status
 
+    echo "git commit init : ${repo_name}/${repo_init_tag}/${repo_init_tag}"
     git commit -C "$repo_init_tag" --amend --reset-author
+    echo "git tag init commit: ${repo_name}/${repo_init_tag}/${repo_init_tag}"
     git tag -f -a -m $(git tag -l --format '%(contents)' ${repo_init_tag}) ${repo_name}/${repo_init_tag}/${repo_init_tag}
 
     unset GIT_AUTHOR_DATE
@@ -361,6 +374,9 @@ for project_revision in ${project_revisions}; do
 done
 cat ./project_tags.txt && rm -f ./project_tags.txt
 [[ ${debug:-} == "true" ]] && set -x
+
+export https_remote=$(git config --get remote.origin.url | sed -e 's/ssh:\/\/git@/https:\/\//' -e 's/7999/7990\/scm/')
+echo "Calculating https remote from ssh origin: ${https_remote}"
 
 echo "Do the conversions"
 for project_revision in ${project_revisions}; do
