@@ -100,6 +100,9 @@ function convert_revision(){
 
     # Move the workarea pointer to the 'baseline' tag
     git reset --mixed ${repo_baseline_rev_tag_wcomponent_wstatus} >> /dev/null
+    git ls-files "*.sh" | xargs git update-index --add --chmod=+x
+    git ls-files "*.exe" | xargs git update-index --add --chmod=+x
+
     git checkout HEAD .gitignore
     rm -f .gitmodules # make sure we have a clean start for every revision - do not use the .gitmodules as we also need to be able to remove some
 
@@ -112,38 +115,50 @@ function convert_revision(){
         local repo_submodule_inst=${BASH_REMATCH[4]}
 
         # Lookup the subproject if present
-        repo_submodule=$(echo ${repo_submodules_map[${repo_submodule_name}]:-})
+        repo_submodule=$(echo ${repo_submodules_map[${repo_submodule_name}]})
         if [[ "${repo_submodule}" == "" ]] ; then
-            echo "[INFO]: ${repo_convert_rev_tag_wcomponent_wstatus} / ${repo_submodule} - The subproject not found in projects to add as submodules - skip"
+            echo "[INFO]: ${repo_submodule_rev} / ${repo_submodule} - The subproject not found in projects to add as submodules - exit"
             cd ${root_dir}
-            continue
+            exit 1
         fi
-        echo "[INFO]: ${repo_convert_rev_tag_wcomponent_wstatus} / ${repo_submodule} / ${repo_submodule_rev} / ${repo_submodule_inst:1} - use it"
+        echo "[INFO]: ${repo_submodule_rev} / ${repo_submodule} / ${repo_submodule_rev} / ${repo_submodule_inst:1} - use it"
 
         case ${submodule_update_mode:-} in
             "update-index")
-                repo_submodule="code-utils"
-                submodule_repo="https://github.com/Praqma/ ${submodule_path}.git
+                # Get the sha1 from a reference / tag or reference is sha1 as not provided
+                https_remote_submodule=$(echo ${https_remote} | sed -e "s/\/${repo_name}.git/\/${repo_submodule}.git/")
+                export repo_submodule_sha1=$(git ls-remote --tag ${https_remote_submodule} | grep -e "${repo_submodule}/.*/${repo_submodule_rev}_rel$" | awk -F" " '{print $1}')
+                # Look then for the "pub" tag
+                [[ ${repo_submodule_sha1} == "" ]] && export repo_submodule_sha1=$(git ls-remote --tag ${https_remote_submodule} | grep -e "${repo_submodule}/.*/${repo_submodule_rev}_pub$" | awk -F" " '{print $1}')
+                # Accept what is there of remaining
+                [[ ${repo_submodule_sha1} == "" ]] && export repo_submodule_sha1=$(git ls-remote --tag ${https_remote_submodule} | grep -e "${repo_submodule}/.*/${repo_submodule_rev}_[dprtis][eueenq][lblsta]$" | awk -F" " '{print $1}')
 
-                # Get the sha1 from a reference / tag or reference is sha1 is not provided
-                ref="refs/tags/latest"                                      # the reference you want attach as submodule revision
-                sha1=`git ls-remote --tag  https://github.com/Praqma/code-utils.git | grep ${ref} | awk -F " " '{print $1}'`
-                echo "Setting submodule: ${repo_submodule} to $sha1 from ${submodule_repo}
+                [[ ${repo_submodule_sha1} == "" ]] && exit 1
+
+                echo "INFO: Setting submodule: ${repo_submodule} to ${repo_submodule_sha1}"
 
                 # Add the submodule
                 git config -f ./.gitmodules --add submodule.code-utils.path ${repo_submodule}
                 git config -f ./.gitmodules --add submodule.code-utils.url ../${repo_submodule}.git
 
                 # set the sha1 as the reference of the submodule
-                git update-index --add --cacheinfo 160000,${sha1},${repo_submodule}
+                git update-index --add --cacheinfo 160000,${repo_submodule_sha1},${repo_submodule}
                 if [[ ${push_tags_in_submodules} == "true" ]]; then
-                    https_url=$(it config --get remote.origin.url | awk -F "/" '{print $3}' | sed -e 's/git@/https:\/\//g' -e 's/7999/7990/')
+                    https_url=$(git config --get remote.origin.url | awk -F "/" '{print $3}' | sed -e 's/git@/https:\/\//g' -e 's/7999/7990/')
                     curl https://api.bitbucket.org/2.0/repositories/jdoe/myrepo/refs/tags \
                         -s -u jdoe -X POST -H "Content-Type: application/json" \
                         -d '{ "name" : "new-tag-name", "target" : { "hash" : "a1b2c3d4e5f6" } }'
                 fi
+                exit 1
                 ;;
             "directory")
+                # Look for the "rel" tag first
+                export repo_submodule_rev_wcomponent_wstatus=$(git tag | grep ${repo_submodule}/.*/${repo_submodule_rev}_rel$ || grep_exit=$? )
+                # Look then for the "pub" tag
+                [[ ${repo_submodule_rev_wcomponent_wstatus} == "" ]] && export repo_submodule_rev_wcomponent_wstatus=$(git tag | grep ${repo_submodule}/.*/${repo_submodule_rev}_pub$ || grep_exit=$? )
+                # Accept what is there of remaining
+                [[ ${repo_submodule_rev_wcomponent_wstatus} == "" ]] && export repo_submodule_rev_wcomponent_wstatus=$(git tag | grep ${repo_submodule}/.*/${repo_submodule_rev}_[dprtis][eueenq][lblsta]$ || grep_exit=$? )
+
                 checkout_exit=0
                 git checkout HEAD ${repo_submodule} || checkout_exit=$?
                 if [[ ${checkout_exit} -ne 0 ]] ; then
@@ -218,9 +233,6 @@ function convert_revision(){
     done
     cd ${root_dir}
     git add  --chmod=+x -A . >> /dev/null
-    git ls-files "*.sh" | xargs git update-index --add --chmod=+x
-    git ls-files "*.exe" | xargs git update-index --add --chmod=+x
-
 
     export GIT_COMMITTER_DATE=$(git log -1 --format='%cd' ${repo_convert_rev_tag}) && [[ -z ${GIT_COMMITTER_DATE} ]] && return 1
     export GIT_COMMITTER_NAME=$(git log -1 --format='%cn' ${repo_convert_rev_tag} ) && [[ -z ${GIT_COMMITTER_NAME} ]] && return 1
@@ -230,8 +242,8 @@ function convert_revision(){
     export GIT_AUTHOR_NAME=$(git log -1 --format='%an' ${repo_convert_rev_tag} ) && [[ -z ${GIT_AUTHOR_NAME} ]] && return 1
     export GIT_AUTHOR_EMAIL=$(git log -1 --format='%ae' ${repo_convert_rev_tag} ) && [[ -z ${GIT_AUTHOR_EMAIL} ]] && return 1
 
+    echo "git commit content of ${repo_convert_rev_tag}"
     git commit -q -C ${repo_convert_rev_tag} --reset-author || ( echo "Empty commit.." )
-#--author "${GIT_AUTHOR_NAME} <${GIT_AUTHOR_EMAIL}>"
 
     # reset the committer to get the correct set for the commiting the tag. There is no author of the tag
     export GIT_AUTHOR_DATE=$(git tag -l --format="%(taggerdate:iso8601)" ${repo_convert_rev_tag} | awk -F" " '{print $1 " " $2}') && [[ -z ${GIT_AUTHOR_DATE} ]] && return 1
@@ -239,12 +251,20 @@ function convert_revision(){
     export GIT_COMMITTER_NAME=$(git tag -l --format="%(taggername)" ${repo_convert_rev_tag} ) && [[ -z ${GIT_COMMITTER_NAME} ]] && return 1
     export GIT_COMMITTER_EMAIL=$(git tag -l --format="%(taggeremail)" ${repo_convert_rev_tag} ) && [[ -z ${GIT_COMMITTER_EMAIL} ]] && return 1
 
+    echo "Get tag content of: ${repo_convert_rev_tag}"
     git tag -l --format '%(contents)' ${repo_convert_rev_tag} > ./tag_meta_data.txt
+    echo "git commit content of ${repo_convert_rev_tag}"
+    echo "git tag ${repo_convert_rev_tag_wcomponent_wstatus} based on ${repo_convert_rev_tag}"
     git tag -a -F ./tag_meta_data.txt ${repo_convert_rev_tag_wcomponent_wstatus}
     rm -f ./tag_meta_data.txt
 
     # Do not consider submodules
-    [[ ${push_remote:-} == "true" ]] && git push origin --recurse-submodules=no  -f ${repo_convert_rev_tag_wcomponent_wstatus}
+    if [[ ${push_remote:-} == "true" ]]; then
+        echo "INFO: Configured to push to remote:  git push origin --recurse-submodules=no -f ${repo_convert_rev_tag_wcomponent_wstatus}"
+        git push origin --recurse-submodules=no -f ${repo_convert_rev_tag_wcomponent_wstatus}
+    else
+        echo "INFO: Skip push to remote"
+    fi
 
     set +x
     echo "============================================================================"
