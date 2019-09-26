@@ -118,8 +118,8 @@ function convert_revision(){
     # Move the workarea pointer to the 'baseline' tag
     git reset -q --mixed ${repo_baseline_rev_tag_wcomponent_wstatus} >> /dev/null
     git add -A . # just add here so execute bit can be manipulated in staged
-    git ls-files "*.sh" | xargs -d '\n' git update-index --add --chmod=+x
-    git ls-files "*.exe" | xargs -d '\n' git update-index --add --chmod=+x
+    git ls-files "*.sh" | xargs --no-run-if-empty -d '\n' git update-index --add --chmod=+x
+    git ls-files "*.exe" | xargs --no-run-if-empty -d '\n' git update-index --add --chmod=+x
 
     git checkout HEAD .gitignore
     rm -f .gitmodules # make sure we have a clean start for every revision - do not use the .gitmodules as we also need to be able to remove some
