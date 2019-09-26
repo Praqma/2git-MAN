@@ -151,8 +151,6 @@ migrate {
                 // Commit everything
                 cmd 'git add --chmod=+x -A .', target.workspace
                 cmd 'git add -A .', target.workspace
-                cmd 'git ls-files "*.sh" | xargs git update-index --add --chmod=+x', target.workspace
-                cmd 'git ls-files "*.exe" | xargs git update-index --add --chmod=+x', target.workspace
 
                 custom { project ->
                     def sout = new StringBuilder(), serr = new StringBuilder()
