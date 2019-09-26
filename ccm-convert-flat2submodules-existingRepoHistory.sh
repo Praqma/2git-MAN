@@ -12,7 +12,7 @@ export repo_name=${1}
 export repo_init_tag=${2}
 export repo_submodules=${3}
 [[ ${submodule_update_mode:-} == "" ]] && export submodule_update_mode="update-index" # or directory which is old style
-[[ ${push_tags_in_submodules:-} == "" ]] && export push_tags_in_submodules="true"
+[[ ${push_tags_in_submodules:-} == "" ]] && export push_tags_in_submodules="false"
 export gitrepo_project_original=${4}
 export project_instance=${5}
 export gitignore_file=${6} # FULL PATH
@@ -116,7 +116,7 @@ function convert_revision(){
 
     [[ ${repo_baseline_rev_tag_wcomponent_wstatus} == "" ]] &&  exit 1
     # Move the workarea pointer to the 'baseline' tag
-    git reset --mixed ${repo_baseline_rev_tag_wcomponent_wstatus} >> /dev/null
+    git reset -q --mixed ${repo_baseline_rev_tag_wcomponent_wstatus} >> /dev/null
     git add -A . # just add here so execute bit can be manipulated in staged
     git ls-files "*.sh" | xargs -d '\n' git update-index --add --chmod=+x
     git ls-files "*.exe" | xargs -d '\n' git update-index --add --chmod=+x
@@ -133,7 +133,7 @@ function convert_revision(){
         local repo_submodule_inst=${BASH_REMATCH[4]}
 
         # Lookup the subproject if present
-        repo_submodule=$(echo ${repo_submodules_map[${repo_submodule_name}]})
+        repo_submodule=$(echo ${repo_submodules_map[${repo_submodule_name:-}]:-})
         if [[ "${repo_submodule}" == "" ]] ; then
             echo "[INFO]: ${repo_submodule_rev} / ${repo_submodule} - The subproject not found in projects to add as submodules - exit"
             cd ${root_dir}
@@ -159,9 +159,15 @@ function convert_revision(){
                 git config -f ./.gitmodules --add submodule.code-utils.path ${repo_submodule}
                 git config -f ./.gitmodules --add submodule.code-utils.url ../${repo_submodule}.git
 
+                # Remove the old dir in git index
+                if [[ ! $(git rm -rf ${repo_submodule}) ]]; then
+                    rm -rf ${repo_submodule}
+                fi
                 # set the sha1 as the reference of the submodule
                 git update-index --add --cacheinfo 160000,${repo_submodule_sha1},${repo_submodule}
                 if [[ ${push_tags_in_submodules} == "true" ]]; then
+                    #TODO: if push of tags in submodules is desired
+                    exit 1
                     https_url=$(git config --get remote.origin.url | awk -F "/" '{print $3}' | sed -e 's/git@/https:\/\//g' -e 's/7999/7990/')
                     curl https://api.bitbucket.org/2.0/repositories/jdoe/myrepo/refs/tags \
                         -s -u jdoe -X POST -H "Content-Type: application/json" \
@@ -353,8 +359,13 @@ echo "Calculating https remote from ssh origin: ${https_remote}"
 
 for sha1 in $(git log --topo-order --oneline --all --pretty=format:"%H " | tac) ; do
     echo "Processing: $sha1"
-    tags=$(git tag --points-at "${sha1}" | grep -v .*/.*/.*_[dprtis][eueenq][lblsta]$)
-    [[ "${tags}" == "" ]] && continue # no old tags found - skip sha1
+    tags=$(git tag --points-at "${sha1}" | grep -v .*/.*/.*_[dprtis][eueenq][lblsta]$ || echo "")
+    if [[ "${tags}" == "" ]]; then
+        converted_tags=$(git tag --points-at "${sha1}" | grep .*/.*/.*_[dprtis][eueenq][lblsta]$ )
+        echo "INFO : No unconverted tags found - These are the new tags found - list and continue"
+        echo "${converted_tags}"
+        continue
+    fi
     for project_revision in $(git tag --points-at "${sha1}" | grep -v .*/.*/.*_[dprtis][eueenq][lblsta]$ || echo "@@@" ); do
         [[ "${repo_name}/${repo_init_tag}/${repo_init_tag}" == "${project_revision}" ]] && continue
         [[ "${repo_init_tag}" == "${project_revision}" ]] && continue
