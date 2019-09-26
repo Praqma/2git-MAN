@@ -12,7 +12,7 @@ export repo_name=${1}
 export repo_init_tag=${2}
 export repo_submodules=${3}
 [[ ${submodule_update_mode:-} == "" ]] && export submodule_update_mode="update-index" # or directory which is old style
-
+[[ ${push_tags_in_submodules:-} == "" ]] && export push_tags_in_submodules="true"
 export gitrepo_project_original=${4}
 export project_instance=${5}
 export gitignore_file=${6} # FULL PATH
@@ -270,7 +270,7 @@ function convert_revision(){
     rm -f ./tag_meta_data.txt
 
     # Do not consider submodules
-    if [[ ${push_remote:-} == "true" ]]; then
+    if [[ ${push_to_remote_during_conversion:-} == "true" ]]; then
         echo "INFO: Configured to push to remote:  git push origin --recurse-submodules=no -f ${repo_convert_rev_tag_wcomponent_wstatus}"
         git push origin --recurse-submodules=no -f ${repo_convert_rev_tag_wcomponent_wstatus}
     else
@@ -342,43 +342,19 @@ else
     echo "Already cloned and initialized"
     echo "Reset all tags to remote"
     cd ${repo_name}
-    git tag | grep -v "^${repo_name}/init/init$" | grep "^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$" |  xargs git tag --delete
+    git tag | grep -v "^${repo_name}/init/init$" | grep "^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$" | xargs --no-run-if-empty git tag --delete
     git fetch --tags
+    git fetch -ap
     pwd
 fi
-
-set +x
-export project_revisions=$(for tag in $(git log --topo-order --oneline --all --decorate \
-                                    | grep -e '(tag: ' \
-                                    | awk -F"(" '{print $2}' \
-                                    | awk -F")" '{print $1}' \
-                                    | sed -e 's/,//g' \
-                                    | sed -e 's/tag://g' \
-                                    | sed -e 's/HEAD -> master//g' \
-                            ); do \
-                                echo $tag ; \
-                            done \
-                            | grep -v origin/master$ \
-                            | grep -v origin/HEAD$ \
-                            | grep -v ${repo_name}/${repo_init_tag}/${repo_init_tag}$ \
-                            | grep -v .*/.*/.*_[dprtis][eueenq][lblsta]$ \
-                            | grep -v ${repo_init_tag}$ \
-                            | tac \
-                           )
-
-
-echo "Found project revisions/tags:"
-rm -f project_tags.txt && touch project_tags.txt
-for project_revision in ${project_revisions}; do
-    echo $project_revision >> project_tags.txt
-done
-cat ./project_tags.txt && rm -f ./project_tags.txt
-[[ ${debug:-} == "true" ]] && set -x
 
 export https_remote=$(git config --get remote.origin.url | sed -e 's/ssh:\/\/git@/https:\/\//' -e 's/7999/7990\/scm/')
 echo "Calculating https remote from ssh origin: ${https_remote}"
 
-echo "Do the conversions"
-for project_revision in ${project_revisions}; do
-    convert_revision ${project_revision}
+for sha1 in `git log --topo-order --oneline --all --pretty=format:"%H" | tac ` ; do
+    for project_revision in $(git tag --points-at $sha1 | grep -v ${repo_name}/${repo_init_tag}/${repo_init_tag}$ | grep -v ${repo_init_tag}$ | grep -v .*/.*/.*_[dprtis][eueenq][lblsta]$); do
+        convert_revision ${project_revision}
+    done
 done
+
+exit
