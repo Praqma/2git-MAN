@@ -351,10 +351,17 @@ fi
 export https_remote=$(git config --get remote.origin.url | sed -e 's/ssh:\/\/git@/https:\/\//' -e 's/7999/7990\/scm/')
 echo "Calculating https remote from ssh origin: ${https_remote}"
 
-for sha1 in `git log --topo-order --oneline --all --pretty=format:"%H" | tac ` ; do
-    for project_revision in $(git tag --points-at $sha1 | grep -v ${repo_name}/${repo_init_tag}/${repo_init_tag}$ | grep -v ${repo_init_tag}$ | grep -v .*/.*/.*_[dprtis][eueenq][lblsta]$); do
+for sha1 in $(git log --topo-order --oneline --all --pretty=format:"%H " | tac) ; do
+    echo "Processing: $sha1"
+    tags=$(git tag --points-at "${sha1}" | grep -v .*/.*/.*_[dprtis][eueenq][lblsta]$)
+    [[ "${tags}" == "" ]] && continue # no old tags found - skip sha1
+    for project_revision in $(git tag --points-at "${sha1}" | grep -v .*/.*/.*_[dprtis][eueenq][lblsta]$ || echo "@@@" ); do
+        [[ "${repo_name}/${repo_init_tag}/${repo_init_tag}" == "${project_revision}" ]] && continue
+        [[ "${repo_init_tag}" == "${project_revision}" ]] && continue
+        [[ "@@@" == "${project_revision}" ]] && continue
         convert_revision ${project_revision}
     done
+    echo "Done: $sha1"
 done
 
 exit
