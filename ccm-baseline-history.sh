@@ -48,11 +48,11 @@ find_project_baseline_to_convert(){
             else
                 if [[ $(ccm finduse -all_projects "$(echo ${SUCCESSOR_PROJECT} | sed -e 's/xxx/ /g')" | grep "Object is not used in scope." ) ]]; then
                     # not in use as sub project"
-                    echo "SKIP: Related Baseline Object is in test status and is NOT in use as subproject: ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_release_this} - and is leaf in history" >&2
+                    echo "SKIP: Related Baseline Object is in test status and is NOT in use as subproject: ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_release_this} - even is leaf in project baseline history" >&2
                     continue
                 else
                     # in use
-                    echo "ACCEPT: Related Baseline Object is in test status and is in use as subproject: ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_release_this} - even it is leaf in history" >&2
+                    echo "ACCEPT: Related Baseline Object is in test status and is in use as subproject: ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_release_this} - even is leaf in project baseline history" >&2
                 fi
             fi
         fi
@@ -62,7 +62,15 @@ find_project_baseline_to_convert(){
             if [[ "${project_baseline_childs:-}" != "" ]]; then
                 echo "ACCEPT: Project revision contains 'History': ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_release_this} - but is in use as baseline of project: ${project_baseline_childs}" >&2
             else
-                echo "SKIP: Project revision contains 'History': ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_release_this} - and is leaf in project baseline history" >&2
+                if [[ $(ccm finduse -all_projects "$(echo ${SUCCESSOR_PROJECT} | sed -e 's/xxx/ /g')" | grep "Object is not used in scope." ) ]]; then
+                    # not in use as sub project"
+                    echo "SKIP: Project revision contains 'History and is NOT in use as subproject: ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_release_this} - even is leaf in project baseline history" >&2
+                    continue
+                else
+                    # in use
+                    echo "ACCEPT: Project revision contains '.History', but is in use as a subproject: ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_release_this} - even is leaf in project baseline history" >&2
+                fi
+                echo "SKIP: Project revision contains '.History': ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_release_this} - and is leaf in project baseline history" >&2
                 continue
             fi
         fi
