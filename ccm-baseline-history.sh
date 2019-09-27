@@ -41,13 +41,19 @@ find_project_baseline_to_convert(){
             exit ${exit_code}
         fi
         if [[ ${ccm_baseline_status:-} == "test_baseline" ]] ; then
-            # Figure out if the project
+            # Figure out if the project is in use as as baseline in and other project
             project_baseline_childs=$(ccm query "has_baseline_project('$(echo ${SUCCESSOR_PROJECT} | sed -e 's/xxx/ /g')') and ( status='integrate' or status='test' or status='sqa' or status='released' )" -u -f "%objectname" | head -1 )
             if [[ "${project_baseline_childs:-}" != "" ]]; then
                 echo "ACCEPT: Related Baseline Object is in test status: ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_release_this} - but at least in use as baseline of project: ${project_baseline_childs}" >&2
             else
-                echo "SKIP: Related Baseline Object is in test status: ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_release_this} - but is leaf in history" >&2
-                continue
+                if [[ $(ccm finduse -all_projects "$(echo ${SUCCESSOR_PROJECT} | sed -e 's/xxx/ /g')" | grep "Object is not used in scope." ) ]]; then
+                    # not in use as sub project"
+                    echo "SKIP: Related Baseline Object is in test status and is NOT in use as subproject: ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_release_this} - and is leaf in history" >&2
+                    continue
+                else
+                    # in use
+                    echo "ACCEPT: Related Baseline Object is in test status and is in use as subproject: ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_release_this} - even it is leaf in history" >&2
+                fi
             fi
         fi
         regex_revision_contains_History='^.*\.History.*$'
