@@ -361,7 +361,7 @@ for sha1 in $(git log --topo-order --oneline --all --pretty=format:"%H " | tac) 
     echo "Processing: $sha1"
     tags=$(git tag --points-at "${sha1}" | grep -v .*/.*/.*_[dprtis][eueenq][lblsta]$ || echo "")
     if [[ "${tags}" == "" ]]; then
-        converted_tags=$(git tag --points-at "${sha1}" | grep .*/.*/.*_[dprtis][eueenq][lblsta]$ )
+        converted_tags=$(git tag --points-at "${sha1}" | grep .*/.*/.*_[dprtis][eueenq][lblsta]$ || echo "")
         echo "INFO : No unconverted tags found - These are the new tags found - list and continue"
         echo "${converted_tags}"
         continue
