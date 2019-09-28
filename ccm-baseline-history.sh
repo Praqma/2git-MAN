@@ -70,8 +70,6 @@ find_project_baseline_to_convert(){
                     # in use
                     echo "ACCEPT: Project revision contains '.History', but is in use as a subproject: ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_release_this} - even is leaf in project baseline history" >&2
                 fi
-                echo "SKIP: Project revision contains '.History': ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_release_this} - and is leaf in project baseline history" >&2
-                continue
             fi
         fi
         printf "$SUCCESSOR_PROJECT@@@$CURRENT_PROJECT\n" >> ${projects_file}
