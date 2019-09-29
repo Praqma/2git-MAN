@@ -135,9 +135,9 @@ function convert_revision(){
         # Lookup the subproject if present
         repo_submodule=$(echo ${repo_submodules_map[${repo_submodule_name:-}]:-})
         if [[ "${repo_submodule}" == "" ]] ; then
-            echo "[INFO]: ${repo_submodule_rev} / ${repo_submodule} - The subproject not found in projects to add as submodules - exit"
+            echo "[INFO]: ${repo_submodule_rev} / ${repo_submodule} - The subproject not found in projects to add as submodules - skip"
             cd ${root_dir}
-            exit 1
+            continue
         fi
         echo "[INFO]: ${repo_submodule_rev} / ${repo_submodule} / ${repo_submodule_rev} / ${repo_submodule_inst:1} - use it"
 
