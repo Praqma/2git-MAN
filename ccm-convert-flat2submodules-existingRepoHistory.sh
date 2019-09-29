@@ -182,6 +182,8 @@ function convert_revision(){
                 [[ ${repo_submodule_rev_wcomponent_wstatus} == "" ]] && export repo_submodule_rev_wcomponent_wstatus=$(git tag | grep ${repo_submodule}/.*/${repo_submodule_rev}_pub$ || grep_exit=$? )
                 # Accept what is there of remaining
                 [[ ${repo_submodule_rev_wcomponent_wstatus} == "" ]] && export repo_submodule_rev_wcomponent_wstatus=$(git tag | grep ${repo_submodule}/.*/${repo_submodule_rev}_[dprtis][eueenq][lblsta]$ || grep_exit=$? )
+                
+                [[ ${repo_submodule_rev_wcomponent_wstatus} == "" ]] && exit 1
 
                 checkout_exit=0
                 git checkout HEAD ${repo_submodule} || checkout_exit=$?
