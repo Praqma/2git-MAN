@@ -13,7 +13,7 @@ export repo_init_tag=${2}
 export repo_submodules=${3}
 [[ ${submodule_update_mode:-} == "" ]] && export submodule_update_mode="directory" # or update-index which is old style
 [[ ${push_tags_in_submodules:-} == "" ]] && export push_tags_in_submodules="false"
-[[ "${execute_mode:-}" == "" ]] && export execute_mode="restart"
+[[ "${execute_mode:-}" == "" ]] && export execute_mode="normal"
 
 export gitrepo_project_original=${4}
 export project_instance=${5}
@@ -325,9 +325,15 @@ function convert_revision(){
 
 }
 
+function reset_converted_tags_remote_n_local() {
+    echo "Delete fetch all tags and delete all the '^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$' tags on the remote and local to restart except ${repo_name}/init/init"
+    git tag | grep -v "^${repo_name}/init/init$" | grep "^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$" | xargs --no-run-if-empty git push origin --delete
+    git tag | grep -v "^${repo_name}/init/init$" | grep "^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$" | xargs --no-run-if-empty git tag --delete
+}
+
 #initialize repo
 if [ ! -e ${repo_name} ] ; then
-    git clone --recursive -b master ${git_remote_repo}
+    git clone -b master ${git_remote_repo}
     cd ${repo_name}
     git branch -a
     git tag
@@ -337,8 +343,19 @@ if [ ! -e ${repo_name} ] ; then
     export GIT_AUTHOR_DATE=$(git tag -l --format="%(taggerdate:iso8601)" ${repo_init_tag} | awk -F" " '{print $1 " " $2}')
     export GIT_COMMITTER_DATE=${GIT_AUTHOR_DATE}
 
-    test "${gitignore_file}x" != "x" && test ! -e ${gitignore_file} && echo "${gitignore_file} does not exist.. Current dir:" && pwd && echo " .. Consider full path.." && exit 1
-    test "${gitignore_file}x" != "x" && test -e ${gitignore_file} && cp ${gitignore_file} ./.gitignore
+    if [[ "${gitignore_file}" != "x" ]]; then
+        if [[ ! -e ${gitignore_file} ]]; then
+            echo "${gitignore_file} does not exist.. Current dir:"
+            pwd
+            echo " .. Consider full path.."
+            exit 1
+        fi
+    fi
+    if [[ "${gitignore_file}x" != "x" ]]; then
+        if [[ -e ${gitignore_file} ]]; then
+            cp ${gitignore_file} ./.gitignore
+        fi
+    fi
 
     git status
     git add -A .
@@ -354,20 +371,28 @@ if [ ! -e ${repo_name} ] ; then
 
     git reset -q --hard ${repo_name}/${repo_init_tag}/${repo_init_tag}
     git clean -xffd
-    pwd
-    # we are still in the root repo
+
+    if [[ "${execute_mode}" == "reset_remote_n_local" ]];then
+        echo "execute_mode is: '${execute_mode}'"
+        reset_converted_tags_remote_n_local
+    fi
+    pwd # we are still in the root repo
 else
     echo "Already cloned and initialized"
-    echo "Reset all tags to remote"
     cd ${repo_name}
-    if [[ "${execute_mode}" == "restart" ]]; then
+    if [[ "${execute_mode}" == "normal" ]]; then
+        echo "execute_mode is: '${execute_mode}'"
+        echo "Reset local tags in scope '^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$' and then start from begin of '^${repo_name}/init/init$'"
         git tag | grep -v "^${repo_name}/init/init$" | grep "^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$" | xargs --no-run-if-empty git tag --delete
         git fetch --tags
         git fetch -ap
-    elif [[ "${execute_mode}" == "continue" ]];then
+    elif [[ "${execute_mode}" == "continue_locally" ]];then
+        echo "execute_mode is: '${execute_mode}'"
         echo "Do not delete already converted tags and fetch again -  just continue in workspace as is"
+    elif [[ "${execute_mode}" == "reset_remote_n_local" ]];then
+        echo "execute_mode is: '${execute_mode}'"
+        reset_converted_tags_remote_n_local
     fi
-    pwd
 fi
 
 export https_remote=$(git config --get remote.origin.url | sed -e 's/ssh:\/\/git@/https:\/\//' -e 's/7999/7990\/scm/')
