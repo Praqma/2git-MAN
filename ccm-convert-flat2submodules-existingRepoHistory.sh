@@ -327,7 +327,7 @@ function convert_revision(){
 
 function reset_converted_tags_remote_n_local() {
     echo "Delete fetch all tags and delete all the '^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$' tags on the remote and local to restart except ${repo_name}/init/init"
-    git tag | grep -v "^${repo_name}/init/init$" | grep "^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$" | xargs --no-run-if-empty git push origin --delete
+    git tag | grep -v "^${repo_name}/init/init$" | grep "^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$" | xargs --no-run-if-empty git push origin --delete || echo "Some tags might not be on the remote - never mind"
     git tag | grep -v "^${repo_name}/init/init$" | grep "^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$" | xargs --no-run-if-empty git tag --delete
 }
 
