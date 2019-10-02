@@ -260,6 +260,7 @@ function convert_revision(){
     fi
     git ls-files "*.sh" | xargs --no-run-if-empty -d '\n' git update-index --add --chmod=+x
     git ls-files "*.exe" | xargs --no-run-if-empty -d '\n' git update-index --add --chmod=+x
+    git add -A .
 
     export GIT_COMMITTER_DATE=$(git log -1 --format='%cd' ${repo_convert_rev_tag}) && [[ -z ${GIT_COMMITTER_DATE} ]] && return 1
     export GIT_COMMITTER_NAME=$(git log -1 --format='%cn' ${repo_convert_rev_tag} ) && [[ -z ${GIT_COMMITTER_NAME} ]] && return 1
@@ -391,6 +392,8 @@ else
         echo "Do not delete already converted tags and fetch again -  just continue in workspace as is"
     elif [[ "${execute_mode}" == "reset_remote_n_local" ]];then
         echo "execute_mode is: '${execute_mode}'"
+        git fetch --tags --force
+        git fetch -ap
         reset_converted_tags_remote_n_local
     fi
 fi
