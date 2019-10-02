@@ -1,0 +1,68 @@
+# New ignores for git and artifactory world (sorted) .... is this the right way to proceed? Why do we cut out these files?
+*.eds
+*.EDS
+*.exe
+*.dll
+*.doc
+*.docx
+*.mbf
+*.mdb
+*.lib
+*.pdb
+*.pdf
+*.sdf
+*.xls
+*.zip
+/.gradle/
+/.idea/
+*.iml
+
+# Specific files NOT ignored - but handled in some other way:
+# .asc
+
+# submodules (sorted)
+#/aether/
+#/appframe/
+#/arcedit/
+#/bes2/
+#/bes3_to_bes2_interface/
+#/dau/
+#/dse/
+#/ecs_ercs_interface/
+#/firebird/
+#/firebird4bes/
+#/gnuc/
+#/gui/
+#/hmi_bat/
+#/hmidev/
+#/Inspect/
+#/lint/
+#/make2/
+#/mb-gcc/
+#/Modbus/
+#/MOP2_Core/
+
+# Historical directories to be removed
+/cppunit-1.12.1/
+
+# gigant-directories (sorted by size) - ME-ECS-SW/1903-2
+/ccu_mrk2/tp/nodetest/
+/gi/TestWall/
+/gi/c/Documentation/
+/gi/SCSU/540/tw
+/gi/Tests/dse_tests/functionality
+/gi/Tests/dse_tests/failures
+/ecu/tp/unittest_checktest/LWM
+/ecu/tp/nodetest/
+/ecu/tp/unittest_dse/SelfControllingHPS/
+
+# gigant-directories (sorted) - PMI-ON-SW/1802-1
+/dau/sw/util/
+/mb-gcc
+
+# gigant-directories (sorted) - appframe/1910-1
+/dse/tools/
+
+# Single Large files not i "HEAD" (sorted) - to be ignored completely.
+/gi/TestWall/SeqZap/All SD s in all States Report GITests 2012-11-15 13.14.47 Detailed Browsable Report.html
+/eicu/Lyngsoe/UCS2100/tools/gd/EAD Trend20050411.log
