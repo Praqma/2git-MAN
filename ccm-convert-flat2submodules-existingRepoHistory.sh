@@ -11,8 +11,10 @@ source ${BASH_SOURCE%/*}/_ccm-functions.sh || source ./_ccm-functions.sh
 export repo_name=${1}
 export repo_init_tag=${2}
 export repo_submodules=${3}
-[[ ${submodule_update_mode:-} == "" ]] && export submodule_update_mode="update-index" # or directory which is old style
+[[ ${submodule_update_mode:-} == "" ]] && export submodule_update_mode="directory" # or update-index which is old style
 [[ ${push_tags_in_submodules:-} == "" ]] && export push_tags_in_submodules="false"
+[[ "${execute_mode:-}" == "" ]] && export execute_mode="restart"
+
 export gitrepo_project_original=${4}
 export project_instance=${5}
 export gitignore_file=${6} # FULL PATH
@@ -60,18 +62,6 @@ function convert_revision(){
 
     [[ "${ccm_release:-}" == "x" ]] && ( echo "Release is empty!!" &&  exit 1)
 
-    # Get the right content
-    if [ `git describe ${repo_convert_rev_tag}`  ] ; then
-        # we do have the correct 'content' tag checkout it out
-        pwd
-        git clean -xffd || git clean -xffd || git clean -xffd # It can happen that the first clean fails, but more tries can fix it
-        git reset -q --hard ${repo_convert_rev_tag} || git reset -q --hard ${repo_convert_rev_tag}
-    else
-        # we do not have the 'content' tag available - investigate its history if it exists ( e.g. missing in repo )
-        ./ccm-baseline-history-get-root.sh "${repo_name}~${ccm_repo_convert_rev_tag}:project:${project_instance}"
-        exit 1
-    fi
-
     #NOTE: The next line is suppressing the support for having a baseline project with a different name than is being converted: ( and name='${repo_name}' )
     local baseline_from_tag_info=$(ccm query "is_baseline_project_of('${repo_name}~$(echo ${ccm_repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${project_instance}') and name='${repo_name}'" \
                                     -u -f "%version" | sed -e 's/ /xxx/g' ) || return 1
@@ -107,7 +97,9 @@ function convert_revision(){
         # we do have the correct 'content' tag checkout it out
         pwd
         git clean -xffd || git clean -xffd || git clean -xffd # It can happen that the first clean fails, but more tries can fix it
-        git reset -q --hard ${repo_convert_rev_tag} || git reset -q --hard ${repo_convert_rev_tag}
+        for path_failed_to_remove in $(git reset -q --hard ${repo_convert_rev_tag} 2>&1 | awk -F "'" '{print $2}'); do
+            git rm -rf ${path_failed_to_remove}  > /dev/null 2>&1  || rm -rf ${path_failed_to_remove}
+        done
     else
         # we do not have the 'content' tag available - investigate its history if it exists ( e.g. missing in repo )
         ./ccm-baseline-history-get-root.sh "${repo_name}~${ccm_repo_convert_rev_tag}:project:${project_instance}"
@@ -116,16 +108,17 @@ function convert_revision(){
 
     [[ ${repo_baseline_rev_tag_wcomponent_wstatus} == "" ]] &&  exit 1
     # Move the workarea pointer to the 'baseline' tag
-    git reset -q --mixed ${repo_baseline_rev_tag_wcomponent_wstatus} >> /dev/null
-    git add -A . # just add here so execute bit can be manipulated in staged
-    git ls-files "*.sh" | xargs --no-run-if-empty -d '\n' git update-index --add --chmod=+x
-    git ls-files "*.exe" | xargs --no-run-if-empty -d '\n' git update-index --add --chmod=+x
+    git reset -q --mixed ${repo_baseline_rev_tag_wcomponent_wstatus} > /dev/null 2>&1
 
     git checkout HEAD .gitignore
-    rm -f .gitmodules # make sure we have a clean start for every revision - do not use the .gitmodules as we also need to be able to remove some
+    rm -f .gitmodules
+    if [[ ! ${repo_submodules} == "" ]]; then
+        touch .gitmodules && git add ./.gitignore # make sure we have a clean start for every revision - do not use the .gitmodules as we also need to be able to remove some
+    fi
 
     local repo_subprojects4part=$(ccm query "is_member_of('${repo_name}~$(echo ${ccm_repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${project_instance}') and name!='${repo_name}' and type='project'" -u -f "%objectname" | sed -s 's/ /xxx/g')
     for repo_submodule4part in ${repo_subprojects4part}; do
+        set +x
         regex_4part='^(.+)~(.+):(.+):(.+)$'
         [[ ${repo_submodule4part} =~ ${regex_4part} ]] || exit 1
         local repo_submodule_name=${BASH_REMATCH[1]}
@@ -135,16 +128,19 @@ function convert_revision(){
         # Lookup the subproject if present
         repo_submodule=$(echo ${repo_submodules_map[${repo_submodule_name:-}]:-})
         if [[ "${repo_submodule}" == "" ]] ; then
-            echo "[INFO]: ${repo_submodule_rev} / ${repo_submodule} - The subproject not found in projects to add as submodules - skip"
+            echo "[INFO]: ${repo_submodule_name} - The subproject not found in projects to add as submodules - skip"
+            [[ ${debug:-} == "true" ]] && set -x
             cd ${root_dir}
             continue
         fi
-        echo "[INFO]: ${repo_submodule_rev} / ${repo_submodule} / ${repo_submodule_rev} / ${repo_submodule_inst:1} - use it"
+        echo "[INFO]: ${repo_submodule4part} - use it"
+        [[ ${debug:-} == "true" ]] && set -x
 
         case ${submodule_update_mode:-} in
             "update-index")
-                # Get the sha1 from a reference / tag or reference is sha1 as not provided
-                https_remote_submodule=$(echo ${https_remote} | sed -e "s/\/${repo_name}.git/\/${repo_submodule}.git/")
+                git add -A . # just add here so execute bit can be manipulated in staged
+               # Get the sha1 from a reference / tag or reference is sha1 as not provided
+                https_remote_submodule=$(echo ${https_remote} | sed -e "s/\/me_limited_submodules.git/\/${repo_submodule}.git/")
                 export repo_submodule_sha1=$(git ls-remote --tag ${https_remote_submodule} | grep -e "${repo_submodule}/.*/${repo_submodule_rev}_rel$" | awk -F" " '{print $1}')
                 # Look then for the "pub" tag
                 [[ ${repo_submodule_sha1} == "" ]] && export repo_submodule_sha1=$(git ls-remote --tag ${https_remote_submodule} | grep -e "${repo_submodule}/.*/${repo_submodule_rev}_pub$" | awk -F" " '{print $1}')
@@ -155,16 +151,17 @@ function convert_revision(){
 
                 echo "INFO: Setting submodule: ${repo_submodule} to ${repo_submodule_sha1}"
 
-                # Add the submodule
-                git config -f ./.gitmodules --add submodule.code-utils.path ${repo_submodule}
-                git config -f ./.gitmodules --add submodule.code-utils.url ../${repo_submodule}.git
-
-                # Remove the old dir in git index
-                if [[ ! $(git rm -rf ${repo_submodule}) ]]; then
-                    rm -rf ${repo_submodule}
+                echo "INFO: Remove the old dir in git index"
+                if [[ ! $(git rm -rf ${repo_submodule} > /dev/null 2>&1 ) ]]; then
+                  rm -rf ${repo_submodule}
                 fi
-                # set the sha1 as the reference of the submodule
-                git update-index --add --cacheinfo 160000,${repo_submodule_sha1},${repo_submodule}
+                echo "INFO: Add the submodule to .gitmodules"
+                git config -f ./.gitmodules --add submodule.${repo_submodule}.path ${repo_submodule}
+                git config -f ./.gitmodules --add submodule.${repo_submodule}.url ../${repo_submodule}.git
+                git add ./.gitmodules 
+
+                echo "INFO: set the sha1: ${repo_submodule_sha1} as the reference of the submodule: ${repo_submodule}"
+                git update-index --add --replace --cacheinfo "160000,${repo_submodule_sha1},${repo_submodule}"
                 if [[ ${push_tags_in_submodules} == "true" ]]; then
                     #TODO: if push of tags in submodules is desired
                     exit 1
@@ -173,58 +170,56 @@ function convert_revision(){
                         -s -u jdoe -X POST -H "Content-Type: application/json" \
                         -d '{ "name" : "new-tag-name", "target" : { "hash" : "a1b2c3d4e5f6" } }'
                 fi
-                exit 1
+                git status | grep "${repo_submodule}"
+                cat .gitmodules
                 ;;
             "directory")
+
+                if [[ ! $(git rm -rf ${repo_submodule}) ]]; then
+                    rm -rf ${repo_submodule}
+                    # This should really not be necessary # rm -rf .git/modules/${repo_submodule}
+                fi
+                if [[ ! $(git submodule update --init --recursive --force ${repo_submodule}) ]] ; then
+                     git rm -rf ${repo_submodule} --cached || echo "Good already  - never mind"
+                     rm -rf ${repo_submodule}
+                     git submodule add --force ../${repo_submodule}.git ${repo_submodule} || git submodule add --force ../${repo_submodule}.git ${repo_submodule} # try harder
+                     git submodule update --init --recursive --force ${repo_submodule}
+                fi
+                git add ./.gitmodules
+
+                cd ${repo_submodule}
+
                 # Look for the "rel" tag first
                 export repo_submodule_rev_wcomponent_wstatus=$(git tag | grep ${repo_submodule}/.*/${repo_submodule_rev}_rel$ || grep_exit=$? )
                 # Look then for the "pub" tag
                 [[ ${repo_submodule_rev_wcomponent_wstatus} == "" ]] && export repo_submodule_rev_wcomponent_wstatus=$(git tag | grep ${repo_submodule}/.*/${repo_submodule_rev}_pub$ || grep_exit=$? )
                 # Accept what is there of remaining
                 [[ ${repo_submodule_rev_wcomponent_wstatus} == "" ]] && export repo_submodule_rev_wcomponent_wstatus=$(git tag | grep ${repo_submodule}/.*/${repo_submodule_rev}_[dprtis][eueenq][lblsta]$ || grep_exit=$? )
-                
+
                 [[ ${repo_submodule_rev_wcomponent_wstatus} == "" ]] && exit 1
 
-                checkout_exit=0
-                git checkout HEAD ${repo_submodule} || checkout_exit=$?
-                if [[ ${checkout_exit} -ne 0 ]] ; then
-                    ls -la ${repo_submodule} || ls_la_exit=$? # just for info / debug
-                    if [[ ! $(git rm -rf ${repo_submodule}) ]]; then
-                        rm -rf ${repo_submodule}
-                        # This should really not be necessary # rm -rf .git/modules/${repo_submodule}
+                if [[ ${push_tags_in_submodules} == "true" ]]; then
+                    # root project tag handling
+                    if [[ ! `git describe ${repo_convert_rev_tag_wcomponent_wstatus}` ]] ; then
+                        # it was not found try and fetch to make 100% sure for whatever reason it is not here..
+                        git fetch --tags
                     fi
-                    git clean -xffd
-                    git checkout HEAD ${repo_submodule} || git submodule add --force ../${repo_submodule}.git ${repo_submodule} || git submodule add --force ../${repo_submodule}.git ${repo_submodule}
-                fi
-                git clean -xffd
-                if [[ ! $(git submodule update --init --recursive --force ${repo_submodule}) ]] ; then
-                     git rm -rf ${repo_submodule} --cached
-                     rm -rf ${repo_submodule}
-                     git submodule add --force ../${repo_submodule}.git ${repo_submodule} || git submodule add --force ../${repo_submodule}.git ${repo_submodule} # try harder
-                     git submodule update --init --recursive --force ${repo_submodule}
-                fi
-
-                cd ${repo_submodule}
-
-                if [[ ! `git describe ${repo_convert_rev_tag_wcomponent_wstatus}` ]] ; then
-                    # it was not found try and fetch to make 100% sure for whatever reason it is not here..
-                    git fetch --tags
-                fi
-                if [[ `git describe ${repo_convert_rev_tag_wcomponent_wstatus}` ]] ; then
-                    # we already have the correct tag, so just set it and move on..
-                    git reset --hard ${repo_convert_rev_tag_wcomponent_wstatus}
-                    git clean -xffd
-                    unset repo_submodule_rev
-                    unset repo_submodule_inst
-                    cd ${root_dir}
-                    continue
+                    if [[ `git describe ${repo_convert_rev_tag_wcomponent_wstatus}` ]] ; then
+                        # we already have the correct tag, so just set it and move on..
+                        git reset --hard ${repo_convert_rev_tag_wcomponent_wstatus}
+                        git clean -xffd
+                        unset repo_submodule_rev
+                        unset repo_submodule_inst
+                        cd ${root_dir}
+                        continue
+                    fi
                 fi
 
-                if [ `git describe ${repo_submodule_rev_wcomponent_wstatus}`  ] ; then
+                if [ `git describe "${repo_submodule_rev_wcomponent_wstatus}"`  ] ; then
                     # we do have the correct 'content' tag - reset hard to it and make sure we are clean..
                     git clean -xffd
                     git reset --hard HEAD
-                    git reset --hard ${repo_submodule_rev_wcomponent_wstatus}
+                    git reset --hard "${repo_submodule_rev_wcomponent_wstatus}"
                     git clean -xffd
                 else
                     # we do not have the 'content' tag available - investigate its root
@@ -233,9 +228,12 @@ function convert_revision(){
                     exit 1
                 fi
 
-                git tag -f -a -m "Please see tag in master repo for info: ${repo_convert_rev_tag_wcomponent_wstatus}" ${repo_convert_rev_tag_wcomponent_wstatus}
+                if [[ ${push_tags_in_submodules} == "true" ]]; then
+                    git tag -f -a -m "Please see tag in master repo for info: ${repo_convert_rev_tag_wcomponent_wstatus}" ${repo_convert_rev_tag_wcomponent_wstatus}
+                    git push origin --recurse-submodules=no -f ${repo_convert_rev_tag_wcomponent_wstatus}
+                fi
 
-                [[ ${push_remote:-} == "true" ]] && git push origin --recurse-submodules=no -f ${repo_convert_rev_tag_wcomponent_wstatus}
+                cd ${root_dir}
                 ;;
             *)
                 echo "[Submodule-mode] WHY are we here: submodule_update_mode is: ${submodule_update_mode} "
@@ -247,11 +245,21 @@ function convert_revision(){
         unset repo_submodule_rev_wcomponent_wstatus
         unset repo_submodule_inst
         unset repo_submodule
-        cd ${root_dir}
 
     done
     cd ${root_dir}
-    git add -A . >> /dev/null
+    git add -A . > /dev/null 2>&1
+    if [[ ! ${repo_submodules} == "" ]]; then
+        cat .gitmodules
+        git add .gitmodules
+        for repo_submodule_from_param in $(echo "${repo_submodules}"); do
+            git status | grep ${repo_submodule_from_param} || echo "${repo_submodule_from_param} - Not in use in this revision"
+        done
+        git add .gitmodules
+        git submodule status
+    fi
+    git ls-files "*.sh" | xargs --no-run-if-empty -d '\n' git update-index --add --chmod=+x
+    git ls-files "*.exe" | xargs --no-run-if-empty -d '\n' git update-index --add --chmod=+x
 
     export GIT_COMMITTER_DATE=$(git log -1 --format='%cd' ${repo_convert_rev_tag}) && [[ -z ${GIT_COMMITTER_DATE} ]] && return 1
     export GIT_COMMITTER_NAME=$(git log -1 --format='%cn' ${repo_convert_rev_tag} ) && [[ -z ${GIT_COMMITTER_NAME} ]] && return 1
@@ -263,6 +271,8 @@ function convert_revision(){
 
     echo "git commit content of ${repo_convert_rev_tag}"
     git commit -q -C ${repo_convert_rev_tag} --reset-author || ( echo "Empty commit.." )
+
+    git submodule status
 
     # reset the committer to get the correct set for the commiting the tag. There is no author of the tag
     export GIT_AUTHOR_DATE=$(git tag -l --format="%(taggerdate:iso8601)" ${repo_convert_rev_tag} | awk -F" " '{print $1 " " $2}') && [[ -z ${GIT_AUTHOR_DATE} ]] && return 1
@@ -350,9 +360,13 @@ else
     echo "Already cloned and initialized"
     echo "Reset all tags to remote"
     cd ${repo_name}
-    git tag | grep -v "^${repo_name}/init/init$" | grep "^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$" | xargs --no-run-if-empty git tag --delete
-    git fetch --tags
-    git fetch -ap
+    if [[ "${execute_mode}" == "restart" ]]; then
+        git tag | grep -v "^${repo_name}/init/init$" | grep "^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$" | xargs --no-run-if-empty git tag --delete
+        git fetch --tags
+        git fetch -ap
+    elif [[ "${execute_mode}" == "continue" ]];then
+        echo "Do not delete already converted tags and fetch again -  just continue in workspace as is"
+    fi
     pwd
 fi
 
