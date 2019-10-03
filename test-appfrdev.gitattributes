@@ -1,9 +1,16 @@
 *.{bz2,exe,vsd,Uml,doc,ide,zip,ico,bmp,opt,lib,tst,MDX,obj,DBF,exp,dbf,DBT,dll,log,EXE,pdf,lnk,reg,res,eap,ddp,mdb,gif,GIF,shs,pdn,txt,xls,bin,a,flash,CNV,sof,iso,7z,ttf,msi} filter=lfs diff=lfs merge=lfs -text
-**/nodetest/*/*_reference.asc filter=lfs diff=lfs merge=lfs text
-**/nodetest/*/reference.asc filter=lfs diff=lfs merge=lfs text
-**/nodetest/*/*_REF.asc filter=lfs diff=lfs merge=lfs text
-**/nodetest/*/*_ref.asc filter=lfs diff=lfs merge=lfs text
-**/nodetest/*/*_ref_egen3.asc filter=lfs diff=lfs merge=lfs text
+
+reference*.asc
+tachosys/tp/tpusim2/signal*.*
+tachosys/tp/tpusim2/signal*
+DPS/DPS/DPS_ReleaseTests/Acc/AddedResistanceFromWaves/*
+DPS/VD/TestTarget/PlotRefManouver.fig
+DPS/VD/TestTarget/PlotRefAccel.fig
+DPS/scr/simulation/scene2/simulation_results.pptx
+test/monitoring/statictical_deviation_monitoring/scene4_reducing_agent_cocos_data/LR_20181006_1600009_t.mat
+test/datalogger/tp/pcdemo_tcp/Manual@Test@of@Datalogger@together@with@MOP@screen.pdf
+test/datalogger/tp/pcdemo_tcp/Manual@Test@of@Datalogger@together@with@MOP@screen.pptx
+test/generate_MPC_MOP_files/correctly_generated_files_egen3/auto_generated_MOP_files/AlarmDescription.en.txt_raw.egen3.html
 
 cc1plus filter=lfs diff=lfs merge=lfs -text
 cc1 filter=lfs diff=lfs merge=lfs -text
