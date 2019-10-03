@@ -262,10 +262,9 @@ function convert_revision(){
     if [[ ! ${repo_submodules} == "" ]]; then
         cat .gitmodules
         git add .gitmodules
-        for repo_submodule_from_param in $(echo "${repo_submodules}"); do
-            git status | grep ${repo_submodule_from_param} || echo "${repo_submodule_from_param} - Not in use in this revision"
-        done
-        git add .gitmodules
+#        for repo_submodule_from_param in $(echo "${repo_submodules}"); do
+#            git status | grep ${repo_submodule_from_param} || echo "${repo_submodule_from_param} - Not in use in this revision"
+#        done
         git submodule status
     fi
     git ls-files "*.sh" | xargs --no-run-if-empty -d '\n' git update-index --add --chmod=+x
