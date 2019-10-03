@@ -19,6 +19,7 @@ export repo_submodules=${3}
 export gitrepo_project_original=${4}
 export project_instance=${5}
 export gitignore_file=${6} # FULL PATH
+export gitattributes_file=${7} # FULL PATH
 
 declare -A repo_submodules_map
 for repo_submodule_from_param in $(echo "${repo_submodules}"); do
@@ -113,6 +114,10 @@ function convert_revision(){
 
     git checkout HEAD .gitignore
     git add ./.gitignore
+
+    git checkout HEAD ./.gitattributes
+    git add ./.gitattributes
+
     rm -f .gitmodules
     if [[ ! ${repo_submodules} == "" ]]; then
         touch .gitmodules && git add ./.gitmodules # make sure we have a clean start for every revision - do not use the .gitmodules as we also need to be able to remove some
@@ -363,7 +368,12 @@ if [ ! -e ${repo_name} ] ; then
         fi
     fi
 
-    git status
+    if [[ -e "${gitattributes_file}" ]]; then
+        cp ${gitattributes_file} ./.gitattributes
+    else
+        echo "${gitattributes_file} does not exist.. skip"
+    fi
+
     git add -A .
     git status
 
@@ -382,6 +392,8 @@ if [ ! -e ${repo_name} ] ; then
         echo "execute_mode is: '${execute_mode}'"
         reset_converted_tags_remote_n_local
     fi
+    echo "Installing Git LFS for the repo"
+    git lfs install
     pwd # we are still in the root repo
 else
     echo "Already cloned and initialized"
