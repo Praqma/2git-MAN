@@ -115,8 +115,10 @@ function convert_revision(){
     git checkout HEAD .gitignore
     git add ./.gitignore
 
-    git checkout HEAD ./.gitattributes
-    git add ./.gitattributes
+    if [[ "${gitattributes_in_use}" == "true" ]] ; then
+        git checkout HEAD ./.gitattributes
+        git add ./.gitattributes
+    fi
 
     rm -f .gitmodules
     if [[ ! ${repo_submodules} == "" ]]; then
@@ -259,14 +261,9 @@ function convert_revision(){
     done
     cd ${root_dir}
     git add -A . > /dev/null 2>&1
-    if [[ ! ${repo_submodules} == "" ]]; then
-        cat .gitmodules
-        git add .gitmodules
-#        for repo_submodule_from_param in $(echo "${repo_submodules}"); do
-#            git status | grep ${repo_submodule_from_param} || echo "${repo_submodule_from_param} - Not in use in this revision"
-#        done
-        git submodule status
-    fi
+
+    [[ ! ${repo_submodules} == "" ]] && cat .gitmodules && git add .gitmodules
+
     git ls-files "*.sh" | xargs --no-run-if-empty -d '\n' git update-index --add --chmod=+x
     git ls-files "*.exe" | xargs --no-run-if-empty -d '\n' git update-index --add --chmod=+x
     git add -A .
@@ -283,6 +280,8 @@ function convert_revision(){
     git commit -q -C ${repo_convert_rev_tag} --reset-author || ( echo "Empty commit.." )
 
     git submodule status
+
+    [[ -e .git/lfs ]] && du -sh .git/lfs
 
     # reset the committer to get the correct set for the commiting the tag. There is no author of the tag
     export GIT_AUTHOR_DATE=$(git tag -l --format="%(taggerdate:iso8601)" ${repo_convert_rev_tag} | awk -F" " '{print $1 " " $2}') && [[ -z ${GIT_AUTHOR_DATE} ]] && return 1
@@ -367,8 +366,10 @@ if [ ! -e ${repo_name} ] ; then
         fi
     fi
 
+    export gitattributes_in_use="false"
     if [[ -e "${gitattributes_file}" ]]; then
         cp ${gitattributes_file} ./.gitattributes
+        export gitattributes_in_use="true"
     else
         echo "${gitattributes_file} does not exist.. skip"
     fi
@@ -411,6 +412,10 @@ else
         git fetch --tags --force
         git fetch -ap
         reset_converted_tags_remote_n_local
+    fi
+    export gitattributes_in_use="false"
+    if [[ -e "${gitattributes_file}" ]]; then
+        export gitattributes_in_use="true"
     fi
 fi
 
