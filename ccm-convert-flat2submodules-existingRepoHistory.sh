@@ -353,7 +353,7 @@ if [ ! -e ${repo_name} ] ; then
     export GIT_COMMITTER_DATE=${GIT_AUTHOR_DATE}
 
     if [[ "${gitignore_file}" != "x" ]]; then
-        if [[ ! -e ${gitignore_file} ]]; then
+        if [[ ! -f ${gitignore_file} ]]; then
             echo "${gitignore_file} does not exist.. Current dir:"
             pwd
             echo " .. Consider full path.."
@@ -361,13 +361,13 @@ if [ ! -e ${repo_name} ] ; then
         fi
     fi
     if [[ "${gitignore_file}x" != "x" ]]; then
-        if [[ -e ${gitignore_file} ]]; then
+        if [[ -f ${gitignore_file} ]]; then
             cp ${gitignore_file} ./.gitignore
         fi
     fi
 
     export gitattributes_in_use="false"
-    if [[ -e "${gitattributes_file}" ]]; then
+    if [[ -f "${gitattributes_file}" ]]; then
         cp ${gitattributes_file} ./.gitattributes
         export gitattributes_in_use="true"
     else
@@ -414,7 +414,7 @@ else
         reset_converted_tags_remote_n_local
     fi
     export gitattributes_in_use="false"
-    if [[ -e "${gitattributes_file}" ]]; then
+    if [[ -f "${gitattributes_file}" ]]; then
         export gitattributes_in_use="true"
     fi
 fi
