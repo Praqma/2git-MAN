@@ -218,7 +218,7 @@ function convert_revision(){
                     fi
                     if [[ `git describe ${repo_convert_rev_tag_wcomponent_wstatus}` ]] ; then
                         # we already have the correct tag, so just set it and move on..
-                        git reset --hard ${repo_convert_rev_tag_wcomponent_wstatus}
+                        git reset -q --hard ${repo_convert_rev_tag_wcomponent_wstatus}
                         git clean -xffd
                         unset repo_submodule_rev
                         unset repo_submodule_inst
@@ -230,8 +230,8 @@ function convert_revision(){
                 if [ `git describe "${repo_submodule_rev_wcomponent_wstatus}"`  ] ; then
                     # we do have the correct 'content' tag - reset hard to it and make sure we are clean..
                     git clean -xffd
-                    git reset --hard HEAD
-                    git reset --hard "${repo_submodule_rev_wcomponent_wstatus}"
+                    git reset -q --hard HEAD
+                    git reset -q --hard "${repo_submodule_rev_wcomponent_wstatus}"
                     git clean -xffd
                 else
                     # we do not have the 'content' tag available - investigate its root
