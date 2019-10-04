@@ -21,7 +21,8 @@ find_project_baseline_to_convert(){
         query="has_baseline_project(name match '${proj_name}*' and version='${proj_version}' and type='project' and instance='${proj_instance}') and ( status='integrate' or status='test' or status='sqa' or status='released' )"
     else
         ccm_proj_obj_string=`printf "${CURRENT_PROJECT}" | sed -e 's/xxx/ /g'`
-        query="has_baseline_project('${ccm_proj_obj_string}') and ( status='integrate' or status='test' or status='sqa' or status='released' )"
+        proj_name=`printf "${CURRENT_PROJECT}" | sed -e 's/xxx/ /g' | awk -F"~|:" '{print $1}'`
+        query="has_baseline_project('${ccm_proj_obj_string}') and project='$proj_name'  and ( status='integrate' or status='test' or status='sqa' or status='released' )"
     fi
 
     # All status versions
