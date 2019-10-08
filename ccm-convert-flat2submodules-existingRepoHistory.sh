@@ -31,7 +31,10 @@ unset repo_submodule_from_map
 
 #export project_revisions=`cat ${1}`
 
-export git_remote_repo=ssh://git@${git_server_path}/${repo_name}.git
+export git_ssh_remote=ssh://git@${git_server_path}/${repo_name}.git
+export git_https_remote=$(echo ${git_ssh_remote} | sed -e 's/ssh:\/\/git@/https:\/\//' -e 's/7999/7990\/scm/')
+export git_remote_to_use=${git_ssh_remote}
+echo "Use remote : ${git_remote_to_use}"
 
 function convert_revision(){
     local root_dir=$(pwd)
@@ -149,7 +152,7 @@ function convert_revision(){
             "update-index")
                 git add -A . # just add here so execute bit can be manipulated in staged
                # Get the sha1 from a reference / tag or reference is sha1 as not provided
-                https_remote_submodule=$(echo ${https_remote} | sed -e "s/\/me_limited_submodules.git/\/${repo_submodule}.git/")
+                https_remote_submodule=$(echo ${git_remote_to_use} | sed -e "s/\/me_limited_submodules.git/\/${repo_submodule}.git/")
                 export repo_submodule_sha1=$(git ls-remote --tag ${https_remote_submodule} | grep -e "${repo_submodule}/.*/${repo_submodule_rev}_rel$" | awk -F" " '{print $1}')
                 # Look then for the "pub" tag
                 [[ ${repo_submodule_sha1} == "" ]] && export repo_submodule_sha1=$(git ls-remote --tag ${https_remote_submodule} | grep -e "${repo_submodule}/.*/${repo_submodule_rev}_pub$" | awk -F" " '{print $1}')
@@ -242,7 +245,7 @@ function convert_revision(){
 
                 if [[ ${push_tags_in_submodules} == "true" ]]; then
                     git tag -f -a -m "Please see tag in master repo for info: ${repo_convert_rev_tag_wcomponent_wstatus}" ${repo_convert_rev_tag_wcomponent_wstatus}
-                    git push origin --recurse-submodules=no -f ${repo_convert_rev_tag_wcomponent_wstatus}
+                    git push ${git_remote_to_use} --recurse-submodules=no -f ${repo_convert_rev_tag_wcomponent_wstatus}
                 fi
 
                 cd ${root_dir}
@@ -342,7 +345,7 @@ function reset_converted_tags_remote_n_local() {
 
 #initialize repo
 if [ ! -e ${repo_name} ] ; then
-    git clone -b master ${git_remote_repo}
+    git clone -b master ${git_remote_to_use}
     cd ${repo_name}
     git branch -a
     git tag
@@ -394,6 +397,8 @@ if [ ! -e ${repo_name} ] ; then
     fi
     echo "Installing Git LFS for the repo"
     git lfs install
+    git config --add --local 'lfs.locksverify' false
+    git config --add --local lfs.contenttype 0
     pwd # we are still in the root repo
 else
     echo "Already cloned and initialized"
@@ -417,10 +422,11 @@ else
     if [[ -f "${gitattributes_file}" ]]; then
         export gitattributes_in_use="true"
     fi
+    echo "Installing Git LFS for the repo"
+    git lfs install
+    git config --add --local 'lfs.locksverify' false
+    git config --add --local lfs.contenttype 0
 fi
-
-export https_remote=$(git config --get remote.origin.url | sed -e 's/ssh:\/\/git@/https:\/\//' -e 's/7999/7990\/scm/')
-echo "Calculating https remote from ssh origin: ${https_remote}"
 
 for sha1 in $(git log --topo-order --oneline --all --pretty=format:"%H " | tac) ; do
     echo "Processing: $sha1"
