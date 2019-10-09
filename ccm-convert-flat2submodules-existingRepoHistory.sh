@@ -33,7 +33,7 @@ unset repo_submodule_from_map
 
 export git_ssh_remote=ssh://git@${git_server_path}/${repo_name}.git
 export git_https_remote=$(echo ${git_ssh_remote} | sed -e 's/ssh:\/\/git@/https:\/\//' -e 's/7999/7990\/scm/')
-export git_remote_to_use=${git_ssh_remote}
+export git_remote_to_use=${git_https_remote}
 echo "Use remote : ${git_remote_to_use}"
 
 function convert_revision(){
