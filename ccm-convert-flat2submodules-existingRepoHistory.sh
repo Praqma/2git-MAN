@@ -103,7 +103,9 @@ function convert_revision(){
         pwd
         git clean -xffd || git clean -xffd || git clean -xffd # It can happen that the first clean fails, but more tries can fix it
         for path_failed_to_remove in $(git reset -q --hard ${repo_convert_rev_tag} 2>&1 | awk -F "'" '{print $2}'); do
-            git rm -rf ${path_failed_to_remove}  > /dev/null 2>&1  || rm -rf ${path_failed_to_remove}
+            echo "Reset/remove submodule and it's path: ${path_failed_to_remove}"
+            git rm -rf --cached ${path_failed_to_remove}  > /dev/null 2>&1  || echo "never mind"
+            rm -rf ${path_failed_to_remove}
         done
     else
         # we do not have the 'content' tag available - investigate its history if it exists ( e.g. missing in repo )
