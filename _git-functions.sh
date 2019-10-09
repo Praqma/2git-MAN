@@ -48,3 +48,14 @@ function git_resolve_tags_wstatus() {
             return 0
         fi
 }
+
+function git_initialize_lfs_n_settings() {
+    echo "Installing Git LFS for the repo"
+    git lfs install
+    if [[ ! $( git config --get lfs.locksverify ) ]] ; then
+        git config --add --local 'lfs.locksverify' false
+    fi
+    if [[ ! $( git config --get lfs.contenttype ) ]] ; then
+        git config --add --local lfs.contenttype 0
+    fi
+}

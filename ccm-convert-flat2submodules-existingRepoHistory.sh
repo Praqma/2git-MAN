@@ -284,7 +284,7 @@ function convert_revision(){
     echo "git commit content of ${repo_convert_rev_tag}"
     git commit -q -C ${repo_convert_rev_tag} --reset-author || ( echo "Empty commit.." )
 
-    git submodule status
+    git submodule status || git status
 
     [[ -e .git/lfs ]] && du -sh .git/lfs
 
@@ -397,10 +397,7 @@ if [ ! -e ${repo_name} ] ; then
         echo "execute_mode is: '${execute_mode}'"
         reset_converted_tags_remote_n_local
     fi
-    echo "Installing Git LFS for the repo"
-    git lfs install
-    git config --add --local 'lfs.locksverify' false
-    git config --add --local lfs.contenttype 0
+    git_initialize_lfs_n_settings
     pwd # we are still in the root repo
 else
     echo "Already cloned and initialized"
@@ -424,10 +421,7 @@ else
     if [[ -f "${gitattributes_file}" ]]; then
         export gitattributes_in_use="true"
     fi
-    echo "Installing Git LFS for the repo"
-    git lfs install
-    git config --add --local 'lfs.locksverify' false
-    git config --add --local lfs.contenttype 0
+    git_initialize_lfs_n_settings
 fi
 
 for sha1 in $(git log --topo-order --oneline --all --pretty=format:"%H " | tac) ; do
