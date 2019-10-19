@@ -21,7 +21,7 @@ export repo_submodules=${3}
 export gitrepo_project_original=${4}
 export project_instance=${5}
 export gitignore_path_n_files=${6} # <relative_path>:<gitignore_file>@<relative_path>:<gitignore_file>..
-export gitattributes_file=${7} # FULL PATH
+export gitattributes_path_n_files=${7} # <relative_path>:<gitattributes_file>@<relative_path>:<gitattributes_file>..
 
 declare -A repo_submodules_map
 for repo_submodule_from_param in $(echo "${repo_submodules}"); do
@@ -124,8 +124,6 @@ function convert_revision(){
         git checkout ${repo_name}/init/init $file
         git add ${file}
     done
-
-    exit
 
     rm -f .gitmodules
     if [[ ! ${repo_submodules} == "" ]]; then
@@ -374,11 +372,17 @@ if [ ! -e ${repo_name} ] ; then
         fi
     done
 
-    if [[ -f "${execution_root_directory}/${gitattributes_file}" ]]; then
-        cp ${execution_root_directory}/${gitattributes_file} ./.gitattributes
-    else
-        echo "${execution_root_directory}/${gitattributes_file} does not exist.. skip"
-    fi
+    for gitattributes_path_n_file in $(echo ${gitattributes_path_n_files} | sed -e 's/:/ /g'); do
+        gitattributes_rel_path=`echo ${gitattributes_path_n_file} | cut -d "@" -f 1`
+        gitattributes_file_name=`echo ${gitattributes_path_n_file} | cut -d "@" -f 2`
+        gitattributes_full_path_name="${execution_root_directory}/${gitattributes_file_name}"
+        if [[ ! -f ${gitattributes_full_path_name} ]]; then
+            echo "${gitattributes_full_path_name} does not exist.. - skip"
+        else
+            mkdir -p ${gitattributes_rel_path}
+            cp ${gitattributes_full_path_name} ${gitattributes_rel_path}/.gitattributes
+        fi
+    done
 
     git add -A .
     git status
