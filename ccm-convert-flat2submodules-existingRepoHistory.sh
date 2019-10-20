@@ -21,7 +21,7 @@ export repo_submodules=${3}
 export gitrepo_project_original=${4}
 export project_instance=${5}
 export gitignore_path_n_files=${6} # <relative_path>:<gitignore_file>@<relative_path>:<gitignore_file>..
-export gitattributes_path_n_files=${7} # <relative_path>:<gitattributes_file>@<relative_path>:<gitattributes_file>..
+export gitattributes_path_n_files=${7:-} # <relative_path>:<gitattributes_file>@<relative_path>:<gitattributes_file>..
 
 declare -A repo_submodules_map
 for repo_submodule_from_param in $(echo "${repo_submodules}"); do
