@@ -81,16 +81,16 @@ class MetaBaseline extends Extraction {
         }
         // get the owner of the project revision
         cmd_line = ["ccm", "attr", "-show", "owner", "${project_revision_with_spaces}"]
-        println "'" + cmd_line + "'"
+        log.info "'" + cmd_line + "'"
         cmd = cmd_line.execute(envVars,new File(workspace))
         cmd.waitForProcessOutput(sout, serr)
         exitValue = cmd.exitValue()
-        println "Exit code: " + exitValue
-        println "Standard out:"
-        println "'" + sout.toString().trim() + "'"
+        log.info "Exit code: " + exitValue
+        log.info "Standard out:"
+        log.info "'" + sout.toString().trim() + "'"
         if ( exitValue ){
-            println "Standard error:"
-            println "'" + serr + "'"
+            log.info "Standard error:"
+            log.info "'" + serr + "'"
             throw new Exception("Get owner gave an non-0 exit code" )
         }
         result['snapshotOwner'] = sout.toString().trim()
@@ -98,11 +98,7 @@ class MetaBaseline extends Extraction {
         serr = new StringBuilder()
 
         // Get the baseline date from project
-         cmd_line = "bash " +
-                System.getProperty("user.dir") + File.separator + "ccm-get-create-time-of-project.sh " +
-                "$snapshotName " +
-                "$snapshotRevision " +
-                "$snapshotInstance"
+        cmd_line = ["ccm", "properties", "-f", "\"%{create_time[dateformat='yyyy-MM-dd HH:MM:SS']}\"", "${project_revision_with_spaces}"]
         log.info "'" + cmd_line + "'"
         cmd = cmd_line.execute(envVars,new File(workspace))
         cmd.waitForProcessOutput(sout, serr)
@@ -112,13 +108,13 @@ class MetaBaseline extends Extraction {
             log.error "Standard error:"
             log.error "'" + serr + "'"
             log.error "Exit code: " + exitValue
-            throw new Exception(cmd_line + ": gave an non-0 exit code" )
+            throw new Exception(cmd_line.toString() + ": gave an non-0 exit code" )
         }
         if ( serr.toString().readLines().size() > 0 ){
             log.error "Standard error:"
             log.error "'" + serr + "'"
             log.error "Exit code: " + exitValue
-            throw new Exception(cmd_line + ": standard error contains text lines: " + serr.toString().readLines().size() )
+            throw new Exception(cmd_line.toString() + ": standard error contains text lines: " + serr.toString().readLines().size() )
         }
         result['snapshot_commiter_date'] = sout.toString().trim()
         sout = new StringBuilder()

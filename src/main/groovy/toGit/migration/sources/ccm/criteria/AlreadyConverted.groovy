@@ -52,13 +52,13 @@ class AlreadyConverted extends Criteria {
         def convert = true
         tags.each { tag ->
             if ( tag ==~ /$tag_regex/ ) {
-                println("Already converted - skip: " + snapshot.identifier + " ~ " + tag_regex )
+                log.info ("Already converted - skip: " + snapshot.identifier + " ~ " + tag_regex )
                 convert = false
                 return
             }
         }
         if ( convert ) {
-            println ("Not converted - do it: " + snapshot.identifier + " ~ " + tag_regex )
+            log.info ("Not converted - do it: " + snapshot.identifier + " ~ " + tag_regex )
         }
         return convert
     }

@@ -5,8 +5,8 @@ set -e
 set -u
 
 # Load functions
-source ${BASH_SOURCE%/*}/_ccm-functions.sh || source ./_ccm-functions.sh
-source ${BASH_SOURCE%/*}/_git-functions.sh || source ./_git-functions.sh
+source $(dirname $0)/_ccm-functions.sh || source ./_ccm-functions.sh
+source $(dirname $0)/_git-functions.sh || source ./_git-functions.sh
 
 execution_root_directory=$(pwd)
 

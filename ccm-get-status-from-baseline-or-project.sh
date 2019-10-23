@@ -3,7 +3,7 @@ set -u
 set -e
 
 # Load functions
-source ${BASH_SOURCE%/*}/_ccm-functions.sh || source ./_ccm-functions.sh
+source $(dirname $0)/_ccm-functions.sh || source ./_ccm-functions.sh
 
 ccm_project_name=$1
 repo_convert_rev_tag=$2

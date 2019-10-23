@@ -2,6 +2,10 @@ package examples
 
 /* vim: set syntax=groovy:set et:set tabstop=4: */
 
+import org.slf4j.LoggerFactory
+
+final log = LoggerFactory.getLogger(this.class)
+
 def ccm_delimiter='~'
 
 def ccm_project
@@ -120,7 +124,7 @@ migrate {
                 cmd 'git reset --hard $baselineRevision_wstatus', target.workspace
 
                 custom {
-                    println "Removing files except .git folder in: $target.workspace"
+                    log.info "Removing files except .git folder in: $target.workspace"
                     new File(target.workspace).eachFile { file ->
                         if(!file.name.startsWith(".git")) {
                             if (!file.isDirectory()) {
@@ -132,7 +136,7 @@ migrate {
                             }
                         }
                     }
-                    println "Remaining files except .git folder in: $target.workspace"
+                    log.info "Remaining files except .git folder in: $target.workspace"
                     new File(target.workspace).eachFile { file ->
                         if(!file.name.startsWith(".git")) println file.getName()
                     }
@@ -142,7 +146,7 @@ migrate {
                 copy("$source.workspace/code/\${snapshotName}~\${snapshotRevision}/\$snapshotName", target.workspace)
 
                 custom {
-                    println "First level files in: $target.workspace"
+                    log.info "First level files in: $target.workspace"
                     new File(target.workspace).eachFile { file ->
                         if(!file.name.startsWith(".git")) println file.getName()
                     }
@@ -161,15 +165,13 @@ migrate {
                         }
                     }
                     def cmd_line = ['git', 'commit', '--file', "../commit_meta_data.txt" ]
-                    println cmd_line
-
-
+                    log.info cmd_line.toString()
 
                     def email_domain = '@man-es.com'
                     def envVars = System.getenv().collect { k, v -> "$k=$v" }
                     envVars.add('GIT_COMMITTER_DATE=' + project.snapshot_commiter_date)
                     envVars.add('GIT_AUTHOR_DATE=' + project.snapshot_commiter_date)
-                    println("project.snapshotOwner:" + project.snapshotOwner)
+                    log.info("project.snapshotOwner: " + project.snapshotOwner)
                     if ( project.snapshotOwner != null ){
                         envVars.add('GIT_AUTHOR_NAME=' + project.snapshotOwner )
                         envVars.add('GIT_AUTHOR_EMAIL=' + project.snapshotOwner + email_domain)
@@ -177,24 +179,27 @@ migrate {
                     def cmd = cmd_line.execute(envVars, new File(target.workspace))
                     cmd.waitForProcessOutput(sout, serr)
                     def exitValue = cmd.exitValue()
-                    println "Standard out:"
-                    println "'" + sout + "'"
-                    println "Standard error:"
-                    println "'" + serr + "'"
-                    println "Exit code: " + exitValue
+                    log.info "Standard out:"
+                    log.info "'" + sout.toString() + "'"
 
                     if (exitValue) {
                         if ( ! sout.contains('nothing to commit, working tree clean') ){
+                            println "Standard error:"
+                            log.info "'" + serr.toString() + "'"
+                            log.info "Exit code: " + exitValue
                             throw new Exception(cmd_line + ": gave exit code: $exitValue")
                         } else {
-                            println "Nothing commit - skip, but still tag"
+                            log.info "Nothing commit - skip, but still tag"
                         }
                         if (serr.toString().readLines().size() > 0) {
+                            println "Standard error:"
+                            log.info "'" + serr.toString() + "'"
+                            log.info "Exit code: " + exitValue
                             throw new Exception(cmd_line + ": standard error contains text lines: " + serr.toString().readLines().size())
                         }
                     }
                     if (serr.toString().readLines().size() > 0) {
-                        println (cmd_line + ": standard error contains text lines: " + serr.toString().readLines().size())
+                        log.info (cmd_line + ": standard error contains text lines: " + serr.toString().readLines().size())
                     }
                 }
 
@@ -209,13 +214,13 @@ migrate {
                 custom { project ->
                     def sout = new StringBuilder(), serr = new StringBuilder()
                     def cmd_line = "git tag -F ../tag_meta_data.txt " + project.snapshotRevision + "_" + project.snapshot_status
-                    println cmd_line
+                    log.info cmd_line
 
                     def email_domain = '@man-es.com'
                     def envVars = System.getenv().collect { k, v -> "$k=$v" }
                     envVars.add('GIT_COMMITTER_DATE=' + project.snapshot_commiter_date)
                     envVars.add('GIT_AUTHOR_DATE=' + project.snapshot_commiter_date)
-                    println("project.snapshotOwner:" + project.snapshotOwner)
+                    log.info("project.snapshotOwner: " + project.snapshotOwner)
                     if ( project.snapshotOwner != null ){
                         envVars.add('GIT_COMMITTER_NAME=' + project.snapshotOwner )
                         envVars.add('GIT_COMMITTER_EMAIL=' + project.snapshotOwner + email_domain)
@@ -223,15 +228,18 @@ migrate {
                     def cmd = cmd_line.execute(envVars,new File(target.workspace))
                     cmd.waitForProcessOutput(sout, serr)
                     def exitValue = cmd.exitValue()
-                    println "Standard out:"
-                    println "'" + sout + "'"
-                    println "Standard error:"
-                    println "'" + serr + "'"
-                    println "Exit code: " + exitValue
+                    log.info "Standard out:"
+                    println "'" + sout.toString() + "'"
                     if ( exitValue ){
+                        log.info "Standard error:"
+                        println "'" + serr.toString() + "'"
+                        log.info "Exit code: " + exitValue
                         throw new Exception(cmd_line + ": gave exit code: $exitValue" )
                     }
                     if ( serr.toString().readLines().size() > 0 ){
+                        log.info "Standard error:"
+                        println "'" + serr.toString() + "'"
+                        log.info "Exit code: " + exitValue
                         throw new Exception(cmd_line + ": standard error contains text lines: " + serr.toString().readLines().size() )
                     }
                 }

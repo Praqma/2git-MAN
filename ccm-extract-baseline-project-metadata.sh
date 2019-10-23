@@ -5,7 +5,7 @@ set -u
 [[ "${debug:-}" == "true" ]] && set -x
 
 # Load functions
-source ${BASH_SOURCE%/*}/_ccm-functions.sh || source ./_ccm-functions.sh
+source $(dirname $0)/_ccm-functions.sh || source ./_ccm-functions.sh
 
 ccm_project_name=$1
 repo_convert_rev_tag=$2
@@ -94,13 +94,14 @@ if [[ "${exit_code}" != "0" ]] ; then
 fi
 
 if [[ "${ccm_baseline_obj:-}" != "" ]]; then
-    printf "Project: ${ccm_project_name}~${repo_convert_rev_tag}:project:${repo_convert_instance} <-> Baseline object: ${ccm_baseline_obj}\n\n"                 >> ${output_file}
+    objectname=$(echo "${ccm_project_name}~${repo_convert_rev_tag}:project:${repo_convert_instance}" | sed -e 's/xxx/ /g')
+    printf "Project: ${objectname} <-> Baseline object: ${ccm_baseline_obj}\n\n"                 >> ${output_file}
     ccm baseline -show info "${ccm_baseline_obj}" -f " Build: %build\n Description: %description\n Release: %release\n Purpose: %purpose\n"                     >> ${output_file}
 
     ccm baseline -show projects "${ccm_baseline_obj}" -f "%objectname %release %owner %{create_time[dateformat='yyyy-MM-dd HH:MM:SS']} Baseline: -> %baseline"  >> ${output_file}
 
     printf "\nAll baseline objects related to project: ${ccm_project_name}~${repo_convert_rev_tag}:project:${repo_convert_instance}\n"                           >> ${output_file}
-    ccm query "has_project_in_baseline('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${repo_convert_instance}')" \
+    ccm query "has_project_in_baseline('${objectname}')" \
                                                                                                         -sby create_time -f "%objectname %release %create_time" >> ${output_file}
     echo >> ${output_file}
 
@@ -172,26 +173,28 @@ if [[ "${ccm_baseline_obj:-}" != "" ]]; then
 
 else
     [[ "${require_baseline_object}" == "true" ]] && ( echo "ERROR: It is expected to have a baseline object due to configuration: require_baseline_object=true for this database: ${ccm_current_db}" && exit 2 )
-    printf "Project: ${ccm_project_name}~${repo_convert_rev_tag}:project:${repo_convert_instance} <-> Baseline object: NONE\n\n"                                >> ${output_file}
+    objectname=$(echo "${ccm_project_name}~${repo_convert_rev_tag}:project:${repo_convert_instance}" | sed -e 's/xxx/ /g')
+
+    printf "Project: ${objectname} <-> Baseline object: NONE\n\n"                                >> ${output_file}
 
     echo "Project baseline:"                                         >> ${output_file}
-    ccm query "is_baseline_project_of('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${repo_convert_instance}')" -f "%displayname"  >> ${output_file} || echo "  <none>" >> ${output_file}
+    ccm query "is_baseline_project_of('${objectname}')" -f "%displayname"  >> ${output_file} || echo "  <none>" >> ${output_file}
     echo >> ${output_file}
 
     echo "${epic_level_header}:"                                     >> ${output_file}
-    ccm query "has_${epic_level_epic2story_relation}(has_associated_task(is_task_in_folder_of(is_folder_in_rp_of('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${repo_convert_instance}'))))" -f "${jira_project_key}-%problem_number %resolver %release %problem_synopsis" >> ${output_file}  || echo "<none>" >> ${output_file}
+    ccm query "has_${epic_level_epic2story_relation}(has_associated_task(is_task_in_folder_of(is_folder_in_rp_of('${objectname}'))))" -f "${jira_project_key}-%problem_number %resolver %release %problem_synopsis" >> ${output_file}  || echo "<none>" >> ${output_file}
 
     echo >> ${output_file}
 
     echo "Related/Integrated ${story_level_header}:"   >> ${output_file}
-    ccm query "has_associated_task(is_task_in_folder_of(is_folder_in_rp_of('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${repo_convert_instance}')))" -f "${jira_project_key}-%problem_number%resolver %release %problem_synopsis"  >> ${output_file}  || echo "<none>" >> ${output_file}
+    ccm query "has_associated_task(is_task_in_folder_of(is_folder_in_rp_of('${objectname}')))" -f "${jira_project_key}-%problem_number%resolver %release %problem_synopsis"  >> ${output_file}  || echo "<none>" >> ${output_file}
 
     echo >> ${output_file}
     echo "Tasks integrated in project:"                              >> ${output_file}
-    ccm query "is_task_in_folder_of(is_folder_in_rp_of('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${repo_convert_instance}'))" -f "%displayname %{create_time[dateformat='yyyy-M-dd HH:MM:SS']} %resolver %status %release %task_synopsis"  >> ${output_file} || echo "<none>" >> ${output_file}
+    ccm query "is_task_in_folder_of(is_folder_in_rp_of('${objectname}'))" -f "%displayname %{create_time[dateformat='yyyy-M-dd HH:MM:SS']} %resolver %status %release %task_synopsis"  >> ${output_file} || echo "<none>" >> ${output_file}
     IFS=$'\n\r'
     loop_number=1
-    for task_number_attrs in $(ccm query "status!='task_automatic' and (is_task_in_folder_of(is_folder_in_rp_of('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${repo_convert_instance}')) or is_task_in_rp_of('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${repo_convert_instance}'))" -u -f "%objectname@@@%task_number@@@%{create_time[dateformat='yyyy-MM-dd HH:MM:SS']}@@@%resolver@@@%status@@@%release" | tail -n +2) ; do
+    for task_number_attrs in $(ccm query "status!='task_automatic' and (is_task_in_folder_of(is_folder_in_rp_of('${objectname}')) or is_task_in_rp_of('${objectname}'))" -u -f "%objectname@@@%task_number@@@%{create_time[dateformat='yyyy-MM-dd HH:MM:SS']}@@@%resolver@@@%status@@@%release" | tail -n +2) ; do
         handle_task_attrs "$task_number_attrs"
         loop_number=$((loop_number + 1))
     done
@@ -200,7 +203,7 @@ else
     if [[ ${extract_data_ccm_task_verbosed_level:-} == "true" ]]; then
         echo >> ${output_file}
         echo "Tasks integrated in baseline and/or project (verbosed):"                   >> ${output_file}
-        integrated_tasks=$(ccm query "status!='task_automatic' and (is_task_in_folder_of(is_folder_in_rp_of('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${repo_convert_instance}')) or is_task_in_rp_of('${ccm_project_name}~$(echo ${repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${repo_convert_instance}'))" || ( [[ $? == 6 ]] && echo "none" ))
+        integrated_tasks=$(ccm query "status!='task_automatic' and (is_task_in_folder_of(is_folder_in_rp_of('${objectname}')) or is_task_in_rp_of('${objectname}'))" || ( [[ $? == 6 ]] && echo "none" ))
         if [[ ${integrated_tasks} == "none" ]]; then
             echo "<none>"           >> ${output_file}
         else

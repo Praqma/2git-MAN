@@ -12,7 +12,7 @@ function find_n_set_baseline_obj_attrs_from_project(){
     proj_name=${BASH_REMATCH[1]}
     proj_version=${BASH_REMATCH[2]}
     proj_instance=${BASH_REMATCH[4]}
-    project_release=$(ccm query "name='${proj_name}' and version='$(echo ${proj_version} | sed -e 's/xxx/ /g')' and type='project'" -u -f "%release") || return $?
+    project_release=$(ccm properties -f "%release" "${ccm_proj_obj_string}") || return $?
 
     # Find the baseline object of the project with the same release as the project itself
     ccm_baseline_obj_and_status_release_this=$(ccm query "has_project_in_baseline('${ccm_proj_obj_string}') and release='${project_release}'" -sby create_time -u -f "%objectname@@@%status@@@%release" | head -1 )

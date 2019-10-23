@@ -8,7 +8,7 @@ BASELINE_PROJECT="$1"
 use_wildcard="" # *
 
 # Load functions
-source ${BASH_SOURCE%/*}/_ccm-functions.sh || source ./_ccm-functions.sh
+source $(dirname $0)/_ccm-functions.sh || source ./_ccm-functions.sh
 
 find_project_baseline_to_convert(){
     local CURRENT_PROJECT=$1
