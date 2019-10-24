@@ -286,7 +286,15 @@ function convert_revision(){
 
     git submodule status || git status
 
-    [[ -e .git/lfs ]] && du -sh .git/lfs
+    set +x
+    echo "#####################"
+    echo "# git sizes:"
+    echo "#####################"
+    [[ -d .git/lfs ]] && printf "INFO: size: %s %s\n" $(du -sh .git/lfs)
+    [[ -d .git/objects ]] && printf "INFO: size: %s %s\n" $(du -sh .git/objects)
+    [[ -d .git/modules ]] && printf "INFO: size: %s %s\n" $(du -sh .git/modules)
+    echo "#####################"
+    [[ ${debug:-} == "true" ]] && set -x
 
     # reset the committer to get the correct set for the commiting the tag. There is no author of the tag
     export GIT_AUTHOR_DATE=$(git tag -l --format="%(taggerdate:iso8601)" ${repo_convert_rev_tag} | awk -F" " '{print $1 " " $2}') && [[ -z ${GIT_AUTHOR_DATE} ]] && return 1
@@ -345,9 +353,13 @@ function reset_converted_tags_remote_n_local() {
     git tag | grep -v "^${repo_name}/init/init$" | grep "^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$" | xargs --no-run-if-empty git tag --delete
 }
 
-#initialize repo
-if [ ! -e ${repo_name} ] ; then
-    git clone -b master ${git_remote_to_use}
+if [[ "${execute_mode}" == "reclone" ]]; then
+    echo "INFO: execute_mode is: '${execute_mode}'"
+    rm -rf ${repo_name}
+fi
+if [[ ! -d "${repo_name}" ]] ; then
+    #initialize repo
+    git clone ${git_remote_to_use}
     cd ${repo_name}
     git branch -a
     git tag
@@ -410,16 +422,16 @@ else
     echo "Already cloned and initialized"
     cd ${repo_name}
     if [[ "${execute_mode}" == "normal" ]]; then
-        echo "execute_mode is: '${execute_mode}'"
+        echo "INFO: execute_mode is: '${execute_mode}'"
         echo "Reset local tags in scope '^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$' and then start from begin of '^${repo_name}/init/init$'"
         git tag | grep -v "^${repo_name}/init/init$" | grep "^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$" | xargs --no-run-if-empty git tag --delete
         git fetch --tags
         git fetch -ap
     elif [[ "${execute_mode}" == "continue_locally" ]];then
-        echo "execute_mode is: '${execute_mode}'"
+        echo "INFO: execute_mode is: '${execute_mode}'"
         echo "Do not delete already converted tags and fetch again -  just continue in workspace as is"
     elif [[ "${execute_mode}" == "reset_remote_n_local" ]];then
-        echo "execute_mode is: '${execute_mode}'"
+        echo "INFO: execute_mode is: '${execute_mode}'"
         git fetch --tags --force
         git fetch -ap
         reset_converted_tags_remote_n_local
@@ -445,4 +457,3 @@ for sha1 in $(git log --topo-order --oneline --all --pretty=format:"%H " | tac) 
     echo "Done: $sha1"
 done
 
-exit
