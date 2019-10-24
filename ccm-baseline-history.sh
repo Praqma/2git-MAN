@@ -49,7 +49,7 @@ find_project_baseline_to_convert(){
             else
                 if [[ $(ccm finduse -all_projects "$(echo ${SUCCESSOR_PROJECT} | sed -e 's/xxx/ /g')" | grep "Object is not used in scope." ) ]]; then
                     # not in use as sub project"
-                    echo "SKIP: Related Baseline Object is in test status and is NOT in use as subproject: ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_release_this} - even is leaf in project baseline history" >&2
+                    echo "SKIP: Related Baseline Object is in test status and is NOT in use as subproject: ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_release_this} - and is leaf in project baseline history" >&2
                     continue
                 else
                     # in use

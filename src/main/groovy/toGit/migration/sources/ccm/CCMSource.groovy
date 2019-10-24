@@ -40,11 +40,13 @@ class CCMSource implements MigrationSource {
 
         println (sout.toString())
         if ( exitValue ){
-            throw new Exception("ccm copy_to_file_system gave an non-0 exit code" )
+            println ("Standard error output" )
+            println (serr.toString())
+            throw new Exception("ccm-baseline-history gave an non-0 exit code" )
         }
         if ( serr.toString().readLines().size() > 0 ){
+            println ("Standard error output - used for SKIP projects" )
             println (serr.toString())
-            throw new Exception("ccm copy_to_file_system standard error contains text lines: " + serr.toString().readLines().size() )
         }
 
         projects = sout.readLines().collect{new Snapshot(it){}}
