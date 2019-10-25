@@ -10,7 +10,6 @@ source $(dirname $0)/_ccm-functions.sh || source ./_ccm-functions.sh
 ccm_project_name=$1
 repo_convert_rev_tag=$2
 repo_convert_instance=$3
-require_baseline_object="false"
 
 [[ -z $4 ]] && ( echo "Please set parameter 4 to Jira Project Key - exit 1" && exit 1 )
 jira_project_key=$4
@@ -45,7 +44,7 @@ case ${ccm_current_db} in
 
         story_level_header="Work Packages (WP)"
         story_level_release_attr="TargetRelease"
-        require_baseline_object="true"
+        require_baseline_object="false"
         ;;
     /data/ccmdb/ME_ECS)
         epic_level_header="Master Change Requests: (MCR)"
@@ -54,6 +53,7 @@ case ${ccm_current_db} in
 
         story_level_header="Implementation Change Requests(ICR)"
         story_level_release_attr="release"
+        require_baseline_object="false"
         ;;
     *)
         echo "Undetermined/supported: ccm_current_db: ${ccm_current_db}"
