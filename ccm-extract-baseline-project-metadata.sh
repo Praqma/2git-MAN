@@ -172,7 +172,7 @@ if [[ "${ccm_baseline_obj:-}" != "" ]]; then
 
 
 else
-    [[ "${require_baseline_object}" == "true" ]] && ( echo "ERROR: It is expected to have a baseline object due to configuration: require_baseline_object=true for this database: ${ccm_current_db}" && exit 2 )
+    [[ "${require_baseline_object}" == "true" ]] && ( echo "ERROR: It is expected to have a baseline object due to configuration: require_baseline_object=true for this database: ${ccm_current_db}" >&2 && exit 2 )
     objectname=$(echo "${ccm_project_name}~${repo_convert_rev_tag}:project:${repo_convert_instance}" | sed -e 's/xxx/ /g')
 
     printf "Project: ${objectname} <-> Baseline object: NONE\n\n"                                >> ${output_file}
