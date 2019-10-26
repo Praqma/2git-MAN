@@ -60,9 +60,13 @@ function convert_revision(){
     local ccm_repo_convert_rev_tag=${repo_convert_rev_tag:: -4}
 
     local exit_code="0"
-    find_n_set_baseline_obj_attrs_from_project "${repo_name}~${ccm_repo_convert_rev_tag}:project:${project_instance}" "verbose_false" || exit_code=$?
+    ccm_project_4part_xxx="${repo_name}~${ccm_repo_convert_rev_tag}:project:${project_instance}"
+    ccm_project_4part_spaced=$(echo "${ccm_project_4part_xxx}" | sed -e 's/xxx/ /g')
+    ccm_project_name_spaced=$(echo ${repo_name} | sed -e 's/xxx/ /g' )
+
+    find_n_set_baseline_obj_attrs_from_project "${ccm_project_4part_xxx}" "verbose_false" || exit_code=$?
     if [[ "${exit_code}" != "0" ]] ; then
-        echo "ERROR: Project not found: ${repo_name}~$(echo ${ccm_repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${project_instance}"
+        echo "ERROR: Project not found: ${ccm_project_4part_spaced}"
         exit ${exit_code}
     fi
     local ccm_release=$(echo ${project_release} | cut -d "/" -f 2) # inherited from function find_n_set_baseline_obj_attrs_from_project
@@ -70,7 +74,7 @@ function convert_revision(){
     [[ "${ccm_release:-}" == "x" ]] && ( echo "Release is empty!!" &&  exit 1)
 
     #NOTE: The next line is suppressing the support for having a baseline project with a different name than is being converted: ( and name='${repo_name}' )
-    local baseline_from_tag_info=$(ccm query "is_baseline_project_of('${repo_name}~$(echo ${ccm_repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${project_instance}') and name='${repo_name}'" \
+    local baseline_from_tag_info=$(ccm query "is_baseline_project_of('${ccm_project_4part_spaced}') and name='${ccm_project_name_spaced}'" \
                                     -u -f "%version" | sed -e 's/ /xxx/g' ) || return 1
     if [[ "${baseline_from_tag_info}" != "" ]] ; then
         local repo_baseline_rev_tag_wcomponent_wstatus=$(git tag | grep ^${repo_name}/.*/${baseline_from_tag_info}_[dprtis][eueenq][lblsta]$ || grep_ext_value=$? )
@@ -130,7 +134,8 @@ function convert_revision(){
         touch .gitmodules && git add ./.gitmodules # make sure we have a clean start for every revision - do not use the .gitmodules as we also need to be able to remove some
     fi
 
-    local repo_subprojects4part=$(ccm query "is_member_of('${repo_name}~$(echo ${ccm_repo_convert_rev_tag} | sed -e 's/xxx/ /g'):project:${project_instance}') and name!='${repo_name}' and type='project'" -u -f "%objectname" | sed -s 's/ /xxx/g')
+    local repo_subprojects4part=$(ccm query "is_member_of('${ccm_project_4part_spaced}') and name!='${ccm_project_name_spaced}' and type='project'" -u -f "%objectname")
+
     for repo_submodule4part in ${repo_subprojects4part}; do
         set +x
         regex_4part='^(.+)~(.+):(.+):(.+)$'
