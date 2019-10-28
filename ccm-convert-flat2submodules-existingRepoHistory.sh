@@ -446,14 +446,14 @@ fi
 
 for sha1 in $(git log --topo-order --oneline --all --pretty=format:"%H " | tac) ; do
     echo "Processing: $sha1"
-    tags=$(git tag --points-at "${sha1}" | grep -v .*/.*/.*_[dprtis][eueenq][lblsta]$ || echo "")
+    tags=$(git tag --points-at "${sha1}" | grep -v "^${repo_name}/init/init$" | grep -v "^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$" || echo "")
     if [[ "${tags}" == "" ]]; then
         converted_tags=$(git tag --points-at "${sha1}" | grep .*/.*/.*_[dprtis][eueenq][lblsta]$ || echo "")
         echo "INFO : No unconverted tags found - These are the new tags found - list and continue"
         echo "${converted_tags}"
         continue
     fi
-    for project_revision in $(git tag --points-at "${sha1}" | grep -v .*/.*/.*_[dprtis][eueenq][lblsta]$ || echo "@@@" ); do
+    for project_revision in $(git tag --points-at "${sha1}" |  grep -v "^${repo_name}/init/init$" | grep -v "^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$" || echo "@@@" ); do
         [[ "${repo_name}/${repo_init_tag}/${repo_init_tag}" == "${project_revision}" ]] && continue
         [[ "${repo_init_tag}" == "${project_revision}" ]] && continue
         [[ "@@@" == "${project_revision}" ]] && continue
