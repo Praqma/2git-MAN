@@ -104,7 +104,8 @@ class CCMSource implements MigrationSource {
             }
             log.info "Move from: " + workspace + "/code/" + project_revision_for_ws + "_tmp" + " to: " + workspace + "/code/" + project_revision_for_ws
             FileUtils.moveDirectory(new File(workspace + "/code/" + project_revision_for_ws + "_tmp"), new File(workspace + "/code/" + project_revision_for_ws))
-            if ( project_revision_for_ws.contains('xxx') ){
+            if ( project_revision_for_ws.contains(' ') ){
+                log.info "Project revision contains [spaces] - replace with xxx's"
                 FileUtils.moveDirectory(
                         new File( workspace + "/code/" + project_revision_for_ws + "/" + project_revision_with_spaces.split('~')[0])
                         ,
