@@ -62,6 +62,8 @@ class CCMSource implements MigrationSource {
     }
 
     private void copy2Filesystem(String project) {
+        def project_revision_for_ws=project.split(":")[0]
+
         def codeFile = new File(workspace, "code")
         codeFile.parentFile.mkdirs()
         if ( ! codeFile.exists()) {
@@ -69,15 +71,11 @@ class CCMSource implements MigrationSource {
         }
         codeFile.mkdir()
         //Get the revision without instance
-        def project_revision_for_ws=project.split(":")[0]
 
         if ( new File(workspace + "/code/" + project_revision_for_ws).exists()){
             log.info "CM/Synergy checkout: Skipping project revision: ${project} - already exists"
         } else {
             def sout = new StringBuilder(), serr = new StringBuilder()
-
-
-
             def file_tmp = new File(workspace + "/code/" + project_revision_for_ws + "_tmp")
             if ( file_tmp.exists() ){
                 log.info workspace + "/code/" + project_revision_for_ws + "_tmp exist - Delete it "
@@ -102,14 +100,18 @@ class CCMSource implements MigrationSource {
             if ( serr.toString().readLines().size() > 0 ){
                 throw new Exception("ccm copy_to_file_system standard error contains text lines: " + serr.toString().readLines().size() )
             }
-            log.info "Move from: " + workspace + "/code/" + project_revision_for_ws + "_tmp" + " to: " + workspace + "/code/" + project_revision_for_ws
-            FileUtils.moveDirectory(new File(workspace + "/code/" + project_revision_for_ws + "_tmp"), new File(workspace + "/code/" + project_revision_for_ws))
-            if ( project_revision_for_ws.contains(' ') ){
+            def path_tmp=workspace + "/code/" + project_revision_for_ws + "_tmp"
+            def path_final=workspace + "/code/" + project_revision_for_ws
+            def file_full_path_name=workspace + "/code/" + project_revision_for_ws + "/" + project_revision_with_spaces.split('~')[0]
+
+            log.info "Move from: ${path_tmp} to: ${path_final}"
+            FileUtils.moveDirectory(new File(path_tmp), new File(path_final))
+            if ( file_full_path_name.contains(' ') ){
                 log.info "Project revision contains [spaces] - replace with xxx's"
                 FileUtils.moveDirectory(
-                        new File( workspace + "/code/" + project_revision_for_ws + "/" + project_revision_with_spaces.split('~')[0])
+                        new File( file_full_path_name )
                         ,
-                        new File(workspace + "/code/" + project_revision_for_ws + '/' + project_revision_with_spaces.split('~')[0].replaceAll(' ','xxx')))
+                        new File(file_full_path_name.replaceAll(' ','xxx')))
             }
 
         }
