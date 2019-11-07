@@ -72,18 +72,31 @@ class CCMSource implements MigrationSource {
         codeFile.mkdir()
         //Get the revision without instance
 
-        if ( new File(workspace + "/code/" + project_revision_for_ws).exists()){
+        def path_final=workspace + "/code/" + project_revision_for_ws
+        def file_full_path_name="${path_final}/" + project_revision_for_ws.split('~')[0]
+        def project_revision_with_spaces = project.replaceAll("xxx"," ")
+
+        if ( new File(file_full_path_name).exists()){
             log.info "CM/Synergy checkout: Skipping project revision: ${project} - already exists"
         } else {
             def sout = new StringBuilder(), serr = new StringBuilder()
-            def file_tmp = new File(workspace + "/code/" + project_revision_for_ws + "_tmp")
+            def path_tmp="${path_final}_tmp"
+
+            def file_tmp = new File(path_tmp)
             if ( file_tmp.exists() ){
-                log.info workspace + "/code/" + project_revision_for_ws + "_tmp exist - Delete it "
+                log.info "${path_tmp} exist - Delete it "
                 file_tmp.deleteDir()
             }
 
+            def file_full_path_spaced_name = new File ("${path_final}/" + project_revision_with_spaces.split('~')[0])
+            log.info file_full_path_spaced_name.toString() + " DEBUG"
+            if ( file_full_path_spaced_name.exists() ) {
+                log.info file_full_path_spaced_name.toString() + " exist due to previous error - Delete it all"
+                def file_base = new File (path_final)
+                file_base.deleteDir()
+            }
+
             def envVars = System.getenv().collect { k, v -> "$k=$v" }
-            def project_revision_with_spaces = project.replaceAll("xxx"," ")
             def cmd_line = ["ccm", "copy_to_file_system", "-p", "${project_revision_for_ws}_tmp", "-r", "${project_revision_with_spaces}"]
             log.info "'" + cmd_line + "'"
             def cmd = cmd_line.execute(envVars,codeFile)
@@ -100,23 +113,17 @@ class CCMSource implements MigrationSource {
             if ( serr.toString().readLines().size() > 0 ){
                 throw new Exception("ccm copy_to_file_system standard error contains text lines: " + serr.toString().readLines().size() )
             }
-            def path_tmp=workspace + "/code/" + project_revision_for_ws + "_tmp"
-            def path_final=workspace + "/code/" + project_revision_for_ws
-            def file_full_path_name=workspace + "/code/" + project_revision_for_ws + "/" + project_revision_with_spaces.split('~')[0]
 
             log.info "Move from: ${path_tmp} to: ${path_final}"
             FileUtils.moveDirectory(new File(path_tmp), new File(path_final))
-            if ( file_full_path_name.contains(' ') ){
+            log.info file_full_path_spaced_name.toString() + " DEBUG"
+            if ( file_full_path_spaced_name.toString().contains(' ') ){
                 log.info "Project revision contains [spaces] - replace with xxx's"
                 FileUtils.moveDirectory(
-                        new File( file_full_path_name )
-                        ,
-                        new File(file_full_path_name.replaceAll(' ','xxx')))
+                        file_full_path_spaced_name, new File(file_full_path_name.replaceAll(' ','xxx'))
+                )
             }
-
         }
-
-
     }
 
     @Override
