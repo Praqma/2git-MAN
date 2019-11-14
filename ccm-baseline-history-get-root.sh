@@ -5,6 +5,10 @@ set -e
 
 BASELINE_PROJECT="$1"
 
+source $(dirname $0)/_ccm-functions.sh || source ./_ccm-functions.sh
+
+printf "Processing ${BASELINE_PROJECT}\n" 1>&2
+
 until [[ "${BASELINE_PROJECT:-}" == "" ]] ; do
 	this_project4part="${BASELINE_PROJECT}"
 	this_project_name=$(echo ${BASELINE_PROJECT} |  awk -F"~" '{print $1}')
@@ -21,8 +25,16 @@ until [[ "${BASELINE_PROJECT:-}" == "" ]] ; do
 	if [[ "${BASELINE_PROJECT:-}" != "" ]] ; then
 		printf "${BASELINE_PROJECT} -> " 1>&2
 	else
-		printf "<void>\n\n" 1>&2
+		printf "<void> - baseline empty\n\n" 1>&2
 		break
   fi
 done
-printf "${this_project4part}" | sed -e 's/ /xxx/g'
+project_status=$(ccm attr -show status "${this_project4part}")
+case "$project_status" in
+  integrate|released|sqa|test)
+      printf "${this_project4part}" | sed -e 's/ /xxx/g'
+      ;;
+  *)
+    printf "Project $this_project4part is in state: $project_status - Skip - do not list" 1>&2
+    ;;
+esac
