@@ -430,7 +430,7 @@ else
         echo "INFO: execute_mode is: '${execute_mode}'"
         echo "Reset local tags in scope '^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$' and then start from begin of '^${repo_name}/init/init$'"
         git tag | grep -v "^${repo_name}/init/init$" | grep "^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$" | xargs --no-run-if-empty git tag --delete
-        git fetch --tags
+        git fetch --tags --force
         git fetch -ap
     elif [[ "${execute_mode}" == "continue_locally" ]];then
         echo "INFO: execute_mode is: '${execute_mode}'"
