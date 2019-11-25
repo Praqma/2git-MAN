@@ -215,7 +215,7 @@ function convert_revision(){
                     git fetch --tags
                     git_resolve_tags_wstatus "${repo_submodule}" "${repo_submodule_rev}"
                     if [[ "${repo_submodule_rev_wcomponent_wstatus}" == "" ]] ; then
-                        echo "[ERROR]: Could find the revision ${repo_submodule_rev} for the ${repo_submodule}"
+                        echo "[ERROR]: Could find the revision ${repo_submodule}/.*/${repo_submodule_rev}_???"
                         exit 1
                     fi
                 fi
