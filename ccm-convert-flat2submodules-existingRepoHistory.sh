@@ -272,9 +272,7 @@ function convert_revision(){
 
     [[ ! ${repo_submodules} == "" ]] && cat .gitmodules && git add .gitmodules
 
-    git ls-files "*.sh" | xargs --no-run-if-empty -d '\n' git update-index --add --chmod=+x
-    git ls-files "*.exe" | xargs --no-run-if-empty -d '\n' git update-index --add --chmod=+x
-    git add -A .
+    git_set_execute_bit_in_index_of_extensions
 
     export GIT_COMMITTER_DATE=$(git log -1 --format='%cd' ${repo_convert_rev_tag}) && [[ -z ${GIT_COMMITTER_DATE} ]] && return 1
     export GIT_COMMITTER_NAME=$(git log -1 --format='%cn' ${repo_convert_rev_tag} ) && [[ -z ${GIT_COMMITTER_NAME} ]] && return 1

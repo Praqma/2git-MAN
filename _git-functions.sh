@@ -59,3 +59,26 @@ function git_initialize_lfs_n_settings() {
         git config --add --local lfs.contenttype 0
     fi
 }
+
+function git_set_execute_bit_in_index_of_extensions() {
+    # PRE: you are in the repo
+    echo "Based on file extension - set execute bit in the repo on following files:"
+    git ls-files | grep -ie '.*\.exe$' -ie '.*\.sh$' -ie '.*\.pl$'  # leave this line for echoing
+    git ls-files | grep -ie '.*\.exe$' -ie '.*\.sh$' -ie '.*\.pl$' | xargs --no-run-if-empty -d '\n' git update-index --add --chmod=+x
+    echo "Done"
+}
+
+function git_find_n_fill_empty_dirs_gitignore() {
+  echo "Fill empty directories with .gitignore"
+  file_empty_dirs_tmp="empty_dirs.tmp"
+  /usr/bin/find . -mindepth 1 -type d -empty | grep -v '\./\.git/' > ${file_empty_dirs_tmp}
+  IFS=$'\r\n'
+  pwd
+  while read empty_dir; do
+    echo ${empty_dir}
+    cp ${script_dir}/emptydir.gitignore ${empty_dir}
+  done < ${file_empty_dirs_tmp} || exit 1
+  rm -f ${file_empty_dirs_tmp}
+  unset IFS
+  echo "Done"
+}

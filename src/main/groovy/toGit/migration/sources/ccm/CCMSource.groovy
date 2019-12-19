@@ -89,7 +89,6 @@ class CCMSource implements MigrationSource {
             }
 
             def file_full_path_spaced_name = new File ("${path_final}/" + project_revision_with_spaces.split('~')[0])
-            log.info file_full_path_spaced_name.toString() + " DEBUG"
             if ( file_full_path_spaced_name.exists() ) {
                 log.info file_full_path_spaced_name.toString() + " exist due to previous error - Delete it all"
                 def file_base = new File (path_final)

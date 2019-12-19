@@ -121,7 +121,7 @@ migrate {
             actions {
 
                 // Scrub Git repository, so file deletions will also be committed
-                cmd 'git reset --hard $baselineRevision_wstatus', target.workspace
+                cmd 'git reset --hard -q $baselineRevision_wstatus', target.workspace
 
                 custom {
                     log.info "Removing files except .git folder in: $target.workspace"
@@ -152,9 +152,16 @@ migrate {
                     }
                 }
 
-                // Commit everything
+                // Fill empty dirs with .gitignore for empty directories
+                cmd "bash git-fill-empty-dirs-with-gitignore.sh " + target.workspace, System.getProperty("user.dir")
+
+                // Add everything
                 cmd 'git add --chmod=+x -A .', target.workspace
                 cmd 'git add -A .', target.workspace
+
+                // Update index to have executables on specific extensions
+                cmd "bash git-set-execute-bit-in-index-of-extensions.sh " + target.workspace, System.getProperty("user.dir")
+
 
                 custom { project ->
                     def sout = new StringBuilder(), serr = new StringBuilder()
@@ -164,8 +171,6 @@ migrate {
                             out.println it
                         }
                     }
-                    def cmd_line = ['git', 'commit', '--file', "../commit_meta_data.txt" ]
-                    log.info cmd_line.toString()
 
                     def email_domain = '@man-es.com'
                     def envVars = System.getenv().collect { k, v -> "$k=$v" }
@@ -176,31 +181,37 @@ migrate {
                         envVars.add('GIT_AUTHOR_NAME=' + project.snapshotOwner )
                         envVars.add('GIT_AUTHOR_EMAIL=' + project.snapshotOwner + email_domain)
                     }
-                    def cmd = cmd_line.execute(envVars, new File(target.workspace))
-                    cmd.waitForProcessOutput(sout, serr)
-                    def exitValue = cmd.exitValue()
-                    log.info "Standard out:"
-                    log.info "'" + sout.toString() + "'"
-
-                    if (exitValue) {
-                        if ( ! sout.contains('nothing to commit, working tree clean') ){
-                            println "Standard error:"
-                            log.info "'" + serr.toString() + "'"
-                            log.info "Exit code: " + exitValue
-                            throw new Exception(cmd_line + ": gave exit code: $exitValue")
-                        } else {
-                            log.info "Nothing commit - skip, but still tag"
+                    def cmd_line = 'git commit --file ../commit_meta_data.txt'
+                    log.info cmd_line.toString()
+                    try {
+                        def cmd = cmd_line.execute(envVars, new File(target.workspace))
+                        cmd.waitForProcessOutput(sout, serr)
+                        def exitValue = cmd.exitValue()
+                        log.info "Standard out: " + "\n" + sout.toString()
+                        if (exitValue) {
+                            if ( ! sout.contains('nothing to commit, working tree clean') ){
+                                log.error "Standard error:" + "'" + serr.toString() + "'"
+                                log.error "Exit code: " + exitValue
+                                throw new Exception(cmd_line + ": gave exit code: $exitValue")
+                            } else {
+                                log.info "Nothing commit - skip, but still tag"
+                            }
+                            if (serr.toString().readLines().size() > 0) {
+                                log.error "Standard error: " + "'" + serr.toString() + "'"
+                                log.error "Exit code: " + exitValue
+                                throw new Exception(cmd_line + ": standard error contains text lines: " + serr.toString().readLines().size())
+                            }
                         }
                         if (serr.toString().readLines().size() > 0) {
-                            println "Standard error:"
-                            log.info "'" + serr.toString() + "'"
-                            log.info "Exit code: " + exitValue
-                            throw new Exception(cmd_line + ": standard error contains text lines: " + serr.toString().readLines().size())
+                            log.info (cmd_line + ": standard error contains text lines: " + serr.toString().readLines().size())
+                            log.info "Standard error:" + "'" + serr.toString() + "'"
                         }
+                    } catch (Exception e) {
+                        log.error('An error occurred during the git commit..')
+                        log.error(e.toString())
+                        throw e
                     }
-                    if (serr.toString().readLines().size() > 0) {
-                        log.info (cmd_line + ": standard error contains text lines: " + serr.toString().readLines().size())
-                    }
+
                 }
 
                 // The file for tag info is generated during MetaDataExtraction
