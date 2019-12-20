@@ -73,10 +73,9 @@ function git_find_n_fill_empty_dirs_gitignore() {
   file_empty_dirs_tmp="empty_dirs.tmp"
   /usr/bin/find . -mindepth 1 -type d -empty | grep -v '\./\.git/' > ${file_empty_dirs_tmp}
   IFS=$'\r\n'
-  pwd
   while read empty_dir; do
     echo ${empty_dir}
-    cp ${script_dir}/emptydir.gitignore ${empty_dir}
+    cp ${script_dir}/emptydir.gitignore ${empty_dir}/.gitignore
   done < ${file_empty_dirs_tmp} || exit 1
   rm -f ${file_empty_dirs_tmp}
   unset IFS
