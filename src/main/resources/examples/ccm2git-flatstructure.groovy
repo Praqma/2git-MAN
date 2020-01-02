@@ -156,11 +156,10 @@ migrate {
                 cmd "bash git-fill-empty-dirs-with-gitignore.sh " + target.workspace, System.getProperty("user.dir")
 
                 // Add everything
-                cmd 'git add --chmod=+x -A --force .', target.workspace
+                cmd 'git add -A --force .', target.workspace
 
                 // Update index to have executables on specific extensions
                 cmd "bash git-set-execute-bit-in-index-of-extensions.sh " + target.workspace, System.getProperty("user.dir")
-
 
                 custom { project ->
                     def sout = new StringBuilder(), serr = new StringBuilder()

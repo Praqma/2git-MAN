@@ -65,6 +65,7 @@ function git_set_execute_bit_in_index_of_extensions() {
     echo "Based on file extension - set execute bit in the repo on following files:"
     git ls-files | grep -ie '.*\.exe$' -ie '.*\.sh$' -ie '.*\.pl$'  # leave this line for echoing
     git ls-files | grep -ie '.*\.exe$' -ie '.*\.sh$' -ie '.*\.pl$' | xargs --no-run-if-empty -d '\n' git update-index --add --chmod=+x
+    git ls-files | grep -ie '.*\.exe$' -ie '.*\.sh$' -ie '.*\.pl$' | xargs --no-run-if-empty -d '\n' chmod +x
     echo "Done"
 }
 
