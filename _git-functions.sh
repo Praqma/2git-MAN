@@ -72,13 +72,24 @@ function git_set_execute_bit_in_index_of_extensions() {
 function git_find_n_fill_empty_dirs_gitignore() {
   echo "Fill empty directories with .gitignore"
   file_empty_dirs_tmp="empty_dirs.tmp"
-  /usr/bin/find . -mindepth 1 -type d -empty | grep -v '\./\.git/' > ${file_empty_dirs_tmp}
-  IFS=$'\r\n'
-  while read empty_dir; do
-    echo ${empty_dir}
-    cp ${script_dir}/emptydir.gitignore ${empty_dir}/.gitignore
-  done < ${file_empty_dirs_tmp} || exit 1
+  local exit_code=0
+  /usr/bin/find . -mindepth 1 -type d -empty | grep -v '\./\.git/' > ${file_empty_dirs_tmp} || exit_code=$?
+  if [[ ${exit_code} -eq 0 ]] ; then
+    # grep did give an output - hence there are empty directories
+    IFS=$'\r\n'
+    while read empty_dir; do
+      echo ${empty_dir}
+      cp ${script_dir}/emptydir.gitignore ${empty_dir}/.gitignore
+    done < ${file_empty_dirs_tmp} || exit 1
+    unset IFS
+  elif [[ ${exit_code} -eq 1 ]] ; then
+    # grep did not give an output - hence there are no empty directories
+    echo "INFO: no empty directories where found"
+  else
+    echo "ERROR occured"
+    exit ${exit_code}
+  fi
   rm -f ${file_empty_dirs_tmp}
-  unset IFS
   echo "Done"
 }
+
