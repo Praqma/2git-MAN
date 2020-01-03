@@ -62,10 +62,18 @@ function git_initialize_lfs_n_settings() {
 
 function git_set_execute_bit_in_index_of_extensions() {
     # PRE: you are in the repo
+    exit_code=0
     echo "Based on file extension - set execute bit in the repo on following files:"
-    git ls-files | grep -ie '.*\.exe$' -ie '.*\.sh$' -ie '.*\.pl$'  # leave this line for echoing
-    git ls-files | grep -ie '.*\.exe$' -ie '.*\.sh$' -ie '.*\.pl$' | xargs --no-run-if-empty -d '\n' git update-index --add --chmod=+x
-    git ls-files | grep -ie '.*\.exe$' -ie '.*\.sh$' -ie '.*\.pl$' | xargs --no-run-if-empty -d '\n' chmod +x
+    git ls-files | grep -ie '.*\.exe$' -ie '.*\.sh$' -ie '.*\.pl$' || exit_code=$?
+    if [[ ${exit_code} -eq 0 ]] ; then
+      git ls-files | grep -ie '.*\.exe$' -ie '.*\.sh$' -ie '.*\.pl$' | xargs --no-run-if-empty -d '\n' git update-index --add --chmod=+x
+      git ls-files | grep -ie '.*\.exe$' -ie '.*\.sh$' -ie '.*\.pl$' | xargs --no-run-if-empty -d '\n' chmod +x
+    elif [[ ${exit_code} -eq 1 ]] ; then
+      echo "No files found"
+    else
+      echo "ERROR occured"
+      exit ${exit_code}
+    fi
     echo "Done"
 }
 
