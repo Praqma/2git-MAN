@@ -380,8 +380,8 @@ if [[ ! -d "${repo_name}" ]] ; then
     export GIT_COMMITTER_DATE=${GIT_AUTHOR_DATE}
 
     for gitignore_path_n_file in $(echo ${gitignore_path_n_files} | sed -e 's/:/ /g'); do
-        gitignore_rel_path=`echo ${gitignore_path_n_file} | cut -d "@" -f 1`
-        gitignore_file_name=`echo ${gitignore_path_n_file} | cut -d "@" -f 2`
+        gitignore_file_name=`echo ${gitignore_path_n_file} | cut -d "@" -f 1`
+        gitignore_rel_path=`echo ${gitignore_path_n_file} | cut -d "@" -f 2`
         gitignore_full_path_name="${execution_root_directory}/${gitignore_file_name}"
         if [[ ! -f ${gitignore_full_path_name} ]]; then
             echo "${gitignore_full_path_name} does not exist.. Current dir:"
@@ -395,8 +395,8 @@ if [[ ! -d "${repo_name}" ]] ; then
     done
 
     for gitattributes_path_n_file in $(echo ${gitattributes_path_n_files} | sed -e 's/:/ /g'); do
-        gitattributes_rel_path=`echo ${gitattributes_path_n_file} | cut -d "@" -f 1`
-        gitattributes_file_name=`echo ${gitattributes_path_n_file} | cut -d "@" -f 2`
+        gitattributes_file_name=`echo ${gitattributes_path_n_file} | cut -d "@" -f 1`
+        gitattributes_rel_path=`echo ${gitattributes_path_n_file} | cut -d "@" -f 2`
         gitattributes_full_path_name="${execution_root_directory}/${gitattributes_file_name}"
         if [[ ! -f ${gitattributes_full_path_name} ]]; then
             echo "${gitattributes_full_path_name} does not exist.. - skip"
