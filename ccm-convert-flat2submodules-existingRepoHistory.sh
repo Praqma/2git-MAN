@@ -354,12 +354,21 @@ function reset_converted_tags_remote_n_local() {
     git tag | grep -v "^${repo_name}/init/init$" | grep "^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$" | xargs --no-run-if-empty git tag --delete
 }
 
+lock_repo_init_file="${execution_root_directory}/repo_under_construction_lock.txt"
+
+if [[ -f ${lock_repo_init_file} ]]; then
+  echo "INFO: Init construction of repo $repo_name did not complete - restart process"
+  rm -rf $repo_name
+fi
+
 if [[ "${execute_mode}" == "reclone" ]]; then
     echo "INFO: execute_mode is: '${execute_mode}'"
     rm -rf ${repo_name}
 fi
+
 if [[ ! -d "${repo_name}" ]] ; then
     #initialize repo
+    echo "LOCK Repo: ${repo_name} cloned from: ${git_remote_to_use} is under init construction" > ${lock_repo_init_file}
     git clone ${git_remote_to_use}
     cd ${repo_name}
     git branch -a
@@ -419,6 +428,7 @@ if [[ ! -d "${repo_name}" ]] ; then
     fi
     git_initialize_lfs_n_settings
     pwd # we are still in the root repo
+    echo "UNLOCK repo: ${repo_name} as init construction completed.." && rm -f ${lock_repo_init_file}
 else
     echo "Already cloned and initialized"
     cd ${repo_name}
