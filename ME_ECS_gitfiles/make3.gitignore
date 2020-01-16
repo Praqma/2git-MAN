@@ -1,0 +1,10 @@
+ant/
+asciidoc/
+flex/
+prqa/
+qemu/
+simulator/
+mscgen/
+
+coverage/cygwin/ctags.exe
+doxygen/cygwin/doxygen.exe
