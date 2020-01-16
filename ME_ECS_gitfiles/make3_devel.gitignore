@@ -1,0 +1,6 @@
+BES/
+qemu/
+RTEMS_cygwin/
+RTEMS_linux/
+tools/
+ui/
