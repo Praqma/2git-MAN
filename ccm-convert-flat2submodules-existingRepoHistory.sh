@@ -380,7 +380,7 @@ if [[ ! -d "${repo_name}" ]] ; then
     echo "LOCK Repo: ${repo_name} cloned from: ${git_remote_to_use} is under init construction" > ${lock_repo_init_file}
     git clone ${git_remote_to_use}
     cd ${repo_name}
-    git fetch --tags --force ${git_remote_to_use_orig}
+    git fetch --tags --force -- ${git_remote_to_use_orig} +refs/heads/*:refs/remotes/origin/*
     git branch -a
     git tag
     git reset -q --hard ${repo_init_tag}
