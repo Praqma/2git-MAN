@@ -407,6 +407,7 @@ if [[ ! -d "${repo_name}" ]] ; then
         fi
     done
 
+    git_initialize_lfs_n_settings
     for gitattributes_path_n_file in $(echo ${gitattributes_path_n_files} | sed -e 's/:/ /g'); do
         gitattributes_file_name=`echo ${gitattributes_path_n_file} | cut -d "@" -f 1`
         gitattributes_rel_path=`echo ${gitattributes_path_n_file} | cut -d "@" -f 2`
@@ -435,7 +436,13 @@ if [[ ! -d "${repo_name}" ]] ; then
 
     git ls-tree -r ${repo_name}/${repo_init_tag}/${repo_init_tag}
 
-    git_initialize_lfs_n_settings
+    if [[ ${push_to_remote_during_conversion:-} == "true" ]]; then
+        echo "INFO: Configured to push to remote:  git push origin --recurse-submodules=no -f ${repo_name}/${repo_init_tag}/${repo_init_tag}"
+        git push origin --recurse-submodules=no -f ${repo_name}/${repo_init_tag}/${repo_init_tag}
+    else
+        echo "INFO: Skip push to remote"
+    fi
+
     pwd # we are still in the root repo
     echo "UNLOCK repo: ${repo_name} as init construction completed.." && rm -f ${lock_repo_init_file}
 else
