@@ -1,6 +1,5 @@
-UIComponents/FunctionTestFramework.rtf
-Framework/GraphicalDev/StyleGuide.doc
-IOComp/Help/PlotPackManual30-HQ.pdf
-IOComp/Disk1/data2.cab
-Framework/GraphicalDev/*
+IOComp/
+Framework/GraphicalDev/
+Simulation/DataObjSim/xercesc/
+
 HMIComponents/HMIComponentsPackage.dpc
