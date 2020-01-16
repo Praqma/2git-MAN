@@ -34,9 +34,12 @@ unset repo_submodule_from_map
 #export project_revisions=`cat ${1}`
 
 export git_ssh_remote=ssh://git@${git_server_path}/${repo_name}.git
+export git_ssh_remote_orig=ssh://git@${git_server_path}/${repo_name}_orig.git
 export git_https_remote=$(echo ${git_ssh_remote} | sed -e 's/ssh:\/\/git@/https:\/\//' -e 's/7999/7990\/scm/')
+export git_https_remote_orig=$(echo ${git_ssh_remote_orig} | sed -e 's/ssh:\/\/git@/https:\/\//' -e 's/7999/7990\/scm/')
 export git_remote_to_use=${git_https_remote}
-echo "Use remote : ${git_remote_to_use}"
+export git_remote_to_use_orig=${git_https_remote_orig}
+echo "Use remote : ${git_remote_to_use} and ${git_remote_to_use_orig}"
 
 function convert_revision(){
     local root_dir=$(pwd)
@@ -348,10 +351,16 @@ function convert_revision(){
 
 }
 
-function reset_converted_tags_remote_n_local() {
-    echo "Delete fetch all tags and delete all the '^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$' tags on the remote and local to restart except ${repo_name}/init/init"
-    git tag | grep -v "^${repo_name}/init/init$" | grep "^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$" | xargs --no-run-if-empty git push origin --delete || echo "Some tags might not be on the remote - never mind"
-    git tag | grep -v "^${repo_name}/init/init$" | grep "^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$" | xargs --no-run-if-empty git tag --delete
+function reset_converted_tags_except_init_remote_n_local() {
+    echo "Delete all local and remote tags '^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$'"
+    git tag | grep "^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$" | xargs --no-run-if-empty git push origin --delete || echo "Some tags might not be on the remote - never mind"
+    git tag | grep "^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$" | xargs --no-run-if-empty git tag --delete
+}
+
+function reset_converted_init_tag_remote_n_local() {
+    echo "Delete local and remote tag ${repo_name}/${repo_init_tag}/${repo_init_tag}"
+    git tag | grep "^${repo_name}/${repo_init_tag}/${repo_init_tag}$" | xargs --no-run-if-empty git push origin --delete || echo "Some tags might not be on the remote - never mind"
+    git tag | grep "^${repo_name}/${repo_init_tag}/${repo_init_tag}$" | xargs --no-run-if-empty git tag --delete
 }
 
 lock_repo_init_file="${execution_root_directory}/repo_under_construction_lock.txt"
@@ -371,10 +380,14 @@ if [[ ! -d "${repo_name}" ]] ; then
     echo "LOCK Repo: ${repo_name} cloned from: ${git_remote_to_use} is under init construction" > ${lock_repo_init_file}
     git clone ${git_remote_to_use}
     cd ${repo_name}
+    git fetch --tags --force ${git_remote_to_use_orig}
     git branch -a
     git tag
     git reset -q --hard ${repo_init_tag}
     git clean -xffd
+
+    reset_converted_tags_except_init_remote_n_local
+    reset_converted_init_tag_remote_n_local
 
     export GIT_AUTHOR_DATE=$(git tag -l --format="%(taggerdate:iso8601)" ${repo_init_tag} | awk -F" " '{print $1 " " $2}')
     export GIT_COMMITTER_DATE=${GIT_AUTHOR_DATE}
@@ -422,10 +435,6 @@ if [[ ! -d "${repo_name}" ]] ; then
 
     git ls-tree -r ${repo_name}/${repo_init_tag}/${repo_init_tag}
 
-    if [[ "${execute_mode}" == "reset_remote_n_local" ]];then
-        echo "execute_mode is: '${execute_mode}'"
-        reset_converted_tags_remote_n_local
-    fi
     git_initialize_lfs_n_settings
     pwd # we are still in the root repo
     echo "UNLOCK repo: ${repo_name} as init construction completed.." && rm -f ${lock_repo_init_file}
@@ -445,7 +454,7 @@ else
         echo "INFO: execute_mode is: '${execute_mode}'"
         git fetch --tags --force
         git fetch -ap
-        reset_converted_tags_remote_n_local
+        reset_converted_tags_except_init_remote_n_local
     fi
     git_initialize_lfs_n_settings
 fi
