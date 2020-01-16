@@ -202,7 +202,7 @@ function convert_revision(){
                 if [[ ! $(git submodule update --init --recursive --force ${repo_submodule}) ]] ; then
                      git rm -rf ${repo_submodule} --cached || echo "Good already  - never mind"
                      rm -rf ${repo_submodule}
-                     git submodule add --force ../${repo_submodule}.git ${repo_submodule} || git submodule add --force ../${repo_submodule}.git ${repo_submodule} # try harder
+                     git submodule add --force ../${repo_submodule}.git ${repo_submodule} || ( cd ${repo_submodule} && git fetch --tags ; git checkout ${repo_submodule}/${repo_init_tag}/${repo_init_tag} && cd - && git submodule add --force ../${repo_submodule}.git ${repo_submodule} )
                      git submodule update --init --recursive --force ${repo_submodule}
                 fi
                 git add ./.gitmodules
