@@ -1,10 +1,10 @@
 MOP2/DatabaseFiles/CCUContents_be.mdb
-MOP2/GraphicalDev/*
+MOP2/GraphicalDev/
 MOP2/MainApp/Bitmaps.zip
 
-gi/TestWall/SeqZap/All@SD@s@in@all@States@Report@GITests@2012-11-15@13.14.47@Detailed@Browsable@Report.html
-gi/c/Documentation/*
-gi/TestWall/TestReports/*
+gi/c/Documentation/
+gi/TestWall/TestReports/
+gi/TestWall/SeqZap/All SD s in all States Report GITests 2012-11-15 13.14.47 Detailed Browsable Report.html
 gi/Tests/dse_tests/functionality/Plant/scene2_LGI/data/1-PressureBuildup_HHI-6G50ME-LGI-DATATIPS.bmp
 gi/TestWall/SeqZap/Utilities.szs
 gi/TestWall/SeqZap/SafetyFailures.szs

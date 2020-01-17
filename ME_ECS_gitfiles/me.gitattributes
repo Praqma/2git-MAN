@@ -1,4 +1,4 @@
-*.{bz2,exe,vsd,Uml,doc,ide,zip,ico,bmp,opt,lib,tst,MDX,obj,DBF,exp,dbf,DBT,dll,log,EXE,pdf,lnk,reg,res,eap,ddp,mdb,gif,GIF,shs,pdn,txt,xls,bin,a,flash,CNV,sof,iso,7z,ttf,msi} filter=lfs diff=lfs merge=lfs -text
+*.{bz2,exe,vsd,Uml,doc,ide,zip,ico,bmp,opt,lib,tst,MDX,obj,DBF,exp,dbf,DBT,dll,log,EXE,pdf,lnk,reg,res,eap,ddp,mdb,gif,GIF,shs,pdn,txt,xls,bin,a,flash,CNV,sof,iso,7z,ttf,msi,bit,vi,lvbitx,lvproj,scsu} filter=lfs diff=lfs merge=lfs -text
 **/nodetest/*/*_reference.asc filter=lfs diff=lfs merge=lfs text
 **/nodetest/*/reference.asc filter=lfs diff=lfs merge=lfs text
 **/nodetest/*/*_REF.asc filter=lfs diff=lfs merge=lfs text
