@@ -26,7 +26,7 @@ export gitattributes_path_n_files=${7:-} # <relative_path>:<gitattributes_file>@
 declare -A repo_submodules_map
 for repo_submodule_from_param in $(echo "${repo_submodules}"); do
      repo_submodule_raw_name=$(echo ${repo_submodule_from_param} | awk -F ":" '{print $1}')
-     repo_submodules_map["${repo_submodule_from_param}"]="${repo_submodule_raw_name}"
+     repo_submodules_map["${repo_submodule_raw_name}"]="${repo_submodule_raw_name}"
 done
 unset repo_submodule_raw_name
 unset repo_submodule_from_map
