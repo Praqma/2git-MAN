@@ -1,3 +1,3 @@
 tools/CoCoS_export/Example/Linerec/LR_20131116_0048055_m.eds
-tools/HDF5@tools/example_files/input_hdf5_files/P01_1.hdf
+tools/HDF5 tools/example_files/input_hdf5_files/P01_1.hdf
 sw/library/Engine/MechLoss/Voelund.pdf
