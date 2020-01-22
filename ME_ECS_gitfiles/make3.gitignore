@@ -4,6 +4,7 @@ prqa/
 qemu/
 simulator/
 mscgen/
+flex/
 
 flexelint9.zip
 flexelint
