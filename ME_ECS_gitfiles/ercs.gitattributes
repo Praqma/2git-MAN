@@ -1,7 +1,7 @@
 *.{bz2,exe,vsd,Uml,doc,ide,zip,ico,bmp,opt,lib,tst,MDX,obj,DBF,exp,dbf,DBT,dll,log,EXE,pdf,lnk,reg,res,eap,ddp,mdb,gif,GIF,shs,pdn,txt,xls,bin,a,flash,CNV,sof,iso,7z,ttf,msi,bit,vi,lvbitx,lvproj,scsu} filter=lfs diff=lfs merge=lfs -text
 
-egr/doc/                                    filter=lfs diff=lfs merge=lfs -text
-scr/doc/                                    filter=lfs diff=lfs merge=lfs -text
+egr/doc/**/* filter=lfs diff=lfs merge=lfs -text
+scr/doc/**/* filter=lfs diff=lfs merge=lfs -text
 
 MOP2/App_Bat/install_App_distribution_XPE.exe filter=lfs diff=lfs merge=lfs -text
 MOP2/EMS/ems_bus/ercs_ems_bridge.dll        filter=lfs diff=lfs merge=lfs -text
