@@ -294,7 +294,8 @@ function convert_revision(){
     echo "#####################"
     echo "# git sizes:"
     echo "#####################"
-    [[ -d .git/lfs ]] && printf "INFO: size: %s %s\n" $(du -sh .git/lfs)
+    [[ -d .git/lfs ]]     && printf "INFO: size: %s %s\n" $(du -sh .git/lfs)
+                             printf "INFO: LFS files count in this commit: %s\n" $(git lfs ls-files HEAD | wc -l])
     [[ -d .git/objects ]] && printf "INFO: size: %s %s\n" $(du -sh .git/objects)
     [[ -d .git/modules ]] && printf "INFO: size: %s %s\n" $(du -sh .git/modules)
     echo "#####################"
@@ -484,3 +485,4 @@ for sha1 in $(git log --topo-order --oneline --all --pretty=format:"%H " | tac) 
     echo "Done: $sha1"
 done
 
+printf "Git LFS in total: %s\n" $( git lfs ls-files --all | wc -l )
