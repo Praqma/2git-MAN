@@ -295,7 +295,7 @@ function convert_revision(){
     echo "# git sizes:"
     echo "#####################"
     [[ -d .git/lfs ]]     && printf "INFO: size: %s %s\n" $(du -sh .git/lfs)
-                             printf "INFO: LFS files count in this commit: %s\n" $( git lfs ls-files HEAD | wc -l )
+    [[ -d .git/lfs ]]     && printf "INFO: LFS files count in this commit: %s\n" $( git lfs ls-files HEAD | wc -l )
     [[ -d .git/objects ]] && printf "INFO: size: %s %s\n" $(du -sh .git/objects)
     [[ -d .git/modules ]] && printf "INFO: size: %s %s\n" $(du -sh .git/modules)
     echo "#####################"
