@@ -485,4 +485,8 @@ for sha1 in $(git log --topo-order --oneline --all --pretty=format:"%H " | tac) 
     echo "Done: $sha1"
 done
 
-printf "Git LFS in total: %s\n" $( git lfs ls-files --all | wc -l )
+[[ -d .git/lfs ]] && printf "Git LFS in total: %s\n" $( git lfs ls-files --all | wc -l )
+[[ -d .git/lfs ]] && echo "Store list of LFS files in: ${execution_root_directory}/git_lfs_files.txt"
+[[ -d .git/lfs ]] && git lfs ls-files --all > ${execution_root_directory}/git_lfs_files.txt
+
+
