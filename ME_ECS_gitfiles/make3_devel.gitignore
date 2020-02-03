@@ -1,6 +1,7 @@
-BES3/
-qemu/
-RTEMS_cygwin/
-RTEMS_linux/
-tools/
-ui/
+/BES3/
+/qemu/
+/RTEMS_cygwin/
+/RTEMS_linux/
+/tools/
+/ui/
+

@@ -1,12 +1,12 @@
-ant/
-asciidoc/
-prqa/
-qemu/
-simulator/
-mscgen/
-flex/
+/ant/
+/asciidoc/
+/prqa/
+/qemu/
+/simulator/
+/mscgen/
+/flex/
 
-flexelint9.zip
-flexelint
-coverage/cygwin/ctags.exe
-doxygen/cygwin/doxygen.exe
+/flexelint9.zip
+/flexelint
+/coverage/cygwin/ctags.exe
+/doxygen/cygwin/doxygen.exe
