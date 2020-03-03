@@ -161,6 +161,9 @@ migrate {
                 // Update index to have executables on specific extensions
                 cmd "bash git-set-execute-bit-in-index-of-extensions.sh " + target.workspace, System.getProperty("user.dir")
 
+                // Update index to have executables based on unix tool file reporting
+                cmd "bash git_set_execute_bit_in_index_of_executable.sh " + target.workspace, System.getProperty("user.dir")
+
                 custom { project ->
                     def sout = new StringBuilder(), serr = new StringBuilder()
 
