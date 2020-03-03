@@ -287,7 +287,7 @@ function convert_revision(){
     export GIT_AUTHOR_EMAIL=$(git log -1 --format='%ae' ${repo_convert_rev_tag} ) && [[ -z ${GIT_AUTHOR_EMAIL} ]] && return 1
 
     echo "git commit content of ${repo_convert_rev_tag}"
-    git commit -q -C ${repo_convert_rev_tag} --reset-author || ( echo "Empty commit.." )
+    git commit -C ${repo_convert_rev_tag} --reset-author || ( echo "Empty commit.." )
 
     git submodule status || git status
 
