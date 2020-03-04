@@ -77,7 +77,7 @@ function git_set_execute_bit_in_index_of_extensions() {
     echo "Done"
 }
 
-function git_set_execute_bit_in_index_of_executable() {
+function git_set_execute_bit_in_index_of_unix_tool_file_executable() {
     # PRE: you are in the repo
     set +x
     echo "Based on file reporting 'executable' - set execute bit in the repo on following files:"
@@ -88,9 +88,8 @@ function git_set_execute_bit_in_index_of_executable() {
         chmod +x ${git_ls_file}
       fi
     done
-    echo "Done"
     [[ ${debug:-} == "true" ]] && set -x
-
+    echo "Done"
 }
 
 function git_find_n_fill_empty_dirs_gitignore() {
