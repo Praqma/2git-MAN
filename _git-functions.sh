@@ -77,15 +77,21 @@ function git_set_execute_bit_in_index_of_extensions() {
     echo "Done"
 }
 
+function _git_set_execute_bit(){
+    echo Making ${git_ls_file} executable
+    git update-index --add --chmod=+x ${git_ls_file}
+    chmod +x ${git_ls_file}
+}
+
 function git_set_execute_bit_in_index_of_unix_tool_file_executable() {
     # PRE: you are in the repo
     set +x
-    echo "Based on file reporting 'executable' - set execute bit in the repo on following files:"
+    echo "Based on file reporting 'executable' or 'interpreter' - set execute bit in the repo on following files:"
     for git_ls_file in `git ls-files`; do
       if file ${git_ls_file} |grep executable 2>&1 > /dev/null; then
-        echo Making ${git_ls_file} executable
-        git update-index --add --chmod=+x ${git_ls_file}
-        chmod +x ${git_ls_file}
+        _git_set_execute_bit
+      elif file ${git_ls_file} |grep interpreter 2>&1 > /dev/null; then
+        _git_set_execute_bit
       fi
     done
     [[ ${debug:-} == "true" ]] && set -x
