@@ -11,10 +11,10 @@ ccm_project_name=$1
 repo_convert_rev_tag=$2
 repo_convert_instance=$3
 
-[[ -z $4 ]] && ( echo "Please set parameter 4 to Jira Project Key - exit 1" && exit 1 )
+[[ -z $4 ]] && ( echo "Please set parameter 4 to Jira Project Key - exit 1" >&2 && exit 1 )
 jira_project_key=$4
 
-[[ -z $5 ]] && ( echo "Please set parameter 5 to 'commit' or 'tag' - exit 1" && exit 1 )
+[[ -z $5 ]] && ( echo "Please set parameter 5 to 'commit' or 'tag' - exit 1" >&2 && exit 1 )
 target_type=$5
 
 jira_task_to_jira_issue_base=9000000
@@ -32,7 +32,8 @@ elif [[ $target_type == "commit" ]] ; then
     extract_data_ccm_task_handle_dirtytasks_separately="false"
     extract_data_ccm_task_verbosed_level="false"
 else
-    echo "Parameter 5 is not set to 'commit' or 'tag' - exit 1" && exit 1
+    echo "Parameter 5 is not set to 'commit' or 'tag' - exit 1" >&2
+    exit 1
 fi
 
 ccm_current_db=`ccm status -f "%database %current_session" | grep TRUE | awk -F " " '{print $1}'`
@@ -56,13 +57,13 @@ case ${ccm_current_db} in
         require_baseline_object="false"
         ;;
     *)
-        echo "Undetermined/supported: ccm_current_db: ${ccm_current_db}"
+        echo "Undetermined/supported: ccm_current_db: ${ccm_current_db}" >&2
         exit 1
 esac
 
-test "${ccm_project_name}x" == "x"      && ( echo "'ccm_project_name' not set - exit"       && exit 1 )
-test "${repo_convert_rev_tag}x" == "x"  && ( echo "'repo_convert_rev_tag' not set - exit"   && exit 1 )
-test "${repo_convert_instance}x" == "x"  && ( echo "'repo_convert_rev_tag' not set - exit"   && exit 1 )
+test "${ccm_project_name}x" == "x"      && ( echo "'ccm_project_name' not set - exit"    >&2   && exit 1 )
+test "${repo_convert_rev_tag}x" == "x"  && ( echo "'repo_convert_rev_tag' not set - exit"  >&2  && exit 1 )
+test "${repo_convert_instance}x" == "x"  && ( echo "'repo_convert_rev_tag' not set - exit"  >&2 && exit 1 )
 
 output_file="./meta_data.txt"
 rm -f ${output_file}
@@ -89,7 +90,7 @@ function handle_task_attrs {
 exit_code="0"
 find_n_set_baseline_obj_attrs_from_project "${ccm_project_name}~${repo_convert_rev_tag}:project:${repo_convert_instance}" "verbose_false" || exit_code=$?
 if [[ "${exit_code}" != "0" ]] ; then
-    echo "ERROR: Project not found: ${ccm_project_name}~${repo_convert_rev_tag}:project:${repo_convert_instance}"
+    echo "ERROR: Project not found: ${ccm_project_name}~${repo_convert_rev_tag}:project:${repo_convert_instance}" >&2
     exit ${exit_code}
 fi
 
@@ -173,9 +174,7 @@ if [[ "${ccm_baseline_obj:-}" != "" ]]; then
 
 else
     [[ "${require_baseline_object}" == "true" ]] && ( echo "ERROR: It is expected to have a baseline object due to configuration: require_baseline_object=true for this database: ${ccm_current_db}" >&2 && exit 2 )
-    objectname=$(echo "${ccm_project_name}~${repo_convert_rev_tag}:project:${repo_convert_instance}" | sed -e 's/xxx/ /g')
-
-    printf "Project: ${objectname} <-> Baseline object: NONE\n\n"                                >> ${output_file}
+    printf "Project: ${ccm_project_name}~${repo_convert_rev_tag}:project:${repo_convert_instance} <-> Baseline object: NONE\n\n"                                >> ${output_file}
 
     echo "Project baseline:"                                         >> ${output_file}
     ccm query "is_baseline_project_of('${objectname}')" -f "%displayname"  >> ${output_file} || echo "  <none>" >> ${output_file}
