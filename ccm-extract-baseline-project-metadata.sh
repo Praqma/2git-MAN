@@ -174,7 +174,9 @@ if [[ "${ccm_baseline_obj:-}" != "" ]]; then
 
 else
     [[ "${require_baseline_object}" == "true" ]] && ( echo "ERROR: It is expected to have a baseline object due to configuration: require_baseline_object=true for this database: ${ccm_current_db}" >&2 && exit 2 )
-    printf "Project: ${ccm_project_name}~${repo_convert_rev_tag}:project:${repo_convert_instance} <-> Baseline object: NONE\n\n"                                >> ${output_file}
+    objectname=$(echo "${ccm_project_name}~${repo_convert_rev_tag}:project:${repo_convert_instance}" | sed -e 's/xxx/ /g')
+
+    printf "Project: ${objectname} <-> Baseline object: NONE\n\n"                                >> ${output_file}
 
     echo "Project baseline:"                                         >> ${output_file}
     ccm query "is_baseline_project_of('${objectname}')" -f "%displayname"  >> ${output_file} || echo "  <none>" >> ${output_file}
