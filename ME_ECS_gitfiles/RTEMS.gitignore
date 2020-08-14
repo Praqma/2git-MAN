@@ -8,3 +8,5 @@
 /lib/
 /RTEMS_cygwin/
 /RTEMS_linux/
+
+RTEMS_devel/downloads/*.diff
