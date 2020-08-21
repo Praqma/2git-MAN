@@ -194,7 +194,7 @@ function convert_revision(){
                 cat .gitmodules
                 ;;
             "directory")
-                git_remote_submodule_to_use=$(echo ${git_remote_to_use} | sed -e "s/\/${repo_name}.git/\/${repo_submodule}.git/")
+
                 if [[ ! $(git rm -rf ${repo_submodule}) ]]; then
                     rm -rf ${repo_submodule}
                     # This should really not be necessary # rm -rf .git/modules/${repo_submodule}
@@ -202,7 +202,7 @@ function convert_revision(){
                 if [[ ! $(git submodule update --init --recursive --force ${repo_submodule}) ]] ; then
                      git rm -rf ${repo_submodule} --cached || echo "Good already  - never mind"
                      rm -rf ${repo_submodule}
-                     git submodule add --force ../${repo_submodule}.git ${repo_submodule} || ( cd ${repo_submodule} && git fetch ${git_remote_submodule_to_use} --tags && git checkout ${repo_submodule}/${repo_init_tag}/${repo_init_tag} && cd - && git submodule add --force ../${repo_submodule}.git ${repo_submodule} )
+                     git submodule add --force ../${repo_submodule}.git ${repo_submodule} || ( cd ${repo_submodule} && git fetch origin --tags && git checkout ${repo_submodule}/${repo_init_tag}/${repo_init_tag} && cd - && git submodule add --force ../${repo_submodule}.git ${repo_submodule} )
                      git submodule update --init --recursive --force ${repo_submodule}
                 fi
                 git add ./.gitmodules
@@ -213,7 +213,7 @@ function convert_revision(){
                 git_resolve_tags_wstatus "${repo_submodule}" "${repo_submodule_rev}"
                 if [[ "${repo_submodule_rev_wcomponent_wstatus}" == "" ]] ; then
                     # try and update
-                    git fetch ${git_remote_submodule_to_use} --tags
+                    git fetch --tags
                     git_resolve_tags_wstatus "${repo_submodule}" "${repo_submodule_rev}"
                     if [[ "${repo_submodule_rev_wcomponent_wstatus}" == "" ]] ; then
                         echo "[ERROR]: Could find the revision ${repo_submodule}/.*/${repo_submodule_rev}_???"
@@ -225,7 +225,7 @@ function convert_revision(){
                     # root project tag handling
                     if [[ ! `git describe ${repo_convert_rev_tag_wcomponent_wstatus}` ]] ; then
                         # it was not found try and fetch to make 100% sure for whatever reason it is not here..
-                        git fetch ${git_remote_submodule_to_use} --tags
+                        git fetch --tags
                     fi
                     if [[ `git describe ${repo_convert_rev_tag_wcomponent_wstatus}` ]] ; then
                         # we already have the correct tag, so just set it and move on..
@@ -253,7 +253,7 @@ function convert_revision(){
 
                 if [[ ${push_tags_in_submodules} == "true" ]]; then
                     git tag -f -a -m "Please see tag in master repo for info: ${repo_convert_rev_tag_wcomponent_wstatus}" ${repo_convert_rev_tag_wcomponent_wstatus}
-                    git push ${git_remote_submodule_to_use} --recurse-submodules=no -f ${repo_convert_rev_tag_wcomponent_wstatus}
+                    git push ${git_remote_to_use} --recurse-submodules=no -f ${repo_convert_rev_tag_wcomponent_wstatus}
                 fi
 
                 cd ${root_dir}
@@ -317,8 +317,8 @@ function convert_revision(){
 
     # Do not consider submodules
     if [[ ${push_to_remote_during_conversion:-} == "true" ]]; then
-        echo "INFO: Configured to push to remote:  git push ${git_remote_to_use} --recurse-submodules=no -f ${repo_convert_rev_tag_wcomponent_wstatus}"
-        git push ${git_remote_to_use} --recurse-submodules=no -f ${repo_convert_rev_tag_wcomponent_wstatus}
+        echo "INFO: Configured to push to remote:  git push origin --recurse-submodules=no -f ${repo_convert_rev_tag_wcomponent_wstatus}"
+        git push origin --recurse-submodules=no -f ${repo_convert_rev_tag_wcomponent_wstatus}
     else
         echo "INFO: Skip push to remote"
     fi
@@ -355,13 +355,13 @@ function convert_revision(){
 
 function reset_converted_tags_except_init_remote_n_local() {
     echo "Delete all local and remote tags '^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$'"
-    git tag | grep "^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$" | xargs --no-run-if-empty git push ${git_remote_to_use} --delete || echo "Some tags might not be on the remote - never mind"
+    git tag | grep "^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$" | xargs --no-run-if-empty git push origin --delete || echo "Some tags might not be on the remote - never mind"
     git tag | grep "^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$" | xargs --no-run-if-empty git tag --delete
 }
 
 function reset_converted_init_tag_remote_n_local() {
     echo "Delete local and remote tag ${repo_name}/${repo_init_tag}/${repo_init_tag}"
-    git tag | grep "^${repo_name}/${repo_init_tag}/${repo_init_tag}$" | xargs --no-run-if-empty git push ${git_remote_to_use} --delete || echo "Some tags might not be on the remote - never mind"
+    git tag | grep "^${repo_name}/${repo_init_tag}/${repo_init_tag}$" | xargs --no-run-if-empty git push origin --delete || echo "Some tags might not be on the remote - never mind"
     git tag | grep "^${repo_name}/${repo_init_tag}/${repo_init_tag}$" | xargs --no-run-if-empty git tag --delete
 }
 
@@ -439,10 +439,10 @@ if [[ ! -d "${repo_name}" ]] ; then
     git ls-tree -r ${repo_name}/${repo_init_tag}/${repo_init_tag}
 
     if [[ ${push_to_remote_during_conversion:-} == "true" ]]; then
-        echo "INFO: Configured to push to remote:  git push ${git_remote_to_use} --recurse-submodules=no -f ${repo_name}/${repo_init_tag}/${repo_init_tag}"
-        git push ${git_remote_to_use} --recurse-submodules=no -f ${repo_name}/${repo_init_tag}/${repo_init_tag}
+        echo "INFO: Configured to push to remote:  git push origin --recurse-submodules=no -f ${repo_name}/${repo_init_tag}/${repo_init_tag}"
+        git push origin --recurse-submodules=no -f ${repo_name}/${repo_init_tag}/${repo_init_tag}
     else
-        echo "INFO: Skip push to remote: ${git_remote_to_use}"
+        echo "INFO: Skip push to remote"
     fi
 
     pwd # we are still in the root repo
@@ -454,15 +454,15 @@ else
         echo "INFO: execute_mode is: '${execute_mode}'"
         echo "Reset local tags in scope '^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$' and then start from begin of '^${repo_name}/init/init$'"
         git tag | grep -v "^${repo_name}/init/init$" | grep "^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$" | xargs --no-run-if-empty git tag --delete
-        git fetch ${git_remote_to_use} --tags --force
-        git fetch ${git_remote_to_use} -ap
+        git fetch --tags --force
+        git fetch -ap
     elif [[ "${execute_mode}" == "continue_locally" ]];then
         echo "INFO: execute_mode is: '${execute_mode}'"
         echo "Do not delete already converted tags and fetch again -  just continue in workspace as is"
     elif [[ "${execute_mode}" == "reset_remote_n_local" ]];then
         echo "INFO: execute_mode is: '${execute_mode}'"
-        git fetch ${git_remote_to_use} --tags --force
-        git fetch ${git_remote_to_use} -ap
+        git fetch --tags --force
+        git fetch -ap
         reset_converted_tags_except_init_remote_n_local
     fi
     git_initialize_lfs_n_settings
