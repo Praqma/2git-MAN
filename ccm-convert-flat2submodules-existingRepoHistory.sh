@@ -213,7 +213,7 @@ function convert_revision(){
                 git_resolve_tags_wstatus "${repo_submodule}" "${repo_submodule_rev}"
                 if [[ "${repo_submodule_rev_wcomponent_wstatus}" == "" ]] ; then
                     # try and update
-                    git fetch --tags -- ${git_remote_submodule_to_use
+                    git fetch --tags -- ${git_remote_submodule_to_use}
                     git_resolve_tags_wstatus "${repo_submodule}" "${repo_submodule_rev}"
                     if [[ "${repo_submodule_rev_wcomponent_wstatus}" == "" ]] ; then
                         echo "[ERROR]: Could find the revision ${repo_submodule}/.*/${repo_submodule_rev}_???"
@@ -225,7 +225,7 @@ function convert_revision(){
                     # root project tag handling
                     if [[ ! `git describe ${repo_convert_rev_tag_wcomponent_wstatus}` ]] ; then
                         # it was not found try and fetch to make 100% sure for whatever reason it is not here..
-                        git fetch --tags -- ${git_remote_submodule_to_use
+                        git fetch --tags -- ${git_remote_submodule_to_use}
                     fi
                     if [[ `git describe ${repo_convert_rev_tag_wcomponent_wstatus}` ]] ; then
                         # we already have the correct tag, so just set it and move on..
