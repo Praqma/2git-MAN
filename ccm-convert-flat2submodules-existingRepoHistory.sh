@@ -202,7 +202,7 @@ function convert_revision(){
                 if [[ ! $(git submodule update --init --recursive --force ${repo_submodule}) ]] ; then
                      git rm -rf ${repo_submodule} --cached || echo "Good already  - never mind"
                      rm -rf ${repo_submodule}
-                     git submodule add --force ../${repo_submodule}.git ${repo_submodule} || ( cd ${repo_submodule} && git fetch --tags  -- ${git_remote_submodule_to_use} && git checkout ${repo_submodule}/${repo_init_tag}/${repo_init_tag} && cd - && git submodule add --force ../${repo_submodule}.git ${repo_submodule} )
+                     git submodule add --force ../${repo_submodule}.git ${repo_submodule} || ( cd ${repo_submodule} && git fetch {git_remote_submodule_to_use} --tags +refs/heads/*:refs/remotes/origin/* && git checkout ${repo_submodule}/${repo_init_tag}/${repo_init_tag} && cd - && git submodule add --force ../${repo_submodule}.git ${repo_submodule} )
                      git submodule update --init --recursive --force ${repo_submodule}
                 fi
                 git add ./.gitmodules
@@ -213,7 +213,7 @@ function convert_revision(){
                 git_resolve_tags_wstatus "${repo_submodule}" "${repo_submodule_rev}"
                 if [[ "${repo_submodule_rev_wcomponent_wstatus}" == "" ]] ; then
                     # try and update
-                    git fetch --tags -- ${git_remote_submodule_to_use}
+                    git fetch ${git_remote_submodule_to_use} --tags +refs/heads/*:refs/remotes/origin/*
                     git_resolve_tags_wstatus "${repo_submodule}" "${repo_submodule_rev}"
                     if [[ "${repo_submodule_rev_wcomponent_wstatus}" == "" ]] ; then
                         echo "[ERROR]: Could find the revision ${repo_submodule}/.*/${repo_submodule_rev}_???"
@@ -225,7 +225,7 @@ function convert_revision(){
                     # root project tag handling
                     if [[ ! `git describe ${repo_convert_rev_tag_wcomponent_wstatus}` ]] ; then
                         # it was not found try and fetch to make 100% sure for whatever reason it is not here..
-                        git fetch --tags -- ${git_remote_submodule_to_use}
+                        git fetch ${git_remote_submodule_to_use} --tags +refs/heads/*:refs/remotes/origin/*
                     fi
                     if [[ `git describe ${repo_convert_rev_tag_wcomponent_wstatus}` ]] ; then
                         # we already have the correct tag, so just set it and move on..
@@ -382,7 +382,7 @@ if [[ ! -d "${repo_name}" ]] ; then
     echo "LOCK Repo: ${repo_name} cloned from: ${git_remote_to_use} is under init construction" > ${lock_repo_init_file}
     git clone ${git_remote_to_use}
     cd ${repo_name}
-    git fetch --tags --force -- ${git_remote_to_use_orig} +refs/heads/*:refs/remotes/origin/*
+    git fetch ${git_remote_to_use_orig} --tags --force +refs/heads/*:refs/remotes/origin/*
     git branch -a
     git tag
     git reset -q --hard ${repo_init_tag}
@@ -454,15 +454,15 @@ else
         echo "INFO: execute_mode is: '${execute_mode}'"
         echo "Reset local tags in scope '^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$' and then start from begin of '^${repo_name}/init/init$'"
         git tag | grep -v "^${repo_name}/init/init$" | grep "^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$" | xargs --no-run-if-empty git tag --delete
-        git fetch --tags --force -- ${git_remote_to_use}
-        git fetch -ap -- ${git_remote_to_use}
+        git fetch ${git_remote_to_use} --tags --force +refs/heads/*:refs/remotes/origin/*
+        git fetch ${git_remote_to_use} -ap +refs/heads/*:refs/remotes/origin/*
     elif [[ "${execute_mode}" == "continue_locally" ]];then
         echo "INFO: execute_mode is: '${execute_mode}'"
         echo "Do not delete already converted tags and fetch again -  just continue in workspace as is"
     elif [[ "${execute_mode}" == "reset_remote_n_local" ]];then
         echo "INFO: execute_mode is: '${execute_mode}'"
-        git fetch --tags --force -- ${git_remote_to_use}
-        git fetch -ap -- ${git_remote_to_use}
+        git fetch ${git_remote_to_use} --tags --force +refs/heads/*:refs/remotes/origin/*
+        git fetch ${git_remote_to_use} -ap  +refs/heads/*:refs/remotes/origin/*
         reset_converted_tags_except_init_remote_n_local
     fi
     git_initialize_lfs_n_settings
