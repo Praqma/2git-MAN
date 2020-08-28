@@ -156,6 +156,8 @@ function convert_revision(){
         echo "[INFO]: ${repo_submodule4part} - use it"
         [[ ${debug:-} == "true" ]] && set -x
 
+        git_remote_submodule_to_use=$(echo ${git_remote_to_use} | sed -e "s/\/${repo_name}.git/\/${repo_submodule}.git/")
+
         case ${submodule_update_mode:-} in
             "update-index")
                 git add -A . # just add here so execute bit can be manipulated in staged
@@ -194,7 +196,6 @@ function convert_revision(){
                 cat .gitmodules
                 ;;
             "directory")
-
                 if [[ ! $(git rm -rf ${repo_submodule}) ]]; then
                     rm -rf ${repo_submodule}
                     # This should really not be necessary # rm -rf .git/modules/${repo_submodule}
