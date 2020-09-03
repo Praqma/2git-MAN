@@ -1,0 +1,4 @@
+*.v filter=lfs diff=lfs merge=lfs -text
+*.vsd filter=lfs diff=lfs merge=lfs -text
+*.asdb filter=lfs diff=lfs merge=lfs -text
+*.mgf filter=lfs diff=lfs merge=lfs -text
