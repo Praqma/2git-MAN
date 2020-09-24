@@ -1,8 +1,10 @@
 *.bz2 filter=lfs diff=lfs merge=lfs -text
 *.exe filter=lfs diff=lfs merge=lfs -text
 *.vsd filter=lfs diff=lfs merge=lfs -text
+*.vsdx filter=lfs diff=lfs merge=lfs -text
 *.Uml filter=lfs diff=lfs merge=lfs -text
 *.doc filter=lfs diff=lfs merge=lfs -text
+*.docx filter=lfs diff=lfs merge=lfs -text
 *.ide filter=lfs diff=lfs merge=lfs -text
 *.zip filter=lfs diff=lfs merge=lfs -text
 *.ico filter=lfs diff=lfs merge=lfs -text
@@ -29,6 +31,8 @@
 *.shs filter=lfs diff=lfs merge=lfs -text
 *.pdn filter=lfs diff=lfs merge=lfs -text
 *.xls filter=lfs diff=lfs merge=lfs -text
+*.xlsx filter=lfs diff=lfs merge=lfs -text
+*.xlsm filter=lfs diff=lfs merge=lfs -text
 *.bin filter=lfs diff=lfs merge=lfs -text
 *.a filter=lfs diff=lfs merge=lfs -text
 *.flash filter=lfs diff=lfs merge=lfs -text
@@ -43,12 +47,24 @@
 *.lvbitx filter=lfs diff=lfs merge=lfs -text
 *.lvproj filter=lfs diff=lfs merge=lfs -text
 *.scsu filter=lfs diff=lfs merge=lfs -text
-**/nodetest/*/*_reference.asc filter=lfs diff=lfs merge=lfs text
-**/nodetest/*/reference.asc filter=lfs diff=lfs merge=lfs text
-**/nodetest/*/*_REF.asc filter=lfs diff=lfs merge=lfs text
-**/nodetest/*/*_ref.asc filter=lfs diff=lfs merge=lfs text
-**/nodetest/*/*_ref_egen3.asc filter=lfs diff=lfs merge=lfs text
+
+*.manbw-paf filter=lfs diff=lfs merge=lfs -text
+*.manbw-spaf filter=lfs diff=lfs merge=lfs -text
+*.s19 filter=lfs diff=lfs merge=lfs -text
+*.BNC filter=lfs diff=lfs merge=lfs -text
 
 cc1plus filter=lfs diff=lfs merge=lfs -text
 cc1 filter=lfs diff=lfs merge=lfs -text
-reference.asc filter=lfs diff=lfs merge=lfs -text
+*.asc filter=lfs diff=lfs merge=lfs -text
+
+# Autodetect text files
+*           text=auto
+
+# Ensure correct end of line handling of .sh and .bash files
+*.txt       text
+*.h         text
+*.c         text
+*.cpp       text
+*.sh        text eol=lf
+*.bash      text eol=lf
+*.pl        text eol=lf
