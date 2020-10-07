@@ -44,13 +44,5 @@
 *.lvbitx filter=lfs diff=lfs merge=lfs -text
 *.lvproj filter=lfs diff=lfs merge=lfs -text
 *.scsu filter=lfs diff=lfs merge=lfs -text
-
-egr/doc/**/* filter=lfs diff=lfs merge=lfs -text
-scr/doc/**/* filter=lfs diff=lfs merge=lfs -text
-
-MOP2/App_Bat/install_App_distribution_XPE.exe filter=lfs diff=lfs merge=lfs -text
-MOP2/EMS/ems_bus/ercs_ems_bridge.dll        filter=lfs diff=lfs merge=lfs -text
-EGRNodetest/**/reference.manbw-paf          filter=lfs diff=lfs merge=lfs -text
-EGRNodetest/**/reference_egen3.manbw-paf    filter=lfs diff=lfs merge=lfs -text
-SCRNodetest/**/reference.manbw-paf          filter=lfs diff=lfs merge=lfs -text
-SCRNodetest/**/reference_egen3.manbw-paf    filter=lfs diff=lfs merge=lfs -text
+*.manbw-paf filter=lfs diff=lfs merge=lfs -text
+*.manbw-spaf filter=lfs diff=lfs merge=lfs -text
