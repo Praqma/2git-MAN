@@ -107,7 +107,7 @@ target('git', repository_name) {
     remote "ssh://git@${git_server_path_this}/${ccm_project}.git"
     longPaths true
     ignore ""
-    lfs '*.dep', '*.zip', '*.tgz', '*.xz', '*.gz'
+    lfs '*.bundle', '*.pima', '*.bz2', '*.exe', '*.jar', '*.deb', '*.zip', '*.tgz', '*.xz', '*.gz'
 }
 
 migrate {
