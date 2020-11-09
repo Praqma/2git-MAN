@@ -163,6 +163,8 @@ function convert_revision(){
         [[ ${debug:-} == "true" ]] && set -x
 
         git_remote_submodule_to_use=$(echo ${git_remote_to_use} | sed -e "s/\/${repo_name}.git/\/${repo_submodule}.git/")
+        git_submodule_path_in_project=$(ccm finduse -p ${repo_submodule4part} | grep "^[[:space:]]" | grep -v '[[:space:]]Projects:' | grep "${repo_submodule4part//:project:1/''}" |  awk -F '~' '{print $1}' | sed -e 's/\t//g' | sed -e "s/^${repo_name}/./g" | sed -e 's/\\/\//g' | sed -e "s/${repo_submodule_name}//")
+        [[ ${git_submodule_path_in_project:-} == "" ]] && ( echo "submodule path is empty - exit 1" && exit 1 )
 
         case ${submodule_update_mode:-} in
             "update-index")
@@ -207,14 +209,21 @@ function convert_revision(){
                     # This should really not be necessary # rm -rf .git/modules/${repo_submodule}
                 fi
                 if [[ ! $(git submodule update --init --recursive --force ${repo_submodule}) ]] ; then
-                     git rm -rf ${repo_submodule} --cached || echo "Good already  - never mind"
-                     rm -rf ${repo_submodule}
-                     git submodule add --force ../${repo_submodule}.git ${repo_submodule} || ( cd ${repo_submodule} && git fetch ${git_remote_submodule_to_use} --tags +refs/heads/*:refs/remotes/origin/* && git checkout ${repo_submodule}/${repo_init_tag}/${repo_init_tag} && cd - && git submodule add --force ../${repo_submodule}.git ${repo_submodule} )
-                     git submodule update --init --recursive --force ${repo_submodule}
+                     git rm -rf  ${git_submodule_path_in_project}/${repo_submodule} --cached || echo "Good already  - never mind"
+                     rm -rf  ${git_submodule_path_in_project}/${repo_submodule}
+                     if [[ ! $(git submodule add --force --name "${repo_submodule_name}" "../${repo_submodule}.git" "${git_submodule_path_in_project}${repo_submodule_name}") ]] ; then
+                       cd ${git_submodule_path_in_project}${repo_submodule_name}
+                       git remote -v
+                       git status
+                       pwd
+                       git checkout -B master
+                       git reset --hard ${repo_submodule}/${repo_init_tag}/${repo_init_tag}
+                       cd ${root_dir}
+                    fi
                 fi
                 git add ./.gitmodules
 
-                cd ${repo_submodule}
+                cd ${git_submodule_path_in_project}/${repo_submodule_name}
 
                 # Look for the "rel" tag first
                 git_resolve_tags_wstatus "${repo_submodule}" "${repo_submodule_rev}"
