@@ -33,10 +33,16 @@ unset repo_submodule_from_map
 
 #export project_revisions=`cat ${1}`
 
+if [[ "${BITBUCKET_PROD_USERNAME:-}" != "" && "${BITBUCKET_PROD_PASSWORD:-}" != "" ]]; then
+  http_remote_credentials="${BITBUCKET_PROD_USERNAME}:${BITBUCKET_PROD_PASSWORD}@"
+else
+  http_remote_credentials=""
+fi
+
 export git_ssh_remote=ssh://git@${git_server_path}/${repo_name}.git
 export git_ssh_remote_orig=ssh://git@${git_server_path}/${repo_name}_orig.git
-export git_https_remote=$(echo ${git_ssh_remote} | sed -e 's/ssh:\/\/git@/https:\/\//' -e 's/7999/7990\/scm/')
-export git_https_remote_orig=$(echo ${git_ssh_remote_orig} | sed -e 's/ssh:\/\/git@/https:\/\//' -e 's/7999/7990\/scm/')
+export git_https_remote=$(echo ${git_ssh_remote} | sed -e "s/ssh:\/\/git@/https:\/\/${http_remote_credentials}/" -e 's/7999/7990\/scm/')
+export git_https_remote_orig=$(echo ${git_ssh_remote_orig} | sed -e "s/ssh:\/\/git@/https:\/\/${http_remote_credentials}/" -e 's/7999/7990\/scm/')
 export git_remote_to_use=${git_https_remote}
 export git_remote_to_use_orig=${git_https_remote_orig}
 echo "Use remote : ${git_remote_to_use} and ${git_remote_to_use_orig}"
