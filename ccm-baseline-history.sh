@@ -31,6 +31,10 @@ find_project_baseline_to_convert(){
     for SUCCESSOR_PROJECT in ${SUCCESSOR_PROJECTS} ; do
         local inherited_string="${inherited_string_local} -> ${CURRENT_PROJECT}"
         [[ ${debug:-} == "true" ]] && printf "${inherited_string}\n"
+        if [[ $(ccm properties -f %ccm2git_migrate $SUCCESSOR_PROJECT ) == "FALSE" ]]; then
+             echo "SKIP: ${SUCCESSOR_PROJECT} ccm2git_migrate=FALSE - continue" >&2
+             continue # Next if already for some odd reason exists - seen in firebird~BES-SW-0906-1.8:project:2
+        fi
         if [[ `grep "$SUCCESSOR_PROJECT@@@$CURRENT_PROJECT" ${projects_file}` ]]; then
              echo "ALREADY include in project file - continue" >&2
              continue # Next if already for some odd reason exists - seen in firebird~BES-SW-0906-1.8:project:2
