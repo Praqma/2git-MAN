@@ -163,7 +163,8 @@ function convert_revision(){
         [[ ${debug:-} == "true" ]] && set -x
 
         git_remote_submodule_to_use=$(echo ${git_remote_to_use} | sed -e "s/\/${repo_name}.git/\/${repo_submodule}.git/")
-        git_submodule_path_in_project=$(ccm finduse -p ${repo_submodule4part} | grep "^[[:space:]]" | grep -v '[[:space:]]Projects:' | grep "${repo_submodule4part//:project:1/''}" | sed -e 's/\t//g' | sed -e 's/\\/\//g' | grep -e "^.*@${ccm_project_4part_spaced//:project:1/''}"'$' | awk -F '~' '{print $1}'  | sed -e "s/^${repo_name}/./g"  | sed -e "s/\/${repo_submodule_name}//")
+        repo_submodule4part_spaced="${repo_submodule4part//xxx/ }"
+        git_submodule_path_in_project=$(ccm finduse -p "${repo_submodule4part_spaced}" | grep "^[[:space:]]" | grep -v '[[:space:]]Projects:' | grep "${repo_submodule4part_spaced//:project:1/''}" | sed -e 's/\t//g' | sed -e 's/\\/\//g' | grep -e "^.*@${ccm_project_4part_spaced//:project:1/''}"'$' | awk -F '~' '{print $1}'  | sed -e "s/^${repo_name}/./g"  | sed -e "s/\/${repo_submodule_name}//")
         [[ ${git_submodule_path_in_project:-} == "" ]] && ( echo "submodule path is empty - exit 1" && exit 1 )
 
         case ${submodule_update_mode:-} in
