@@ -258,7 +258,7 @@ function convert_revision(){
                 if [ `git describe "${repo_submodule_rev_wcomponent_wstatus}"`  ] ; then
                     # we do have the correct 'content' tag - reset hard to it and make sure we are clean..
                     git clean -xffd
-                    git reset -q --hard HEAD
+                    git reset -q --hard
                     git reset -q --hard "${repo_submodule_rev_wcomponent_wstatus}"
                     git clean -xffd
                 else
