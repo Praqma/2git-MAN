@@ -113,6 +113,7 @@ class CCMSource implements MigrationSource {
                 throw new Exception("ccm copy_to_file_system standard error contains text lines: " + serr.toString().readLines().size() )
             }
 
+            // TODO: If _tmp is empty and project has no members then create an empty directory
             log.info "Move from: ${path_tmp} to: ${path_final}"
             FileUtils.moveDirectory(new File(path_tmp), new File(path_final))
             log.info file_full_path_spaced_name.toString() + " DEBUG"

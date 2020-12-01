@@ -151,6 +151,7 @@ migrate {
                         if(!file.name.startsWith(".git")) println file.getName()
                     }
                 }
+                // Remove all .gitignore, .gitmodules, .gitattributes except in root folder
 
                 // Fill empty dirs with .gitignore for empty directories
                 cmd "bash git-fill-empty-dirs-with-gitignore.sh " + target.workspace, System.getProperty("user.dir")
@@ -158,6 +159,11 @@ migrate {
                 // Add everything
                 cmd 'git add -A --force .', target.workspace
 
+                cmd "bash git-remove-all-git-related-files-2plus-levels.sh " + target.workspace, System.getProperty("user.dir")
+
+                cmd "bash git-fill-empty-dirs-with-gitignore.sh " + target.workspace, System.getProperty("user.dir")
+
+                cmd 'git add -A --force .', target.workspace
                 // Update index to have executables on specific extensions
                 cmd "bash git-set-execute-bit-in-index-of-extensions.sh " + target.workspace, System.getProperty("user.dir")
 
