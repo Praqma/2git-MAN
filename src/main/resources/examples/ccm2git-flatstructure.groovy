@@ -151,6 +151,7 @@ migrate {
                         if(!file.name.startsWith(".git")) println file.getName()
                     }
                 }
+
                 // Remove all .gitignore, .gitmodules, .gitattributes except in root folder
                 cmd "bash git-remove-all-git-related-files-2plus-levels.sh " + target.workspace, System.getProperty("user.dir")
                 // Add everything and renormalize attributes
@@ -168,7 +169,6 @@ migrate {
                 // Update index to have executables based on unix tool file reporting
                 cmd "bash git-set-execute-bit-in-index-of-unix-tool-file-executable.sh " + target.workspace, System.getProperty("user.dir")
 
-                cmd 'git status', target.workspace
                 custom { project ->
                     def sout = new StringBuilder(), serr = new StringBuilder()
 
@@ -263,6 +263,24 @@ migrate {
 
                 cmd 'du -sBM .git > ../${snapshotName}~${snapshotRevision}@git_size.txt', target.workspace
                 cmd 'cat ../${snapshotName}~${snapshotRevision}@git_size.txt', target.workspace
+
+                custom {
+                    log.info "Removing files except .git folder in: $target.workspace"
+                    new File(target.workspace).eachFile { file ->
+                        if(!file.name.startsWith(".git")) {
+                            if (!file.isDirectory()) {
+                                println file.getName()
+                                file.delete()
+                            } else {
+                                println file.getName()
+                                file.deleteDir()
+                            }
+                        }
+                    }
+                }
+                cmd 'git reset --hard -q ${snapshotRevision}_${snapshot_status}', target.workspace
+
+                cmd 'diff -r -q . ' + source.workspace + '/code/${snapshotName}~${snapshotRevision}/${snapshotName} || echo ""', target.workspace
             }
         }
     }
