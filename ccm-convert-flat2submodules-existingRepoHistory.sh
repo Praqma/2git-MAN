@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 [[ ${debug:-} == "true" ]] && set -x
 [[ ${run_local:-} == "true" ]] && push_remote="false"
-set -e
 set -u
+set -e
+set -o pipefail
 
 # Load functions
 source $(dirname $0)/_ccm-functions.sh || source ./_ccm-functions.sh
@@ -140,7 +141,8 @@ function convert_revision(){
 
     rm -f .gitmodules
     if [[ ! ${repo_submodules} == "" ]]; then
-        touch .gitmodules && git add ./.gitmodules # make sure we have a clean start for every revision - do not use the .gitmodules as we also need to be able to remove some
+        touch .gitmodules
+        git add ./.gitmodules # make sure we have a clean start for every revision - do not use the .gitmodules as we also need to be able to remove some
     fi
 
     for repo_submodule4part in $(ccm query "is_member_of('${ccm_project_4part_spaced}') and name!='${ccm_project_name_spaced}' and type='project'" -u -f "%objectname" | sed -e 's/ /xxx/g' ); do
@@ -290,7 +292,10 @@ function convert_revision(){
     cd ${root_dir}
     git add -A . > /dev/null 2>&1
 
-    [[ ! ${repo_submodules} == "" ]] && cat .gitmodules && git add .gitmodules
+    if [[ ! ${repo_submodules} == "" ]]; then
+      cat .gitmodules
+      git add .gitmodules
+    fi
 
     git_set_execute_bit_in_index_of_extensions
     git_set_execute_bit_in_index_of_unix_tool_file_executable
@@ -306,7 +311,8 @@ function convert_revision(){
     echo "git commit content of ${repo_convert_rev_tag}"
     git commit -C ${repo_convert_rev_tag} --reset-author || ( echo "Empty commit.." )
 
-    git submodule status || git status
+    git submodule status
+    git status
 
     set +x
     echo "#####################"
