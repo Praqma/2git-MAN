@@ -380,13 +380,13 @@ function convert_revision(){
 function reset_converted_tags_except_init_remote_n_local() {
     echo "Delete all local and remote tags '^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$'"
     git tag | grep "^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$" | xargs --no-run-if-empty git push ${git_remote_to_use} --delete || echo "Some tags might not be on the remote - never mind"
-    git tag | grep "^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$" | xargs --no-run-if-empty git tag --delete
+    git tag | grep "^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$" | xargs --no-run-if-empty git tag --delete || echo "Some tags might not be on the remote - never mind"
 }
 
 function reset_converted_init_tag_remote_n_local() {
     echo "Delete local and remote tag ${repo_name}/${repo_init_tag}/${repo_init_tag}"
     git tag | grep "^${repo_name}/${repo_init_tag}/${repo_init_tag}$" | xargs --no-run-if-empty git push ${git_remote_to_use} --delete || echo "Some tags might not be on the remote - never mind"
-    git tag | grep "^${repo_name}/${repo_init_tag}/${repo_init_tag}$" | xargs --no-run-if-empty git tag --delete
+    git tag | grep "^${repo_name}/${repo_init_tag}/${repo_init_tag}$" | xargs --no-run-if-empty git tag --delete || echo "Some tags might not be on the remote - never mind"
 }
 
 lock_repo_init_file="${execution_root_directory}/repo_under_construction_lock.txt"
@@ -477,7 +477,9 @@ else
     if [[ "${execute_mode}" == "normal" ]]; then
         echo "INFO: execute_mode is: '${execute_mode}'"
         echo "Reset local tags in scope '^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$' and then start from begin of '^${repo_name}/init/init$'"
-        git tag | grep -v "^${repo_name}/init/init$" | grep "^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$" | xargs --no-run-if-empty git tag --delete
+        if [[ ! $( git tag | grep -v "^${repo_name}/init/init$" | grep "^${repo_name}/.*/.*_[dprtis][eueenq][lblsta]$" | xargs --no-run-if-empty git tag --delete ) ]] ; then
+          echo "No tags found"
+        fi
         git fetch ${git_remote_to_use} --tags --force +refs/heads/*:refs/remotes/origin/*
         git fetch ${git_remote_to_use} -ap +refs/heads/*:refs/remotes/origin/*
     elif [[ "${execute_mode}" == "continue_locally" ]];then
