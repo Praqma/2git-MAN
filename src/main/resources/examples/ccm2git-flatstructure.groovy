@@ -220,6 +220,24 @@ migrate {
 
                 }
 
+                // Reset to test that git return to workspace is identical except the .git* files that are manipulated (removed Synergy snapshot .git files and added .gitignore to empty dirs
+                custom {
+                    log.info "Removing files except .git folder in: $target.workspace"
+                    new File(target.workspace).eachFile { file ->
+                        if(!file.name.startsWith(".git")) {
+                            if (!file.isDirectory()) {
+                                println file.getName()
+                                file.delete()
+                            } else {
+                                println file.getName()
+                                file.deleteDir()
+                            }
+                        }
+                    }
+                }
+                cmd 'git reset --hard -q HEAD', target.workspace
+                cmd 'diff -r -q -x ".gitignore" -x ".gitattributes" -x ".gitmodules" -x ".git" . ' + source.workspace + '/code/${snapshotName}~${snapshotRevision}/${snapshotName}', target.workspace
+
                 // The file for tag info is generated during MetaDataExtraction
                 custom { project ->
                     new File(target.workspace + File.separator + ".." + File.separator + "tag_meta_data.txt").withWriter { out ->
@@ -264,23 +282,6 @@ migrate {
                 cmd 'du -sBM .git > ../${snapshotName}~${snapshotRevision}@git_size.txt', target.workspace
                 cmd 'cat ../${snapshotName}~${snapshotRevision}@git_size.txt', target.workspace
 
-                custom {
-                    log.info "Removing files except .git folder in: $target.workspace"
-                    new File(target.workspace).eachFile { file ->
-                        if(!file.name.startsWith(".git")) {
-                            if (!file.isDirectory()) {
-                                println file.getName()
-                                file.delete()
-                            } else {
-                                println file.getName()
-                                file.deleteDir()
-                            }
-                        }
-                    }
-                }
-                cmd 'git reset --hard -q ${snapshotRevision}_${snapshot_status}', target.workspace
-
-                cmd 'diff -r -q . ' + source.workspace + '/code/${snapshotName}~${snapshotRevision}/${snapshotName} || echo ""', target.workspace
             }
         }
     }
