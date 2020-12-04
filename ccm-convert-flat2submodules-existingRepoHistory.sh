@@ -223,6 +223,8 @@ function convert_revision(){
                        git reset --hard ${repo_submodule}/${repo_init_tag}/${repo_init_tag}
                        cd ${root_dir}
                        git submodule add --force --name "${repo_submodule_name}" "../${repo_submodule}.git" "${git_submodule_path_in_project}/${repo_submodule_name}"
+                    else
+                       git submodule add --force --name "${repo_submodule_name}" "../${repo_submodule}.git" "${git_submodule_path_in_project}/${repo_submodule_name}"
                     fi
                 fi
                 git add ./.gitmodules
