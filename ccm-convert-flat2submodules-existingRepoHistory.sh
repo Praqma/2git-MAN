@@ -25,12 +25,14 @@ export gitignore_path_n_files=${6} # <relative_path>:<gitignore_file>@<relative_
 export gitattributes_path_n_files=${7:-} # <relative_path>:<gitattributes_file>@<relative_path>:<gitattributes_file>..
 
 declare -A repo_submodules_map
+IFS=","
 for repo_submodule_from_param in $(echo "${repo_submodules}"); do
      repo_submodule_raw_name=$(echo ${repo_submodule_from_param} | awk -F ":" '{print $1}')
      repo_submodules_map["${repo_submodule_raw_name}"]="${repo_submodule_raw_name}"
 done
 unset repo_submodule_raw_name
 unset repo_submodule_from_map
+unset IFS
 
 #export project_revisions=`cat ${1}`
 
