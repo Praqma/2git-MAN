@@ -47,7 +47,7 @@ case ${ccm_current_db} in
         story_level_release_attr="TargetRelease"
         require_baseline_object="false"
         ;;
-    /data/ccmdb/ME_ECS|/data/ccmdb/halon)
+    /data/ccmdb/ME_ECS|/data/ccmdb/halon|/data/ccmdb/ParamCreat|/data/ccmdb/cocos)
         epic_level_header="Master Change Requests: (MCR)"
         epic_level_release_attr="release"
         epic_level_epic2story_relation="associatedImpl"
