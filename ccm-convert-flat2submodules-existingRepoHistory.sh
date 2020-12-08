@@ -88,6 +88,7 @@ function convert_revision(){
     local ccm_release=$(echo ${project_release} | cut -d "/" -f 2) # inherited from function find_n_set_baseline_obj_attrs_from_project
 
     [[ "${ccm_release:-}" == "x" ]] && ( echo "Release is empty!!" &&  exit 1)
+    [[ "${ccm_release:-}" == "<void>" ]] && ( echo "Release is <void>!!" &&  exit 1) # if the release is <void> it is rewritten to void as BitBucket does not allow <> chars in tags
 
     #NOTE: The next line is suppressing the support for having a baseline project with a different name than is being converted: ( and name='${repo_name}' )
     local baseline_from_tag_info=$(ccm query "is_baseline_project_of('${ccm_project_4part_spaced}') and name='${ccm_project_name_spaced}'" \

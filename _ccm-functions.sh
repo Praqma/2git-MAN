@@ -13,9 +13,15 @@ function find_n_set_baseline_obj_attrs_from_project(){
     proj_version=${BASH_REMATCH[2]}
     proj_instance=${BASH_REMATCH[4]}
     project_release=$(ccm properties -f "%release" "${ccm_proj_obj_string}") || return $?
+    if [[ "$project_release" == "<void>" ]]; then
+      project_release="void"
+      release_query=""
+    else
+      release_query=" and release='${project_release}'"
+    fi
 
     # Find the baseline object of the project with the same release as the project itself
-    ccm_baseline_obj_and_status_release_this=$(ccm query "has_project_in_baseline('${ccm_proj_obj_string}') and release='${project_release}'" -sby create_time -u -f "%objectname@@@%status@@@%release" | head -1 )
+    ccm_baseline_obj_and_status_release_this=$(ccm query "has_project_in_baseline('${ccm_proj_obj_string}') ${release_query}" -sby create_time -u -f "%objectname@@@%status@@@%release" | head -1 )
     regex_baseline_attr='^(.+)@@@(.+)@@@(.+)$'
     if [[ "${ccm_baseline_obj_and_status_release_this:-}" == "" ]]; then
         # No baseline found with primary release tag .. See if other baseline objects are connected ( eg. list any Baseline Object and accept the first )
