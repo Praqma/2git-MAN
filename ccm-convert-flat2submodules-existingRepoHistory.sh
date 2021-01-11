@@ -94,8 +94,14 @@ function convert_revision(){
     local baseline_from_tag_info=$(ccm query "is_baseline_project_of('${ccm_project_4part_spaced}') and name='${ccm_project_name_spaced}'" \
                                     -u -f "%version" | sed -e 's/ /xxx/g' ) || return 1
     if [[ "${baseline_from_tag_info}" != "" ]] ; then
-        local repo_baseline_rev_tag_wcomponent_wstatus=$(git tag | grep ^${repo_name}/.*/${baseline_from_tag_info}_[dprtis][eueenq][lblsta]$ || grep_ext_value=$? )
-        if [ "${repo_baseline_rev_tag_wcomponent_wstatus}x" == "x" ] ; then
+        # prefer released if found
+        local repo_baseline_rev_tag_wcomponent_wstatus=$(git tag | grep ^${repo_name}/.*/${baseline_from_tag_info}_rel$ || grep_ext_value=$? )
+        if [[ "${repo_baseline_rev_tag_wcomponent_wstatus}" == "" ]]; then
+          local repo_baseline_rev_tag_wcomponent_wstatus=$(git tag | grep ^${repo_name}/.*/${baseline_from_tag_info}_[dprtis][eueenq][lblsta]$ || grep_ext_value=$? )
+          tag_amounts=$(echo ${repo_baseline_rev_tag_wcomponent_wstatus} | wc -l )
+          [[ ${tag_amounts} -gt 1 ]] && { printf "ERROR: More than one tag (${tag_amounts}) found in repo_baseline_rev_tag_wcomponent_wstatus\n${repo_baseline_rev_tag_wcomponent_wstatus}\n" && return 1 ;}
+        fi
+        if [[ "${repo_baseline_rev_tag_wcomponent_wstatus}" == "" ]] ; then
             #find the original tag and convert it first
             local repo_baseline_orig_tag_wstatus=$(git tag | grep "^${baseline_from_tag_info}_[dprtis][eueenq][lblsta]$" || grep_ext_value=$?)
             if [[ "${repo_baseline_orig_tag_wstatus}" != "" ]]; then
