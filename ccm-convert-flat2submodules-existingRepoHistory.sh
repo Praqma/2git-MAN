@@ -245,15 +245,11 @@ function convert_revision(){
                 cd ${git_submodule_path_in_project}/${repo_submodule_name}
 
                 # Look for the "rel" tag first
+                git fetch ${git_remote_submodule_to_use} --tags +refs/heads/*:refs/remotes/origin/*
                 git_resolve_tags_wstatus "${repo_submodule}" "${repo_submodule_rev}"
                 if [[ "${repo_submodule_rev_wcomponent_wstatus}" == "" ]] ; then
-                    # try and update
-                    git fetch ${git_remote_submodule_to_use} --tags +refs/heads/*:refs/remotes/origin/*
-                    git_resolve_tags_wstatus "${repo_submodule}" "${repo_submodule_rev}"
-                    if [[ "${repo_submodule_rev_wcomponent_wstatus}" == "" ]] ; then
-                        echo "[ERROR]: Could find the revision ${repo_submodule}/.*/${repo_submodule_rev}_???"
-                        exit 1
-                    fi
+                  echo "[ERROR]: Could find the revision ${repo_submodule}/.*/${repo_submodule_rev}_???"
+                  exit 1
                 fi
 
                 if [[ ${push_tags_in_submodules} == "true" ]]; then
