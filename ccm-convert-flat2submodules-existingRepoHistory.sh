@@ -158,7 +158,12 @@ function convert_revision(){
         git add ./.gitmodules # make sure we have a clean start for every revision - do not use the .gitmodules as we also need to be able to remove some
     fi
 
-    for repo_submodule4part in $(ccm query "is_member_of('${ccm_project_4part_spaced}') and name!='${ccm_project_name_spaced}' and type='project'" -u -f "%objectname" | sed -e 's/ /xxx/g' ); do
+    if [[ ${submodules_from_baseline_obj:-} == true ]] ; then
+      repo_submodules4part=$(ccm query "is_project_in_baseline_of(has_project_in_baseline('${ccm_project_name_spaced}')) and name match 'Shared_*'" | sed -e 's/ /xxx/g' )
+    else
+      repo_submodules4part=$(ccm query "is_member_of('${ccm_project_4part_spaced}') and name!='${ccm_project_name_spaced}' and type='project'" -u -f "%objectname" | sed -e 's/ /xxx/g' )
+    fi
+    for repo_submodule4part in ${repo_submodules4part} ; do
         set +x
         regex_4part='^(.+)~(.+):(.+):(.+)$'
         [[ ${repo_submodule4part} =~ ${regex_4part} ]] || exit 1
@@ -179,7 +184,11 @@ function convert_revision(){
 
         git_remote_submodule_to_use=$(echo ${git_remote_to_use} | sed -e "s/\/${repo_name}.git/\/${repo_submodule}.git/")
         repo_submodule4part_spaced="${repo_submodule4part//xxx/ }"
-        git_submodule_path_in_project=$(ccm finduse -p "${repo_submodule4part_spaced}" | grep "^[[:space:]]" | grep -v '[[:space:]]Projects:' | grep "${repo_submodule4part_spaced//:project:1/''}" | sed -e 's/\t//g' | sed -e 's/\\/\//g' | grep -e "^.*@${ccm_project_4part_spaced//:project:1/''}"'$' | awk -F '~' '{print $1}'  | sed -e "s/^${repo_name}/./g"  | sed -e "s/\/${repo_submodule_name}//")
+        if [[ ${submodules_from_baseline_obj:-} == true ]] ; then
+          git_submodule_path_in_project=${repo_submodule_name}
+        else
+          git_submodule_path_in_project=$(ccm finduse -p "${repo_submodule4part_spaced}" | grep "^[[:space:]]" | grep -v '[[:space:]]Projects:' | grep "${repo_submodule4part_spaced//:project:1/''}" | sed -e 's/\t//g' | sed -e 's/\\/\//g' | grep -e "^.*@${ccm_project_4part_spaced//:project:1/''}"'$' | awk -F '~' '{print $1}'  | sed -e "s/^${repo_name}/./g"  | sed -e "s/\/${repo_submodule_name}//")
+        fi
         [[ ${git_submodule_path_in_project:-} == "" ]] && ( echo "submodule path is empty - exit 1" && exit 1 )
 
         case ${submodule_update_mode:-} in
