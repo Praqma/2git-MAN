@@ -157,12 +157,22 @@ function convert_revision(){
         touch .gitmodules
         git add ./.gitmodules # make sure we have a clean start for every revision - do not use the .gitmodules as we also need to be able to remove some
     fi
-
+    exit_code=0
     if [[ ${submodules_from_baseline_obj:-} == true ]] ; then
-      repo_submodules4part=$(ccm query "is_project_in_baseline_of(has_project_in_baseline('${ccm_project_4part_spaced}')) and name match 'Shared_*'" | sed -e 's/ /xxx/g' )
+      repo_submodules4part=$(ccm query "is_project_in_baseline_of(has_project_in_baseline('${ccm_project_4part_spaced}')) and name match 'Shared_*'" | sed -e 's/ /xxx/g' ) || exit_code $?
     else
-      repo_submodules4part=$(ccm query "is_member_of('${ccm_project_4part_spaced}') and name!='${ccm_project_name_spaced}' and type='project'" -u -f "%objectname" | sed -e 's/ /xxx/g' )
+      repo_submodules4part=$(ccm query "is_member_of('${ccm_project_4part_spaced}') and name!='${ccm_project_name_spaced}' and type='project'" -u -f "%objectname" | sed -e 's/ /xxx/g' ) || exit_code $?
     fi
+    if [[ $exit_code -ne 0 ]]; then
+      if [[ $exit_code -eq 6 ]]; then
+        # query did not give outout
+        repo_submodules4part=""
+      else
+        echo "ERROR: Something went wrong"
+        exit 1
+      fi
+    fi
+
     for repo_submodule4part in ${repo_submodules4part} ; do
         set +x
         regex_4part='^(.+)~(.+):(.+):(.+)$'
