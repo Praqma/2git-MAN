@@ -189,17 +189,19 @@ function convert_revision(){
             cd ${root_dir}
             continue
         fi
+        unset repo_submodule_name
         echo "[INFO]: ${repo_submodule4part} - use it"
         [[ ${debug:-} == "true" ]] && set -x
 
         git_remote_submodule_to_use=$(echo ${git_remote_to_use} | sed -e "s/\/${repo_name}.git/\/${repo_submodule}.git/")
         repo_submodule4part_spaced="${repo_submodule4part//xxx/ }"
         if [[ ${submodules_from_baseline_obj:-} == true ]] ; then
-          git_submodule_path_in_project=${repo_submodule_name}
+          git_submodule_path=${repo_submodule}
         else
-          git_submodule_path_in_project=$(ccm finduse -p "${repo_submodule4part_spaced}" | grep "^[[:space:]]" | grep -v '[[:space:]]Projects:' | grep "${repo_submodule4part_spaced//:project:1/''}" | sed -e 's/\t//g' | sed -e 's/\\/\//g' | grep -e "^.*@${ccm_project_4part_spaced//:project:1/''}"'$' | awk -F '~' '{print $1}'  | sed -e "s/^${repo_name}/./g"  | sed -e "s/\/${repo_submodule_name}//")
+          git_submodule_path_in_project=$(ccm finduse -p "${repo_submodule4part_spaced}" | grep "^[[:space:]]" | grep -v '[[:space:]]Projects:' | grep "${repo_submodule4part_spaced//:project:1/''}" | sed -e 's/\t//g' | sed -e 's/\\/\//g' | grep -e "^.*@${ccm_project_4part_spaced//:project:1/''}"'$' | awk -F '~' '{print $1}'  | sed -e "s/^${repo_name}/./g"  | sed -e "s/\/${repo_submodule}//")
+          git_submodule_path=${git_submodule_path_in_project}/${repo_submodule}
         fi
-        [[ ${git_submodule_path_in_project:-} == "" ]] && ( echo "submodule path is empty - exit 1" && exit 1 )
+        [[ ${git_submodule_path:-} == "" ]] && ( echo "submodule path is empty - exit 1" && exit 1 )
 
         case ${submodule_update_mode:-} in
             "update-index")
@@ -244,24 +246,24 @@ function convert_revision(){
                     # This should really not be necessary # rm -rf .git/modules/${repo_submodule}
                 fi
                 if [[ ! $(git submodule update --init --recursive --force ${repo_submodule}) ]] ; then
-                     git rm -rf  ${git_submodule_path_in_project}/${repo_submodule} --cached || echo "Good already  - never mind"
-                     rm -rf  ${git_submodule_path_in_project}/${repo_submodule}
-                     if [[ ! $(git submodule add --force --name "${repo_submodule_name}" "../${repo_submodule}.git" "${git_submodule_path_in_project}/${repo_submodule_name}") ]] ; then
-                       cd ${git_submodule_path_in_project}/${repo_submodule_name}
+                     git rm -rf  ${git_submodule_path} --cached || echo "Good already  - never mind"
+                     rm -rf  ${git_submodule_path}
+                     if [[ ! $(git submodule add --force --name "${repo_submodule}" "../${repo_submodule}.git" "${git_submodule_path}") ]] ; then
+                       cd ${git_submodule_path}
                        git remote -v
                        git status
                        pwd
                        git checkout -B master
                        git reset --hard ${repo_submodule}/${repo_init_tag}/${repo_init_tag}
                        cd ${root_dir}
-                       git submodule add --force --name "${repo_submodule_name}" "../${repo_submodule}.git" "${git_submodule_path_in_project}/${repo_submodule_name}"
+                       git submodule add --force --name "${repo_submodule}" "../${repo_submodule}.git" "${git_submodule_path}"
                     else
-                       git submodule add --force --name "${repo_submodule_name}" "../${repo_submodule}.git" "${git_submodule_path_in_project}/${repo_submodule_name}"
+                       git submodule add --force --name "${repo_submodule}" "../${repo_submodule}.git" "${git_submodule_path}"
                     fi
                 fi
                 git add ./.gitmodules
 
-                cd ${git_submodule_path_in_project}/${repo_submodule_name}
+                cd ${git_submodule_path}
 
                 # Look for the "rel" tag first
                 git fetch ${git_remote_submodule_to_use} --tags +refs/heads/*:refs/remotes/origin/*
@@ -313,7 +315,6 @@ function convert_revision(){
                 exit 1
         esac
 
-        unset repo_submodule_name
         unset repo_submodule_rev
         unset repo_submodule_rev_wcomponent_wstatus
         unset repo_submodule_inst
