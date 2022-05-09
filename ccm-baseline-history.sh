@@ -20,18 +20,27 @@ find_project_baseline_to_convert(){
         proj_instance=`printf "${CURRENT_PROJECT}" | sed -e 's/xxx/ /g' | awk -F"~|:" '{print $4}'`
         query="has_baseline_project(name match '${proj_name}*' and version='${proj_version}' and type='project' and instance='${proj_instance}') and ( status='integrate' or status='test' or status='sqa' or status='released' )"
     else
-        ccm_proj_obj_string=`printf "${CURRENT_PROJECT}" | sed -e 's/xxx/ /g'`
-        proj_name=`printf "${CURRENT_PROJECT}" | sed -e 's/xxx/ /g' | awk -F"~|:" '{print $1}'`
-        query="has_baseline_project('${ccm_proj_obj_string}') and project='$proj_name'  and ( status='integrate' or status='test' or status='sqa' or status='released' )"
+        [[ ${CURRENT_PROJECT:-} =~ ${regex_ccm4part} ]] || {
+            echo "4part does not comply"
+            return 1
+          }
+        local proj_name=${BASH_REMATCH[1]}
+        local version=${BASH_REMATCH[2]}
+        local type=${BASH_REMATCH[3]}
+        local instance=${BASH_REMATCH[4]}
+	
+        query="has_baseline_project('${CURRENT_PROJECT}') and project='$proj_name'  and ( status='integrate' or status='test' or status='sqa' or status='released' )"
     fi
 
     # All status versions
-    local SUCCESSOR_PROJECTS=`ccm query "${query}" -u -f "%objectname" | sed -e 's/ /xxx/g'`
-    [[ ${debug:-} == "true" ]] && printf "_________________________\n$SUCCESSOR_PROJECTS\n"
-    for SUCCESSOR_PROJECT in ${SUCCESSOR_PROJECTS} ; do
+    [[ ${debug:-} == "true" ]] && {
+      printf "_________________________\n%s\n" "$(ccm query "${query}" -u -f "%objectname")"
+    }
+    IFS=$'\r\n'
+    for SUCCESSOR_PROJECT in $(ccm query "${query}" -u -f "%objectname") ; do
         local inherited_string="${inherited_string_local} -> ${CURRENT_PROJECT}"
         [[ ${debug:-} == "true" ]] && printf "${inherited_string}\n"
-        if [[ $(ccm properties -f %ccm2git_migrate $SUCCESSOR_PROJECT ) == "FALSE" ]]; then
+        if [[ $(ccm properties -f %ccm2git_migrate "${SUCCESSOR_PROJECT}" ) == "FALSE" ]]; then
              echo "SKIP: ${SUCCESSOR_PROJECT} ccm2git_migrate=FALSE - continue" >&2
              continue # Next if already for some odd reason exists - seen in firebird~BES-SW-0906-1.8:project:2
         fi
@@ -47,7 +56,7 @@ find_project_baseline_to_convert(){
         fi
         if [[ ${ccm_baseline_status:-} == "test_baseline" ]] ; then
             # Figure out if the project is in use as as baseline in and other project
-            project_baseline_childs=$(ccm query "has_baseline_project('$(echo ${SUCCESSOR_PROJECT} | sed -e 's/xxx/ /g')') and ( status='integrate' or status='test' or status='sqa' or status='released' )" -u -f "%objectname" | head -1 )
+            project_baseline_childs=$(ccm query "has_baseline_project('${SUCCESSOR_PROJECT}') and ( status='integrate' or status='test' or status='sqa' or status='released' )" -u -f "%objectname" | head -1 )
             if [[ "${project_baseline_childs:-}" != "" ]]; then
                 echo "ACCEPT: Related Baseline Object is in test status: ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_release_this} - but at least in use as baseline of project: ${project_baseline_childs}" >&2
             else
@@ -97,7 +106,7 @@ fi
 inherited_string="${BASELINE_PROJECT}"
 echo "$BASELINE_PROJECT@@@${init_project_name}~init:project:${instance}" > ${projects_file}
 
-find_project_baseline_to_convert ${BASELINE_PROJECT} ${inherited_string}
+find_project_baseline_to_convert "${BASELINE_PROJECT}" "${inherited_string}"
 if [[ ${debug:-} != "true" ]]; then
     cat ${projects_file}
 fi
