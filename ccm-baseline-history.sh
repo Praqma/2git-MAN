@@ -34,12 +34,12 @@ find_project_baseline_to_convert(){
 
     # All status versions
     [[ ${debug:-} == "true" ]] && {
-      printf "_________________________\n%s\n" "$(ccm query "${query}" -u -f "%objectname")"
+      printf "_________________________\n%s\n" "$(ccm query "${query}" -u -f "%objectname")" >&2
     }
     IFS=$'\r\n'
     for SUCCESSOR_PROJECT in $(ccm query "${query}" -u -f "%objectname") ; do
         local inherited_string="${inherited_string_local} -> ${CURRENT_PROJECT}"
-        [[ ${debug:-} == "true" ]] && printf "${inherited_string}\n"
+        [[ ${debug:-} == "true" ]] && printf "${inherited_string}\n" >&2
         if [[ $(ccm properties -f %ccm2git_migrate "${SUCCESSOR_PROJECT}" ) == "FALSE" ]]; then
              echo "SKIP: ${SUCCESSOR_PROJECT} ccm2git_migrate=FALSE - continue" >&2
              continue # Next if already for some odd reason exists - seen in firebird~BES-SW-0906-1.8:project:2
