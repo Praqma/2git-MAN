@@ -53,10 +53,10 @@ class MetaBaseline extends Extraction {
         } else {
             // run this sections of we are pointing to any revision other than init alias an already converted
             cmd_line = "bash " +
-                    System.getProperty("user.dir") + File.separator + "ccm-get-status-from-baseline-or-project.sh " +
-                    "$snapshotName " +
-                    "$baselineRevision " +
-                    "$baselineInstance"
+                    System.getProperty("user.dir") + File.separator + 'ccm-get-status-from-baseline-or-project.sh ' +
+                    '"' + snapshotName + '" ' +
+                    '"' + baselineRevision + '" ' +
+                    '"' + baselineInstance + '"'
             log.info(cmd_line)
             cmd = cmd_line.execute(envVars, new File(workspace))
             cmd.waitForProcessOutput(sout, serr)
@@ -123,9 +123,9 @@ class MetaBaseline extends Extraction {
         // get baseline or project baseline status from
         cmd_line = "bash " +
                 System.getProperty("user.dir") + File.separator + "ccm-get-status-from-baseline-or-project.sh " +
-                "$snapshotName " +
-                "$snapshotRevision " +
-                "$snapshotInstance"
+                '"' + snapshotName + '" ' +
+                '"' + baselineRevision + '" ' +
+                '"' + baselineInstance + '"'
         log.info(cmd_line)
         cmd = cmd_line.execute(envVars,new File(workspace))
         cmd.waitForProcessOutput(sout, serr)
@@ -151,10 +151,10 @@ class MetaBaseline extends Extraction {
         // Build the CCM project meta data for later commit
         cmd_line = "bash " +
                 System.getProperty("user.dir") + File.separator + "ccm-extract-baseline-project-metadata.sh " +
-                "$snapshotName " +
-                "$snapshotRevision " +
-                "$snapshotInstance " +
-                "$jiraProjectKey " +
+                '"' + snapshotName + '" ' +
+                '"' + baselineRevision + '" ' +
+                '"' + baselineInstance + '" ' +
+                '"' + jiraProjectKey + '" ' +
                 "tag"
         log.info(cmd_line)
         cmd = cmd_line.execute(envVars,new File(workspace))
@@ -180,10 +180,10 @@ class MetaBaseline extends Extraction {
 
         cmd_line = "bash " +
                 System.getProperty("user.dir") + File.separator + "ccm-extract-baseline-project-metadata.sh " +
-                "$snapshotName " +
-                "$snapshotRevision " +
-                "$snapshotInstance " +
-                "$jiraProjectKey " +
+                '"' + snapshotName + '" ' +
+                '"' + baselineRevision + '" ' +
+                '"' + baselineInstance + '" ' +
+                '"' + jiraProjectKey + '" ' +
                 "commit"
         log.info(cmd_line)
         cmd = cmd_line.execute(envVars,new File(workspace))
