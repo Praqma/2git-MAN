@@ -4,10 +4,14 @@ set -u
 set -e
 
 source $(dirname $0)/_ccm-functions.sh || source ./_ccm-functions.sh
+
+if [[ ${1} == "" ]]; then
+  printf "project parameter 1 is empty - skip" 1>&2
+  exit 0
+fi
 BASELINE_PROJECT_tmp="$1"
 BASELINE_PROJECT="$1"
 
-#byref_translate_from_string2ccm_4part BASELINE_PROJECT_tmp BASELINE_PROJECT
 
 printf "Processing ${BASELINE_PROJECT}\n" 1>&2
 
