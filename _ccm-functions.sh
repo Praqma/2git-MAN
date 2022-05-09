@@ -2,6 +2,48 @@
 
 regex_ccm4part='^(.+)~(.+):(.+):(.+)$'
 
+
+
+function byref_translate_from_ccm_project_name_string2git_repo_name_string() {
+  # from parameter: "pro??ject~ver??sion:<type>:<instance>"
+  #  ccm query "name match 'pro??ject' and version match 'ver??sion' and type='<type>' and instance='<instance>'
+  # returns and store in parameter 2:   "pro äject~ver üsion:<type>:<instance>"
+  if [[ -z ${1} ]]; then
+    echo "Parameter 1  - as ref - cannot be empty" && exit 1
+  else
+    local -n _fromString=${1}
+  fi
+  if [[ -z ${2} ]]; then
+    echo "Parameter 1  - as ref - cannot be empty" && exit 1
+  else
+    local -n _toString=${2}
+  fi
+  _toString=$(printf "%s" "${_fromString}" | sed \
+            -e 's/ /-/g' \
+            )
+}
+
+
+function byref_translate_from_git_repo_name_string2ccm_project_name_query_string() {
+  # from parameter: "pro??ject~ver??sion:<type>:<instance>"
+  #  ccm query "name match 'pro??ject' and version match 'ver??sion' and type='<type>' and instance='<instance>'
+  # returns and store in parameter 2:   "pro äject~ver üsion:<type>:<instance>"
+  if [[ -z ${1} ]]; then
+    echo "Parameter 1  - as ref - cannot be empty" && exit 1
+  else
+    local -n _fromString=${1}
+  fi
+  if [[ -z ${2} ]]; then
+    echo "Parameter 1  - as ref - cannot be empty" && exit 1
+  else
+    local -n _toString=${2}
+  fi
+  _toString=$(printf "%s" "${_fromString}" | sed \
+            -e 's/-/?/g' \
+            )
+}
+
+
 function byref_translate_from_git_string2ccm_query_quetionmark() {
   # from parameter: "pro??ject~ver??sion:<type>:<instance>"
   #  ccm query "name match 'pro??ject' and version match 'ver??sion' and type='<type>' and instance='<instance>'
@@ -20,10 +62,10 @@ function byref_translate_from_git_string2ccm_query_quetionmark() {
             -e 's/-/?/g'
 }
 
-function byref_translate_from_ccm_query_name_quetionmark_instance2ccm_name() {
-  # from parameter: "pro??ject:<instance>"
+function byref_translate_from_git_string2ccm_query_quetionmark() {
+  # from parameter: "pro??ject~ver??sion:<type>:<instance>"
   #  ccm query "name match 'pro??ject' and version match 'ver??sion' and type='<type>' and instance='<instance>'
-  # returns and store in parameter 2:   "project~version:<type>:<instance>"
+  # returns and store in parameter 2:   "pro äject~ver üsion:<type>:<instance>"
   if [[ -z ${1} ]]; then
     echo "Parameter 1  - as ref - cannot be empty" && exit 1
   else
@@ -34,12 +76,74 @@ function byref_translate_from_ccm_query_name_quetionmark_instance2ccm_name() {
   else
     local -n _toString=${2}
   fi
+  _toString=printf "%s" "${_fromString}" | sed \
+            -e 's/-/?/g'
+}
 
-  if [[ $(ccm query "name match '$name' and type='$type' and instance='${instance}'" -u -f "%objectname" | wc -l) -gt 1 ]]; then
-    echo "ERROR: I found two projects with similar ? query name output -oo gave foo and boo"
+
+function byref_translate_from_ccm_project_name_query_string2ccm_project_name() {
+  # from parameter: "pro??ject:<instance>"
+  #  ccm query "name match 'pro??ject' and version match 'ver??sion' and type='<type>' and instance='<instance>'
+  # returns and store in parameter 2:   "project~version:<type>:<instance>"
+  if [[ -z ${1} ]]; then
+    echo "Parameter 1  - as ref - cannot be empty" && exit 1
+  else
+    local -n _fromString=${1}
+  fi
+  if [[ -z ${2} ]]; then
+    echo "Parameter 2  - as ref - cannot be empty" && exit 1
+  else
+    local -n _instance=${2}
+  fi
+  if [[ -z ${3} ]]; then
+    echo "Parameter 3  - as ref - cannot be empty" && exit 1
+  else
+    local -n _toString=${3}
+  fi
+
+  local _query_string="name match '$_fromString' and type='project' and instance='${_instance}'"
+  local _found_project_name_instances=$(ccm query "${_query_string}" -u -f "%name:%instance" | /usr/bin/sort -u | wc -l)
+  if [[ _found_project_name_instances -eq 0 ]]; then
+    echo "ERROR: I found no projects with similar ? query name output  gave foo and boo "
+    echo "$_query_string"
     return 1
   fi
-  _tostring=$(ccm query "name match '$name' and type='$type' and instance='${instance}'" -u -f "%objectname")
+  if [[ _found_project_name_instances -gt 1 ]]; then
+    echo "ERROR: I found two or more projects with similar ? query name output -oo gave foo and boo"
+    ccm query "${_query_string}" -u -f "%name:%instance"
+    return 1
+  fi
+  _toString="$(ccm query "${_query_string}" -u -f "%name")"
+}
+
+
+function byref_translate_from_git_repo_name_string2ccm_project_name_string() {
+  # from parameter: "pro??ject:<instance>"
+  #  ccm query "name match 'pro??ject' and version match 'ver??sion' and type='<type>' and instance='<instance>'
+  # returns and store in parameter 2:   "project~version:<type>:<instance>"
+  if [[ -z ${1} ]]; then
+    echo "Parameter 1  - as ref - cannot be empty" && exit 1
+  else
+    local -n _fromString=${1}
+  fi
+  if [[ -z ${2} ]]; then
+    echo "Parameter 2  - as ref - cannot be empty" && exit 1
+  else
+    local -n _instance=${2}
+  fi
+  if [[ -z ${3} ]]; then
+    echo "Parameter 3  - as ref - cannot be empty" && exit 1
+  else
+    local -n _toString=${3}
+  fi
+
+  local _git_repo_name=$_fromString
+  local _ccm_project_instance=$_instance
+  local _ccm_query_name=""
+  byref_translate_from_git_repo_name_string2ccm_project_name_query_string _git_repo_name _ccm_query_name
+  local _query_result=""
+  byref_translate_from_ccm_project_name_query_string2ccm_project_name _ccm_query_name _ccm_project_instance _query_result
+  _toString=$_query_result
 }
 
 function byref_translate_from_ccm_name_string2git_repo_string() {
@@ -83,25 +187,6 @@ function byref_translate_from_ccm_version_string2git_tag_string() {
 
 
 
-
-function byref_translate_from_ccm_project_name_string2git_repo_name_string() {
-  # from parameter: "pro??ject~ver??sion:<type>:<instance>"
-  #  ccm query "name match 'pro??ject' and version match 'ver??sion' and type='<type>' and instance='<instance>'
-  # returns and store in parameter 2:   "pro äject~ver üsion:<type>:<instance>"
-  if [[ -z ${1} ]]; then
-    echo "Parameter 1  - as ref - cannot be empty" && exit 1
-  else
-    local -n _fromString=${1}
-  fi
-  if [[ -z ${2} ]]; then
-    echo "Parameter 1  - as ref - cannot be empty" && exit 1
-  else
-    local -n _toString=${2}
-  fi
-  _toString=$(printf "%s" "${_fromString}" | sed \
-            -e 's/ /-/g' \
-            )
-}
 
 
 
