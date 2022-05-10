@@ -1,9 +1,9 @@
 #!/bin/bash
 
-set -e
+set -euo pipefail
+
 [[ ${debug:-} == "true" ]] && set -x
-set -u
-BASELINE_PROJECT="$1"
+
 
 use_wildcard="" # *
 
@@ -15,9 +15,9 @@ find_project_baseline_to_convert(){
     local inherited_string_local=$2
 
     if [[ "${use_wildcard}" == "*" ]]; then
-        proj_name=`printf "${CURRENT_PROJECT}" | sed -e 's/xxx/ /g' | awk -F"~|:" '{print $1}'`
-        proj_version=`printf "${CURRENT_PROJECT}" | sed -e 's/xxx/ /g' | awk -F"~|:" '{print $2}'`
-        proj_instance=`printf "${CURRENT_PROJECT}" | sed -e 's/xxx/ /g' | awk -F"~|:" '{print $4}'`
+        proj_name=`printf "${CURRENT_PROJECT}"  | awk -F"~|:" '{print $1}'`
+        proj_version=`printf "${CURRENT_PROJECT}"  | awk -F"~|:" '{print $2}'`
+        proj_instance=`printf "${CURRENT_PROJECT}"  | awk -F"~|:" '{print $4}'`
         query="has_baseline_project(name match '${proj_name}*' and version='${proj_version}' and type='project' and instance='${proj_instance}') and ( status='integrate' or status='test' or status='sqa' or status='released' )"
     else
         [[ ${CURRENT_PROJECT:-} =~ ${regex_ccm4part} ]] || {
@@ -28,7 +28,7 @@ find_project_baseline_to_convert(){
         local version=${BASH_REMATCH[2]}
         local type=${BASH_REMATCH[3]}
         local instance=${BASH_REMATCH[4]}
-	
+
         query="has_baseline_project('${CURRENT_PROJECT}') and project='$proj_name'  and ( status='integrate' or status='test' or status='sqa' or status='released' )"
     fi
 
@@ -60,7 +60,7 @@ find_project_baseline_to_convert(){
             if [[ "${project_baseline_childs:-}" != "" ]]; then
                 echo "ACCEPT: Related Baseline Object is in test status: ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_release_this} - but at least in use as baseline of project: ${project_baseline_childs}" >&2
             else
-                if [[ $(ccm finduse -all_projects "$(echo ${SUCCESSOR_PROJECT} | sed -e 's/xxx/ /g')" | grep "Object is not used in scope." ) ]]; then
+                if [[ $(ccm finduse -all_projects "$(echo ${SUCCESSOR_PROJECT} )" | grep "Object is not used in scope." ) ]]; then
                     # not in use as sub project"
                     echo "SKIP: Related Baseline Object is in test status and is NOT in use as subproject: ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_release_this} - and is leaf in project baseline history" >&2
                     continue
@@ -72,11 +72,11 @@ find_project_baseline_to_convert(){
         fi
         regex_revision_contains_History='^.*\.History.*$'
         if [[ ${proj_version:-} =~ ${regex_revision_contains_History} ]] ; then
-            project_baseline_childs=$(ccm query "has_baseline_project('$(echo ${SUCCESSOR_PROJECT} | sed -e 's/xxx/ /g')') and ( status='integrate' or status='test' or status='sqa' or status='released' )" -u -f "%objectname" | head -1 )
+            project_baseline_childs=$(ccm query "has_baseline_project('$(echo ${SUCCESSOR_PROJECT} )') and ( status='integrate' or status='test' or status='sqa' or status='released' )" -u -f "%objectname" | head -1 )
             if [[ "${project_baseline_childs:-}" != "" ]]; then
                 echo "ACCEPT: Project revision contains 'History': ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_release_this} - but is in use as baseline of project: ${project_baseline_childs}" >&2
             else
-                if [[ $(ccm finduse -all_projects "$(echo ${SUCCESSOR_PROJECT} | sed -e 's/xxx/ /g')" | grep "Object is not used in scope." ) ]]; then
+                if [[ $(ccm finduse -all_projects "$(echo ${SUCCESSOR_PROJECT} )" | grep "Object is not used in scope." ) ]]; then
                     # not in use as sub project"
                     echo "SKIP: Project revision contains 'History and is NOT in use as subproject: ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_release_this} - even is leaf in project baseline history" >&2
                     continue
@@ -86,13 +86,18 @@ find_project_baseline_to_convert(){
                 fi
             fi
         fi
-        printf "$SUCCESSOR_PROJECT@@@$CURRENT_PROJECT\n" >> ${projects_file}
+        git_CURRENT_PROJECT=""
+        byref_translate_from_git_repo_4part2ccm_4part $CURRENT_PROJECT git_CURRENT_PROJECT
+
+        git_SUCCESSOR_PROJECT=""
+        byref_translate_from_git_repo_4part2ccm_4part $SUCCESSOR_PROJECT git_SUCCESSOR_PROJECT
+        printf "$git_SUCCESSOR_PROJECT@@@git_CURRENT_PROJECT@@@$SUCCESSOR_PROJECT@@@$CURRENT_PROJECT\n" >> ${projects_file}
         find_project_baseline_to_convert "${SUCCESSOR_PROJECT}" "${inherited_string}"
     done
 }
 
-init_project_name=`printf "${BASELINE_PROJECT}" | awk -F"~" '{print $1}'`
-instance=`printf "${BASELINE_PROJECT}" | awk -F"~|:" '{print $4}' `
+## MAIN ##
+git_BASELINE_PROJECT="$1"
 
 export projects_file="./projects.txt"
 #rm -f ${projects_file}
@@ -103,10 +108,21 @@ if [ "${use_cached_project_list:-}X" == "trueX" ]; then
   fi
 fi
 
-inherited_string="${BASELINE_PROJECT}"
-echo "$BASELINE_PROJECT@@@${init_project_name}~init:project:${instance}" > ${projects_file}
+ccm_BASELINE_PROJECT=""
+byref_translate_from_git_repo_4part2ccm_4part $git_BASELINE_PROJECT ccm_BASELINE_PROJECT
 
-find_project_baseline_to_convert "${BASELINE_PROJECT}" "${inherited_string}"
-if [[ ${debug:-} != "true" ]]; then
-    cat ${projects_file}
-fi
+
+checked_version=$(ccm properties -f %version "$ccm_BASELINE_PROJECT" ) || {
+  exit_code=$?
+  echo "Project: $ccm_BASELINE_PROJECT does not exit - exit 1"
+  exit $exit_code
+}
+
+init_project_name=`printf "${ccm_BASELINE_PROJECT}" | awk -F"~" '{print $1}'`
+instance=`printf "${ccm_BASELINE_PROJECT}" | awk -F"~|:" '{print $4}' `
+
+inherited_string="${ccm_BASELINE_PROJECT}"
+echo "$git_BASELINE_PROJECT@@@${init_project_name}~init:project:${instance}@@@$ccm_BASELINE_PROJECT@@@${init_project_name}~init:project:${instance}" > ${projects_file}
+
+find_project_baseline_to_convert "${ccm_BASELINE_PROJECT}" "${inherited_string}"
+cat ${projects_file}

@@ -59,11 +59,23 @@ class CCMSource implements MigrationSource {
 
     @Override
     void checkout(Snapshot snapshot) {
-        copy2Filesystem(snapshot.identifier.split("@@@")[0])
+        copy2Filesystem(snapshot)
     }
 
-    private void copy2Filesystem(String project) {
-        def project_revision_for_ws=project.split(":")[0]
+    private void copy2Filesystem(Snapshot snapshot) {
+        def gitSnapshotThis = snapshot.identifier.split("@@@")[0]
+        def gitSnapshotBaseline = snapshot.identifier.split("@@@")[1]
+        def gitSnapshotName = gitSnapshotThis.split("~")[0]
+        def gitSnapshotRevision = gitSnapshotThis.split("~")[1].split(":")[0]
+        def gitSnapshotInstance = gitSnapshotThis.split("~")[1].split(":")[2]
+        def gitBaselineRevision = gitSnapshotBaseline.split("~")[1].split(":")[0]
+        def gitBaselineInstance = gitSnapshotBaseline.split("~")[1].split(":")[2]
+
+        def ccmSnapshotThis = snapshot.identifier.split("@@@")[2]
+        def ccmSnapshotName = ccmSnapshotThis.split("~")[0]
+        def ccmSnapshotBaseline = snapshot.identifier.split("@@@")[3]
+
+        def gitSnapshot_revision_for_ws=gitSnapshotThis.split(":")[0]
 
         def codeFile = new File(workspace, "code")
         codeFile.parentFile.mkdirs()
@@ -71,14 +83,13 @@ class CCMSource implements MigrationSource {
             codeFile.delete()
         }
         codeFile.mkdir()
-        //Get the revision without instance
 
-        def path_final=workspace + "/code/" + project_revision_for_ws
-        def file_full_path_name="${path_final}/" + project_revision_for_ws.split('~')[0]
-        def project_revision_with_spaces = project.replaceAll("xxx"," ")
+
+        def path_final=workspace + "/code/" + gitSnapshot_revision_for_ws
+        def file_full_path_name="${path_final}/" + gitSnapshotName
 
         if ( new File(file_full_path_name).exists()){
-            log.info "CM/Synergy checkout: Skipping project revision: ${project} - already exists"
+            log.info "CM/Synergy checkout: Skipping project revision: ${gitSnapshot_revision_for_ws} - already exists"
         } else {
             def sout = new StringBuilder(), serr = new StringBuilder()
             def path_tmp="${path_final}_tmp"
@@ -89,7 +100,7 @@ class CCMSource implements MigrationSource {
                 file_tmp.deleteDir()
             }
 
-            def file_full_path_spaced_name = new File ("${path_final}/" + project_revision_with_spaces.split('~')[0])
+            def file_full_path_spaced_name = new File ("${path_final}/" + ccmSnapshotThis.split('~')[0])
             if ( file_full_path_spaced_name.exists() ) {
                 log.info file_full_path_spaced_name.toString() + " exist due to previous error - Delete it all"
                 def file_base = new File (path_final)
@@ -97,7 +108,7 @@ class CCMSource implements MigrationSource {
             }
 
             def envVars = System.getenv().collect { k, v -> "$k=$v" }
-            def cmd_line = ["ccm", "copy_to_file_system", "-p", "${project_revision_for_ws}_tmp", "-r", "${project_revision_with_spaces}"]
+            def cmd_line = ["ccm", "copy_to_file_system", "-p", "${gitSnapshot_revision_for_ws}_tmp", "-r", "${ccmSnapshotThis}"]
             log.info "'" + cmd_line + "'"
             def cmd = cmd_line.execute(envVars,codeFile)
             cmd.waitForProcessOutput(sout, serr)
@@ -114,15 +125,16 @@ class CCMSource implements MigrationSource {
                 throw new Exception("ccm copy_to_file_system standard error contains text lines: " + serr.toString().readLines().size() )
             }
 
-            // TODO: If _tmp is empty and project has no members then create an empty directory
+            if ( ! new File(path_tmp + "/" + ccmSnapshotName ).exists() ) {
+                log.info "Checkout is empty - make an empty dir: " + path_final + "/" + ccmSnapshotName
+                new File(path_tmp + "/" + ccmSnapshotName).mkdir()
+            }
             log.info "Move from: ${path_tmp} to: ${path_final}"
             FileUtils.moveDirectory(new File(path_tmp), new File(path_final))
-            log.info file_full_path_spaced_name.toString() + " DEBUG"
-            if ( file_full_path_spaced_name.toString().contains(' ') ){
-                log.info "Project revision contains [spaces] - replace with xxx's"
-                FileUtils.moveDirectory(
-                        file_full_path_spaced_name, new File(file_full_path_name.replaceAll(' ','xxx'))
-                )
+
+            if ( gitSnapshotName != ccmSnapshotName  ){
+                log.info "ccm and git names differ.. move ccm name to git name: " + path_final + "/" + ccmSnapshotName + " -> "  + file_full_path_name
+                FileUtils.moveDirectory(new File(path_final + "/" + ccmSnapshotName), new File(file_full_path_name))
             }
         }
     }

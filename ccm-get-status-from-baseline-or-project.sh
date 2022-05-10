@@ -7,16 +7,7 @@ set -e
 # Load functions
 source $(dirname $0)/_ccm-functions.sh || source ./_ccm-functions.sh
 
-ccm_project_name=$1
-repo_convert_rev_tag=$2
-repo_convert_instance=$3
-
-[[ "${ccm_project_name:-}" == "" ]]       && ( echo "'ccm_project_name' not set - exit"       && exit 1 )
-[[ "${repo_convert_rev_tag:-}" == "" ]]   && ( echo "'repo_convert_rev_tag' not set - exit"   && exit 1 )
-[[ "${repo_convert_instance:-}" == "x" ]] && ( echo "'repo_convert_rev_tag' not set - exit"   && exit 1 )
-
-ccm_proj_obj_string="${ccm_project_name//xxx/' '}~${repo_convert_rev_tag//xxx/' '}:project:${repo_convert_instance}"
-
+ccm_proj_obj_string="$1"
 
 exit_code="0"
 find_n_set_baseline_obj_attrs_from_project "${ccm_proj_obj_string}" "verbose_false" || exit_code=$?

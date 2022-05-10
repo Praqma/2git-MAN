@@ -102,7 +102,7 @@ source('ccm') {
 
 target('git', repository_name) {
     workspace "${my_workspace}/repo/" + ccm_project
-    user 'Claus Schneider(Praqma)'
+    user 'Claus Schneider(Eficode)'
     email 'claus.schneider-ext@man-es.com'
     remote "ssh://git@${git_server_path_this}/${ccm_project}.git"
     longPaths true
@@ -121,7 +121,7 @@ migrate {
             actions {
 
                 // Scrub Git repository, so file deletions will also be committed
-                cmd 'git reset --hard -q $baselineRevision_wstatus', target.workspace
+                cmd 'git reset --hard -q $gitBaselineRevision_wstatus', target.workspace
 
                 custom {
                     log.info "Removing files except .git folder in: $target.workspace"
@@ -143,7 +143,7 @@ migrate {
                 }
 
                 // Copy checked out into Git repository
-                copy("$source.workspace/code/\${snapshotName}~\${snapshotRevision}/\$snapshotName", target.workspace)
+                copy("$source.workspace/code/\${gitSnapshotName}~\${gitSnapshotRevision}/\$gitSnapshotName", target.workspace)
 
                 custom {
                     log.info "First level files in: $target.workspace"
@@ -236,7 +236,7 @@ migrate {
                     }
                 }
                 cmd 'git reset --hard -q HEAD', target.workspace
-                cmd 'diff -r -q -x ".gitignore" -x ".gitattributes" -x ".gitmodules" -x ".git" . ' + source.workspace + '/code/${snapshotName}~${snapshotRevision}/${snapshotName}', target.workspace
+                cmd 'diff -r -q -x ".gitignore" -x ".gitattributes" -x ".gitmodules" -x ".git" . ' + source.workspace + '/code/${gitSnapshotName}~${gitSnapshotRevision}/${gitSnapshotName}', target.workspace
 
                 // The file for tag info is generated during MetaDataExtraction
                 custom { project ->
@@ -248,7 +248,7 @@ migrate {
                 }
                 custom { project ->
                     def sout = new StringBuilder(), serr = new StringBuilder()
-                    def cmd_line = "git tag -F ../tag_meta_data.txt " + project.snapshotRevision + "_" + project.snapshot_status
+                    def cmd_line = "git tag -F ../tag_meta_data.txt " + project.gitSnapshotRevision + "_" + project.snapshot_status
                     log.info cmd_line
 
                     def email_domain = '@man-es.com'
@@ -279,8 +279,8 @@ migrate {
                     }
                 }
 
-                cmd 'du -sBM .git > ../${snapshotName}~${snapshotRevision}@git_size.txt', target.workspace
-                cmd 'cat ../${snapshotName}~${snapshotRevision}@git_size.txt', target.workspace
+                cmd 'du -sBM .git > ../${gitSnapshotName}~${gitSnapshotRevision}@git_size.txt', target.workspace
+                cmd 'cat ../${gitSnapshotName}~${gitSnapshotRevision}@git_size.txt', target.workspace
 
             }
         }

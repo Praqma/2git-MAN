@@ -7,15 +7,24 @@ set -u
 # Load functions
 source $(dirname $0)/_ccm-functions.sh || source ./_ccm-functions.sh
 
-ccm_project_name=$1
-repo_convert_rev_tag=$2
-repo_convert_instance=$3
+[[ -z $1 ]] && ( echo "Please set parameter 1 to ccm 4 part project name - exit 1" >&2 && exit 1 )
+ccm_4name=$1
 
-[[ -z $4 ]] && ( echo "Please set parameter 4 to Jira Project Key - exit 1" >&2 && exit 1 )
-jira_project_key=$4
+[[ "${ccm_4name}" =~ ${regex_ccm4part} ]] || {
+    echo "$0:  4part does not comply"
+    exit 1
+  }
+ccm_project_name=${BASH_REMATCH[1]}
+repo_convert_rev_tag=${BASH_REMATCH[2]}
+repo_convert_type=${BASH_REMATCH[3]}
+repo_convert_instance=${BASH_REMATCH[4]}
 
-[[ -z $5 ]] && ( echo "Please set parameter 5 to 'commit' or 'tag' - exit 1" >&2 && exit 1 )
-target_type=$5
+
+[[ -z $2 ]] && ( echo "Please set parameter 2 to Jira Project Key - exit 1" >&2 && exit 1 )
+jira_project_key=$2
+
+[[ -z $3 ]] && ( echo "Please set parameter 3 to 'commit' or 'tag' - exit 1" >&2 && exit 1 )
+target_type=$3
 
 jira_task_to_jira_issue_base=9000000
 
@@ -95,7 +104,7 @@ if [[ "${exit_code}" != "0" ]] ; then
 fi
 
 if [[ "${ccm_baseline_obj:-}" != "" ]]; then
-    objectname=$(echo "${ccm_project_name}~${repo_convert_rev_tag}:project:${repo_convert_instance}" | sed -e 's/xxx/ /g')
+    objectname="${ccm_project_name}~${repo_convert_rev_tag}:project:${repo_convert_instance}"
     printf "Project: ${objectname} <-> Baseline object: ${ccm_baseline_obj}\n\n"                 >> ${output_file}
     ccm baseline -show info "${ccm_baseline_obj}" -f " Build: %build\n Description: %description\n Release: %release\n Purpose: %purpose\n"                     >> ${output_file}
 
@@ -174,7 +183,7 @@ if [[ "${ccm_baseline_obj:-}" != "" ]]; then
 
 else
     [[ "${require_baseline_object}" == "true" ]] && ( echo "ERROR: It is expected to have a baseline object due to configuration: require_baseline_object=true for this database: ${ccm_current_db}" >&2 && exit 2 )
-    objectname=$(echo "${ccm_project_name}~${repo_convert_rev_tag}:project:${repo_convert_instance}" | sed -e 's/xxx/ /g')
+    objectname="${ccm_project_name}~${repo_convert_rev_tag}:project:${repo_convert_instance}"
 
     printf "Project: ${objectname} <-> Baseline object: NONE\n\n"                                >> ${output_file}
 
