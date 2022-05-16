@@ -205,7 +205,7 @@ function convert_revision(){
             continue
         fi
         unset repo_submodule_name
-        echo "[INFO]: ${repo_submodule4part} - use it"
+        echo "[INFO]: ${ccm_submodule4part} - use it"
         [[ ${debug:-} == "true" ]] && set -x
 
         git_remote_submodule_to_use=$(echo ${git_remote_to_use} | sed -e "s/\/${repo_name}.git/\/${repo_submodule}.git/")
