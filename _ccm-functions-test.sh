@@ -42,9 +42,15 @@ git_repo_4part="Create-NG_shared_MPC55xx_dev_ser~1_MD_SystemTesting_20130528:pro
 expected_result="Create NG_shared_MPC55xx_dev_ser~1_MD_SystemTesting_20130528:project:1"
 result=""
 printf "%-8s: %-80s : %-75s " "test" "byref_translate_from_git_repo_4part2ccm_4part" "${git_repo_4part} -> $expected_result"
-byref_translate_from_git_repo_4part2ccm_4part "$git_repo_4part" $ccm_query_instance result
+byref_translate_from_git_repo_4part2ccm_4part "$git_repo_4part" result
 [[ "$result" == "${expected_result}" ]] && { printf "%10s\n" "SUCCESS" ; }|| { printf " FAILED: ${expected_result} != $result\n" ;}
 
+ccm_4part="app_startup~1.0.x MD_SystemTesting_20130108:project:1"
+expected_result="app_startup~1.0.x-MD_SystemTesting_20130108:project:1"
+result=""
+printf "%-8s: %-80s : %-75s " "test" "byref_translate_from_ccm_4part2git_repo_4part" "${ccm_4part} -> $expected_result"
+byref_translate_from_ccm_4part2git_repo_4part "${ccm_4part}" result
+[[ "$result" == "${expected_result}" ]] && { printf "%10s\n" "SUCCESS" ; }|| { printf " FAILED: ${expected_result} != $result\n" ;}
 
 exit
 

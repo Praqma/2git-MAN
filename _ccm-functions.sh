@@ -88,7 +88,7 @@ function byref_translate_from_ccm_name_instance_query2ccm_name() {
     ccm query "${_query_string}" -u -f "%name:%instance"
     return 1
   fi
-  _toString="$(ccm query "${_query_string}" -u -f "%name")"
+  _toString=$(ccm query "${_query_string}" -u -f "%name" | /usr/bin/sort -u )
 }
 
 function byref_translate_from_git_repo2ccm_name() {
@@ -111,9 +111,9 @@ function byref_translate_from_git_repo2ccm_name() {
   local _git_repo_name=$_fromString
   local _ccm_instance=$_instance
   local _ccm_query_name=""
-  byref_translate_from_git_repo2ccm_name_query $_git_repo_name _ccm_query_name
+  byref_translate_from_git_repo2ccm_name_query "${_git_repo_name}" _ccm_query_name
   local _query_result=""
-  byref_translate_from_ccm_name_instance_query2ccm_name $_ccm_query_name $_instance _query_result
+  byref_translate_from_ccm_name_instance_query2ccm_name "${_ccm_query_name}" "${_instance}" _query_result
   _toString=$_query_result
 }
 
@@ -139,16 +139,47 @@ function byref_translate_from_git_repo_4part2ccm_4part() {
   local _instance=${BASH_REMATCH[4]}
 
   local _ccm_query_name=""
-  byref_translate_from_git_repo2ccm_name_query $_name _ccm_query_name
+  byref_translate_from_git_repo2ccm_name_query "${_name}" _ccm_query_name
 
   local _ccm_query_version=""
-  byref_translate_from_git_tag2ccm_version_query $_version _ccm_query_version
+  byref_translate_from_git_tag2ccm_version_query "${_version}" _ccm_query_version
 
   local _ccm_query_4name="$_ccm_query_name~$_ccm_query_version:$_type:$_instance"
 
   local _query_result=""
-  byref_translate_from_ccm_4part_query2ccm_4part $_ccm_query_4name _query_result
+  byref_translate_from_ccm_4part_query2ccm_4part "${_ccm_query_4name}" _query_result
   _toString=$_query_result
+}
+
+function byref_translate_from_ccm_4part2git_repo_4part() {
+  if [[ -z ${1} ]]; then
+    echo "${FUNCNAME[0]}: Parameter 1  - by value - cannot be empty" && exit 1
+  else
+    local _fromString=${1}
+  fi
+  if [[ -z ${2} ]]; then
+    echo "${FUNCNAME[0]}: Parameter 2  - by ref - cannot be empty" && exit 1
+  else
+    local -n _toString=${2}
+  fi
+
+  [[ "${_fromString:-}" =~ ${regex_ccm4part} ]] || {
+      echo "4part does not comply"
+      return 1
+    }
+  local _name=${BASH_REMATCH[1]}
+  local _version=${BASH_REMATCH[2]}
+  local _type=${BASH_REMATCH[3]}
+  local _instance=${BASH_REMATCH[4]}
+
+  local _git_repo=""
+  byref_translate_from_ccm_name2git_repo "${_name}" _git_repo
+
+  local _git_tag=""
+  byref_translate_from_ccm_version2git_tag "${_version}" _git_tag
+
+  _toString="${_git_repo}~${_git_tag}:$_type:$_instance"
+
 }
 
 function byref_translate_from_ccm_4part_query2ccm_4part() {
@@ -175,22 +206,6 @@ function byref_translate_from_ccm_4part_query2ccm_4part() {
   _ccm4part=$(ccm query "name match '$name' and version match '$version' and type='$type' and instance='${instance}'" -u -f "%objectname")
 }
 
-function byref_translate_from_string2ccm_4part() {
-  if [[ -z ${1} ]]; then
-    echo "Parameter 1  - as ref - cannot be empty" && return 1
-  else
-    local -n _fromString=${1}
-  fi
-  if [[ -z ${2} ]]; then
-    echo "Parameter 1  - as ref - cannot be empty" && return 1
-  else
-    local -n _2ccm4part=${2}
-  fi
-  _toString=$( echo "${_fromString//-/?}" )
-  byref_translate_from_ccm4part_query2ccm_4part _toString _2ccm4part
-}
-
-
 function find_n_set_baseline_obj_attrs_from_project(){
     local ccm_project_4part=$1
     local verbose="true"
@@ -200,8 +215,6 @@ function find_n_set_baseline_obj_attrs_from_project(){
     proj_name=${BASH_REMATCH[1]}
     proj_version=${BASH_REMATCH[2]}
     proj_instance=${BASH_REMATCH[4]}
-
-    ccm_proj_obj_string=`printf "${ccm_project_4part}" | sed -e 's/-/?/g'`
 
     project_release=$(ccm properties -f "%release" "${ccm_project_4part}") || return $?
     if [[ "$project_release" == "<void>" ]]; then
@@ -237,3 +250,4 @@ function find_n_set_baseline_obj_attrs_from_project(){
         ccm_baseline_release=${BASH_REMATCH[3]}
     fi
 }
+

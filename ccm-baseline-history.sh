@@ -87,11 +87,11 @@ find_project_baseline_to_convert(){
             fi
         fi
         git_CURRENT_PROJECT=""
-        byref_translate_from_git_repo_4part2ccm_4part $CURRENT_PROJECT git_CURRENT_PROJECT
+        byref_translate_from_ccm_4part2git_repo_4part "${CURRENT_PROJECT}" git_CURRENT_PROJECT
 
         git_SUCCESSOR_PROJECT=""
-        byref_translate_from_git_repo_4part2ccm_4part $SUCCESSOR_PROJECT git_SUCCESSOR_PROJECT
-        printf "$git_SUCCESSOR_PROJECT@@@git_CURRENT_PROJECT@@@$SUCCESSOR_PROJECT@@@$CURRENT_PROJECT\n" >> ${projects_file}
+        byref_translate_from_ccm_4part2git_repo_4part "${SUCCESSOR_PROJECT}" git_SUCCESSOR_PROJECT
+        printf "${git_SUCCESSOR_PROJECT}@@@${git_CURRENT_PROJECT}@@@${SUCCESSOR_PROJECT}@@@${CURRENT_PROJECT}\n" >> ${projects_file}
         find_project_baseline_to_convert "${SUCCESSOR_PROJECT}" "${inherited_string}"
     done
 }
@@ -109,7 +109,7 @@ if [ "${use_cached_project_list:-}X" == "trueX" ]; then
 fi
 
 ccm_BASELINE_PROJECT=""
-byref_translate_from_git_repo_4part2ccm_4part $git_BASELINE_PROJECT ccm_BASELINE_PROJECT
+byref_translate_from_git_repo_4part2ccm_4part "${git_BASELINE_PROJECT}" ccm_BASELINE_PROJECT
 
 
 checked_version=$(ccm properties -f %version "$ccm_BASELINE_PROJECT" ) || {

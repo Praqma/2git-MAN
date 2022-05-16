@@ -122,3 +122,15 @@ function git_find_n_fill_empty_dirs_gitignore() {
   echo "Done"
 }
 
+function git_copy_tag(){
+    local source_tag="$1"
+    local target_tag="$2"
+    local GIT_COMMITTER_NAME="$(git tag -l --format=\"%\(taggername\)\" \"$source_tag\" )"
+    local GIT_COMMITTER_EMAIL="$(git tag -l --format=\"%\(taggeremail\)\" \"$source_tag\" )"
+    local GIT_COMMITTER_DATE="$(git tag -l --format=\"%\(taggerdate:iso8601\)\" \"$source_tag\" )"
+    git tag \
+        "$target_tag" \
+        "$(git tag -l --format=\"%\(*objectname\)\" \"$source_tag\" )" \
+        -a \
+        -m "$(git tag -l --format=\"%\(contents\)\" \$source_tag\" )"
+}
