@@ -56,7 +56,14 @@ find_project_baseline_to_convert(){
         fi
         if [[ ${ccm_baseline_status:-} == "test_baseline" ]] ; then
             # Figure out if the project is in use as as baseline in and other project
-            project_baseline_childs=$(ccm query "has_baseline_project('${SUCCESSOR_PROJECT}') and ( status='integrate' or status='test' or status='sqa' or status='released' )" -u -f "%objectname" | head -1 )
+            exit_code=0
+            project_baseline_childs=$(ccm query "has_baseline_project('${SUCCESSOR_PROJECT}') and ( status='integrate' or status='test' or status='sqa' or status='released' )" -u -f "%objectname" | head -1 ) || exit_code=$?
+            if [[ $exit_code -eq 6 ]]; then
+              project_baseline_childs=""
+            elif [[ $exit_code -ne 0 ]]; then
+              echo "ERROR: something when wrong: exit code: $exit_code"
+              exit $exit_code
+            fi
             if [[ "${project_baseline_childs:-}" != "" ]]; then
                 echo "ACCEPT: Related Baseline Object is in test status: ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_release_this} - but at least in use as baseline of project: ${project_baseline_childs}" >&2
             else
@@ -72,7 +79,14 @@ find_project_baseline_to_convert(){
         fi
         regex_revision_contains_History='^.*\.History.*$'
         if [[ ${proj_version:-} =~ ${regex_revision_contains_History} ]] ; then
-            project_baseline_childs=$(ccm query "has_baseline_project('$(echo ${SUCCESSOR_PROJECT} )') and ( status='integrate' or status='test' or status='sqa' or status='released' )" -u -f "%objectname" | head -1 )
+            exit_code=0
+            project_baseline_childs=$(ccm query "has_baseline_project('$(echo ${SUCCESSOR_PROJECT} )') and ( status='integrate' or status='test' or status='sqa' or status='released' )" -u -f "%objectname" | head -1 ) || exit_code=$?
+            if [[ $exit_code -eq 6 ]]; then
+              project_baseline_childs=""
+            elif [[ $exit_code -ne 0 ]]; then
+              echo "ERROR: something when wrong: exit code: $exit_code"
+              exit $exit_code
+            fi
             if [[ "${project_baseline_childs:-}" != "" ]]; then
                 echo "ACCEPT: Project revision contains 'History': ${SUCCESSOR_PROJECT}: ${ccm_baseline_obj_and_status_release_this} - but is in use as baseline of project: ${project_baseline_childs}" >&2
             else
