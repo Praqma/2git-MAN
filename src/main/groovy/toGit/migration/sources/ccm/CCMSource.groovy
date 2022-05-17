@@ -126,7 +126,11 @@ class CCMSource implements MigrationSource {
             }
 
             if ( ! new File(path_tmp + "/" + ccmSnapshotName ).exists() ) {
-                log.info "Checkout is empty - make an empty dir: " + path_final + "/" + ccmSnapshotName
+                if ( ! new File(path_tmp).exists() ) {
+                    log.info "Checkout is empty - make an empty dir: " + path_final
+                    new File(path_tmp).mkdir()
+                }
+                log.info "Checkout is empty - make an empty dir: " + path_final + "/" + ccmSnapshotName + "/" + ccmSnapshotName
                 new File(path_tmp + "/" + ccmSnapshotName).mkdir()
             }
             log.info "Move from: ${path_tmp} to: ${path_final}"
