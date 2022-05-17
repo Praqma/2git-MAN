@@ -97,7 +97,7 @@ function convert_revision(){
 
     #NOTE: The next line is suppressing the support for having a baseline project with a different name than is being converted: ( and name='${repo_name}' )
     local ccm_baseline_from_tag_info="$(ccm query "is_baseline_project_of('${ccm_4part}') and name='${ccm_name}'" \
-                                    -u -f "%version" | sed -e 's/ /xxx/g' )" || return 1
+                                    -u -f "%version" )" || return 1
 
 
     if [[ "${ccm_baseline_from_tag_info}" != "" ]] ; then
@@ -313,7 +313,7 @@ function convert_revision(){
                 else
                     # we do not have the 'content' tag available - investigate its root
                     cd $(dirname $0)
-                    ./ccm-baseline-history-get-root.sh "${repo_submodule}~$(echo ${repo_submodule_rev} | sed -e 's/xxx/ /g')"
+                    ./ccm-baseline-history-get-root.sh "${ccm_submodule4part})"
                     exit 1
                 fi
 
