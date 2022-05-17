@@ -26,7 +26,7 @@ export gitignore_path_n_files=${6} # <relative_path>:<gitignore_file>@<relative_
 export gitattributes_path_n_files=${7:-} # <relative_path>:<gitattributes_file>@<relative_path>:<gitattributes_file>..
 
 export ccm_name=""
-byref_translate_from_git_repo2ccm_name ${repo_name} $project_instance ccm_name
+byref_translate_from_git_repo2ccm_name "${repo_name}" "$project_instance" ccm_name
 
 declare -A repo_submodules_map
 if [[ $(echo "${repo_submodules}" | grep "," ) ]]; then
@@ -103,7 +103,7 @@ function convert_revision(){
     if [[ "${ccm_baseline_from_tag_info}" != "" ]] ; then
         # prefer released if found
         baseline_from_tag_info=""
-        byref_translate_from_git_tag2ccm_version_query $ccm_baseline_from_tag_info baseline_from_tag_info
+        byref_translate_from_git_tag2ccm_version_query "$ccm_baseline_from_tag_info" baseline_from_tag_info
 
         local repo_baseline_rev_tag_wcomponent_wstatus=$(git tag | grep ^${repo_name}/.*/${baseline_from_tag_info}_rel$ || grep_ext_value=$? )
         if [[ "${repo_baseline_rev_tag_wcomponent_wstatus}" == "" ]]; then
@@ -192,9 +192,9 @@ function convert_revision(){
         local ccm_submodule_inst=${BASH_REMATCH[4]}
 
         local repo_submodule_name=""
-        byref_translate_from_ccm_name2git_repo $ccm_submodule_name repo_submodule_name
+        byref_translate_from_ccm_name2git_repo "$ccm_submodule_name" repo_submodule_name
         local repo_submodule_rev=""
-        byref_translate_from_ccm_version2git_tag $ccm_submodule_name repo_submodule_rev
+        byref_translate_from_ccm_version2git_tag "$ccm_submodule_name" repo_submodule_rev
 
         # Lookup the subproject if present
         repo_submodule=$(echo ${repo_submodules_map[${repo_submodule_name:-}]:-})
