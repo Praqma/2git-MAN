@@ -194,7 +194,7 @@ function convert_revision(){
         local repo_submodule_name=""
         byref_translate_from_ccm_name2git_repo "$ccm_submodule_name" repo_submodule_name
         local repo_submodule_rev=""
-        byref_translate_from_ccm_version2git_tag "$ccm_submodule_name" repo_submodule_rev
+        byref_translate_from_ccm_version2git_tag "$ccm_submodule_rev" repo_submodule_rev
 
         # Lookup the subproject if present
         repo_submodule=$(echo ${repo_submodules_map[${repo_submodule_name:-}]:-})
