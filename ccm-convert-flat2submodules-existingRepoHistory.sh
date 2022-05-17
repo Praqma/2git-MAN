@@ -103,7 +103,7 @@ function convert_revision(){
     if [[ "${ccm_baseline_from_tag_info}" != "" ]] ; then
         # prefer released if found
         baseline_from_tag_info=""
-        byref_translate_from_git_tag2ccm_version_query "$ccm_baseline_from_tag_info" baseline_from_tag_info
+        byref_translate_from_ccm_version2git_tag "$ccm_baseline_from_tag_info" baseline_from_tag_info
 
         local repo_baseline_rev_tag_wcomponent_wstatus=$(git tag | grep ^${repo_name}/.*/${baseline_from_tag_info}_rel$ || grep_ext_value=$? )
         if [[ "${repo_baseline_rev_tag_wcomponent_wstatus}" == "" ]]; then
