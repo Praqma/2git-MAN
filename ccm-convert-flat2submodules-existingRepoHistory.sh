@@ -268,7 +268,10 @@ function convert_revision(){
                        git status
                        pwd
                        git checkout -B master
-                       git reset --hard ${repo_submodule}/${repo_init_tag}/${repo_init_tag}
+                       git reset --hard ${repo_submodule}/${repo_init_tag}/${repo_init_tag} || {
+                          git fetch origin +refs/tags/*:refs/tags/*
+                          git reset --hard ${repo_submodule}/${repo_init_tag}/${repo_init_tag}
+                       }
                        cd ${root_dir}
                        git submodule add --force --name "${repo_submodule}" "../${repo_submodule}.git" "${git_submodule_path}"
                     else
