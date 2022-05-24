@@ -169,7 +169,7 @@ function convert_revision(){
     fi
     exit_code=0
     if [[ ${submodules_from_baseline_obj:-} == true ]] ; then
-      ccm_submodules4part="$(ccm query "is_project_in_baseline_of(has_project_in_baseline('${ccm_4part}')) and name match 'Shared_*'" -u -f "%objectname" )" || exit_code=$?
+      ccm_submodules4part="$(ccm query "is_project_in_baseline_of(has_project_in_baseline('${ccm_4part}'))" -u -f "%objectname" )" || exit_code=$?
     else
       ccm_submodules4part="$(ccm query "is_member_of('${ccm_4part}') and name!='${ccm_name}' and type='project'" -u -f "%objectname" )" || exit_code=$?
     fi
