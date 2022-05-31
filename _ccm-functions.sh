@@ -92,17 +92,17 @@ function byref_translate_from_ccm_name_instance_query2ccm_name() {
 }
 
 function byref_translate_from_git_repo2ccm_name() {
-  if [[ -z ${1} ]]; then
+  if [[ -z ${1:-} ]]; then
     echo "${FUNCNAME[0]}: Parameter 1  - by value - cannot be empty" && exit 1
   else
     local _fromString=${1}
   fi
-  if [[ -z ${2} ]]; then
+  if [[ -z ${2:-} ]]; then
     echo "${FUNCNAME[0]}: Parameter 2  - by value - cannot be empty" && exit 1
   else
     local _instance=${2}
   fi
-  if [[ -z ${3} ]]; then
+  if [[ -z ${3:-} ]]; then
     echo "${FUNCNAME[0]}: Parameter 3  - by ref - cannot be empty" && exit 1
   else
     local -n _toString=${3}

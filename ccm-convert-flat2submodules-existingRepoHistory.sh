@@ -210,7 +210,32 @@ function convert_revision(){
 
         git_remote_submodule_to_use=$(echo ${git_remote_to_use} | sed -e "s/\/${repo_name}.git/\/${repo_submodule}.git/")
         if [[ ${submodules_from_baseline_obj:-} == true ]] ; then
-          git_submodule_path=${repo_submodule}
+          shared_config_file=$(git ls-tree -r --name-only ${repo_convert_rev_tag} | grep '^.*/shared_config.txt$') || {
+            if [[ $? == 1 ]] ; then
+              echo "[INFO]: shared_config.txt file not found - ok"
+            else
+              echo "[ERROR]: Something went wrong in finding the shared_config.txt file"
+              exit 1
+            fi
+          }
+          if [[ "${shared_config_file:-}" != "" ]]; then
+            echo "[INFO]: shared_config.txt found in the git tag ${repo_convert_rev_tag}"
+            _tmp_path_dirname=$(dirname $(git cat-file -p ${repo_convert_rev_tag}:$(git ls-tree -r --name-only ${repo_convert_rev_tag} | grep '^.*/shared_config.txt$') \
+                                              | grep -e "^${ccm_submodule_name}~.*$" -e "^.*\\${ccm_submodule_name}~.*$" | sed -e 's/\\/\//g'))
+            if [[ ${_tmp_path_dirname:-} == "${ccm_submodule_name}" || ${_tmp_path_dirname:-} == "" ]]; then
+              echo "The path was not explicitly specified in the shared_config file or module not found - add it to the dir of the shared_config.txt"
+              git_submodule_path="$(dirname "${shared_config_file}" )/${repo_submodule}"
+            else
+              _tmp_path=$(basename ${_tmp_path_dirname})
+              echo "Use the found path from ${shared_config_file}: ${_tmp_path}"
+              git_submodule_path="${_tmp_path}/${repo_submodule}"
+            fi
+          else
+            echo "Place the submodule in the root folder as fall-back"
+            # TODO: Consider to lookup last released git describe to find the path and revision it add submodule in anyway
+            # TODO: basename $(dirname $(git cat-file -p $(git describe --match '*/*/*_rel'):$(git ls-tree -r --name-only $(git describe --match '*/*/*_rel') | grep shared_config.txt) | grep -e '^Shared_MPC55xx_CoDeSys2.3~.*$' -e '^.*\\.*Shared_QNX_expert_gateway_common_src~.*$'))
+            git_submodule_path=${repo_submodule}
+          fi
         else
           git_submodule_path_in_project=$(ccm finduse -p "${ccm_submodule4part}" | grep "^[[:space:]]" | grep -v '[[:space:]]Projects:' | grep "${ccm_submodule4part//:project:1/''}" | sed -e 's/\t//g' | sed -e 's/\\/\//g' | grep -e "^.*@${ccm_4part//:project:1/''}"'$' | awk -F '~' '{print $1}'  | sed -e "s/^${repo_name}/./g"  | sed -e "s/\/${repo_submodule}//")
           git_submodule_path=${git_submodule_path_in_project}/${repo_submodule}
