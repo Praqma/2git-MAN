@@ -52,8 +52,8 @@ fi
 
 export git_ssh_remote=ssh://git@${git_server_path}/${repo_name}.git
 export git_ssh_remote_orig=ssh://git@${git_server_path}/${repo_name}_orig.git
-export git_https_remote=$(echo ${git_ssh_remote} | sed -e "s/ssh:\/\/git@/https:\/\/${http_remote_credentials}/" -e 's/7999/7990\/scm/')
-export git_https_remote_orig=$(echo ${git_ssh_remote_orig} | sed -e "s/ssh:\/\/git@/https:\/\/${http_remote_credentials}/" -e 's/7999/7990\/scm/')
+export git_https_remote=$(echo ${git_ssh_remote} | sed -e "s/ssh:\/\/git@/https:\/\/${http_remote_credentials}/" -e 's/7999/7990\/scm/' | sed -e 's/ssh-//')
+export git_https_remote_orig=$(echo ${git_ssh_remote_orig} | sed -e "s/ssh:\/\/git@/https:\/\/${http_remote_credentials}/" -e 's/7999/7990\/scm/' | sed -e 's/ssh-//')
 export git_remote_to_use=${git_https_remote}
 export git_remote_to_use_orig=${git_https_remote_orig}
 echo "Use remote : ${git_remote_to_use} and ${git_remote_to_use_orig}"
@@ -174,9 +174,9 @@ function convert_revision(){
         if [[ $exit_code -eq 6 ]]; then
           # query did not give outout - try to find the previous release tag via git describe and get setup from there
           # previous _rel
-	  echo "WARNING: No submodules found.. need investigation how to get the previous releases submodules list, content"
-	  git describe --match *_rel
-	  previous_tag=$(git tag describe --match *_rel --abbrev=0)
+          echo "WARNING: No submodules found.. need investigation how to get the previous releases submodules list, content"
+          git describe --match *_rel
+          previous_tag=$(git tag describe --match *_rel --abbrev=0)
         else
           echo "ERROR: Something went wrong"
           exit 1
