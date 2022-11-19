@@ -170,6 +170,19 @@ function convert_revision(){
     exit_code=0
     if [[ ${submodules_from_baseline_obj:-} == true ]] ; then
       ccm_submodules4part="$(ccm query "is_project_in_baseline_of(has_project_in_baseline('${ccm_4part}'))" -u -f "%objectname" )" || exit_code=$?
+      if [[ $exit_code -ne 0 ]]; then
+        if [[ $exit_code -eq 6 ]]; then
+          # query did not give outout - try to find the previous release tag via git describe and get setup from there
+          # previous _rel
+	  echo "WARNING: No submodules found.. need investigation how to get the previous releases submodules list, content"
+	  git describe --match *_rel
+	  previous_tag=$(git tag describe --match *_rel --abbrev=0)
+        else
+          echo "ERROR: Something went wrong"
+          exit 1
+        fi
+      fi
+
     else
       ccm_submodules4part="$(ccm query "is_member_of('${ccm_4part}') and name!='${ccm_name}' and type='project'" -u -f "%objectname" )" || exit_code=$?
     fi
@@ -232,8 +245,6 @@ function convert_revision(){
             fi
           else
             echo "Place the submodule in the root folder as fall-back"
-            # TODO: Consider to lookup last released git describe to find the path and revision it add submodule in anyway
-            # TODO: basename $(dirname $(git cat-file -p $(git describe --match '*/*/*_rel'):$(git ls-tree -r --name-only $(git describe --match '*/*/*_rel') | grep shared_config.txt) | grep -e '^Shared_MPC55xx_CoDeSys2.3~.*$' -e '^.*\\.*Shared_QNX_expert_gateway_common_src~.*$'))
             git_submodule_path=${repo_submodule}
           fi
         else
