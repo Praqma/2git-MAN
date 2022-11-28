@@ -169,20 +169,36 @@ function convert_revision(){
     fi
     exit_code=0
     if [[ ${submodules_from_baseline_obj:-} == true ]] ; then
-      ccm_submodules4part="$(ccm query "is_project_in_baseline_of(has_project_in_baseline('${ccm_4part}')) and name!='${repo_name}'" -u -f "%objectname" )" || exit_code=$?
+      ccm_submodules4part="$(ccm query "is_project_in_baseline_of(has_project_in_baseline('${ccm_4part}')) and not ( name='${repo_name}' )" -u -f "%objectname" )" || exit_code=$?
       if [[ $exit_code -ne 0 ]]; then
         if [[ $exit_code -eq 6 ]]; then
           # query did not give outout - try to find the previous release tag via git describe and get setup from there
           # previous _rel
           echo "WARNING: No submodules found.. need investigation how to get the previous releases submodules list, content"
-          git describe --match *_rel
-          previous_tag=$(git tag describe --match *_rel --abbrev=0)
+          if git describe --match '*_rel' HEAD ; then
+            previous_tag=$(git describe --match *_rel --abbrev=0 HEAD )
+            echo "INFO: Previous release found: $repo_baseline_rev_tag_wcomponent_wstatus -> $previous_tag: find the .gitmodules and each of the submodules revisions"
+            if git cat-file -p ${previous_tag}:$(git ls-tree -r --name-only $previous_tag | grep '^.gitmodules$' ) > .gitmodules ; then
+              echo "INFO: .gitmodules file found"
+              git add .gitmodules
+            else
+              echo "ERROR: No .gitmodules found even expected"
+              exit 1
+            fi
+          else
+            echo "INFO: There is not previous _rel tag found"
+            if git describe --match '*/*/init' ${repo_baseline_rev_tag_wcomponent_wstatus} ; then
+              echo "INFO: only init found"
+            else
+              echo "ERROR: We cannot even find the init tag"
+              exit 1
+            fi
+          fi
         else
           echo "ERROR: Something went wrong"
           exit 1
         fi
       fi
-
     else
       ccm_submodules4part="$(ccm query "is_member_of('${ccm_4part}') and name!='${ccm_name}' and type='project'" -u -f "%objectname" )" || exit_code=$?
     fi
@@ -233,6 +249,11 @@ function convert_revision(){
           }
           if [[ "${shared_config_file:-}" != "" ]]; then
             echo "[INFO]: shared_config.txt found in the git tag ${repo_convert_rev_tag}"
+            git cat-file -p ${repo_convert_rev_tag}:$(git ls-tree -r --name-only ${repo_convert_rev_tag} | grep '^.*/shared_config.txt$' ) | grep -e "^${ccm_submodule_name}~.*$" -e "^.*\\${ccm_submodule_name}~.*$" || {
+              echo "ERROR: Something is wrong - the submodule is not to be found in shared_config_file -  please investigate"
+              git cat-file -p ${repo_convert_rev_tag}:$(git ls-tree -r --name-only ${repo_convert_rev_tag} | grep '^.*/shared_config.txt$' )
+              exit 1
+            }
             _tmp_path_dirname=$(dirname $(git cat-file -p ${repo_convert_rev_tag}:$(git ls-tree -r --name-only ${repo_convert_rev_tag} | grep '^.*/shared_config.txt$') \
                                               | grep -e "^${ccm_submodule_name}~.*$" -e "^.*\\${ccm_submodule_name}~.*$" | sed -e 's/\\/\//g'))
             if [[ ${_tmp_path_dirname:-} == "${ccm_submodule_name}" || ${_tmp_path_dirname:-} == "" ]]; then
