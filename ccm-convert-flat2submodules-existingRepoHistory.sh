@@ -169,7 +169,7 @@ function convert_revision(){
     fi
     exit_code=0
     if [[ ${submodules_from_baseline_obj:-} == true ]] ; then
-      ccm_submodules4part="$(ccm query "is_project_in_baseline_of(has_project_in_baseline('${ccm_4part}')) and name!='${repo_name}' -u -f "%objectname" )" || exit_code=$?
+      ccm_submodules4part="$(ccm query "is_project_in_baseline_of(has_project_in_baseline('${ccm_4part}')) and name!='${repo_name}'" -u -f "%objectname" )" || exit_code=$?
       if [[ $exit_code -ne 0 ]]; then
         if [[ $exit_code -eq 6 ]]; then
           # query did not give outout - try to find the previous release tag via git describe and get setup from there
