@@ -174,25 +174,19 @@ function convert_revision(){
         if [[ $exit_code -eq 6 ]]; then
           # query did not give outout - try to find the previous release tag via git describe and get setup from there
           # previous _rel
-          echo "WARNING: No submodules found.. need investigation how to get the previous releases submodules list, content"
-          if git describe --match '*_rel' HEAD ; then
-            previous_tag=$(git describe --match *_rel --abbrev=0 HEAD )
-            echo "INFO: Previous release found: $repo_baseline_rev_tag_wcomponent_wstatus -> $previous_tag: find the .gitmodules and each of the submodules revisions"
-            if git cat-file -p ${previous_tag}:$(git ls-tree -r --name-only $previous_tag | grep '^.gitmodules$' ) > .gitmodules ; then
-              echo "INFO: .gitmodules file found"
-              git add .gitmodules
-            else
-              echo "ERROR: No .gitmodules found even expected"
-              exit 1
-            fi
+          echo "WARNING: No submodules found.. Restore what was already there from previous previous submodules list and content"
+          if git restore .gitmodules ; then
+            for submodule_line in $(git ls-tree HEAD | grep -e '^160000 commit [0-9a-f]\{40\}[[:space:]].*'); do
+              [[ ${submodule_line} =~ ${regex_submodule_line} ]] || exit 1
+              local submodule_sha1=${BASH_REMATCH[1]}
+              local submodule_path=${BASH_REMATCH[2]}
+              git restore ${}submodule_path}
+              #git update-index --add --replace --cacheinfo "160000,${submodule_sha1},${submodule_path}"
+              unset submodule_sha1
+              unset submodule_path
+            done
           else
-            echo "INFO: There is not previous _rel tag found"
-            if git describe --match '*/*/init' ${repo_baseline_rev_tag_wcomponent_wstatus} ; then
-              echo "INFO: only init found"
-            else
-              echo "ERROR: We cannot even find the init tag"
-              exit 1
-            fi
+            echo "INFO: no .gitmodules found"
           fi
         else
           echo "ERROR: Something went wrong"
@@ -252,6 +246,7 @@ function convert_revision(){
             git cat-file -p ${repo_convert_rev_tag}:$(git ls-tree -r --name-only ${repo_convert_rev_tag} | grep '^.*/shared_config.txt$' ) | grep -e "^${ccm_submodule_name}~.*$" -e "^.*\\${ccm_submodule_name}~.*$" || {
               echo "ERROR: Something is wrong - the submodule is not to be found in shared_config_file -  please investigate"
               git cat-file -p ${repo_convert_rev_tag}:$(git ls-tree -r --name-only ${repo_convert_rev_tag} | grep '^.*/shared_config.txt$' )
+              submodule_commit=)$(git ls-tree HEAD ./${ccm_submodule_name}/ | grep -e '^160000 commit [0-9a-f]\{40\}[[:space:]]${ccm_submodule_name}')
               exit 1
             }
             _tmp_path_dirname=$(dirname $(git cat-file -p ${repo_convert_rev_tag}:$(git ls-tree -r --name-only ${repo_convert_rev_tag} | grep '^.*/shared_config.txt$') \
