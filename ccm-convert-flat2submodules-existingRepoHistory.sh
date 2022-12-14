@@ -246,7 +246,7 @@ function convert_revision(){
             git cat-file -p ${repo_convert_rev_tag}:$(git ls-tree -r --name-only ${repo_convert_rev_tag} | grep '^.*/shared_config.txt$' ) | grep -e "^${ccm_submodule_name}~.*$" -e "^.*\\${ccm_submodule_name}~.*$" || {
               echo "ERROR: Something is wrong - the submodule is not to be found in shared_config_file -  please investigate"
               git cat-file -p ${repo_convert_rev_tag}:$(git ls-tree -r --name-only ${repo_convert_rev_tag} | grep '^.*/shared_config.txt$' )
-              submodule_commit=)$(git ls-tree HEAD ./${ccm_submodule_name}/ | grep -e '^160000 commit [0-9a-f]\{40\}[[:space:]]${ccm_submodule_name}')
+              submodule_commit=$(git ls-tree HEAD ./${ccm_submodule_name}/ | grep -e '^160000 commit [0-9a-f]\{40\}[[:space:]]${ccm_submodule_name}')
               exit 1
             }
             _tmp_path_dirname=$(dirname $(git cat-file -p ${repo_convert_rev_tag}:$(git ls-tree -r --name-only ${repo_convert_rev_tag} | grep '^.*/shared_config.txt$') \
