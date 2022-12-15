@@ -176,6 +176,7 @@ function convert_revision(){
           # previous _rel
           echo "WARNING: No submodules found.. Restore what was already there from previous previous submodules list and content"
           if git restore .gitmodules ; then
+            regex_submodule_line='^160000 commit ([0-9a-f]\{40\})[[:space:]](.+)$'
             for submodule_line in $(git ls-tree HEAD | grep -e '^160000 commit [0-9a-f]\{40\}[[:space:]].*'); do
               [[ ${submodule_line} =~ ${regex_submodule_line} ]] || exit 1
               local submodule_sha1=${BASH_REMATCH[1]}
