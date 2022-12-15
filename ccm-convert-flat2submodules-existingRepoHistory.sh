@@ -402,8 +402,12 @@ function convert_revision(){
     git add -A . > /dev/null 2>&1
 
     if [[ ! ${repo_submodules} == "" ]]; then
-      cat .gitmodules
-      git add .gitmodules
+      if [[ -f .gitmodules ]]; then
+        cat .gitmodules
+        git add .gitmodules
+      else
+        echo "INFO: No .gitmodules initialized"
+      fi
     fi
 
     git_set_execute_bit_in_index_of_extensions
