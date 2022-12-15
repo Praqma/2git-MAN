@@ -183,7 +183,7 @@ function convert_revision(){
               if [[ ${submodule_line} =~ ${regex_submodule_line} ]] ; then
                 local submodule_sha1=${BASH_REMATCH[1]}
                 local submodule_path=${BASH_REMATCH[2]}
-                git restore ${}submodule_path}
+                git restore ${submodule_path}
                 #git update-index --add --replace --cacheinfo "160000,${submodule_sha1},${submodule_path}"
                 unset submodule_sha1
                 unset submodule_path
