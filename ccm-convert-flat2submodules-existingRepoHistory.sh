@@ -186,8 +186,8 @@ function convert_revision(){
                 #git update-index --add --replace --cacheinfo "160000,${submodule_sha1},${submodule_path}"
                 unset submodule_sha1
                 unset submodule_path
-#              else
-#                echo "ERROR: .gitmodules exists, not commited modules found.."
+              else
+                echo "skip: $submodule_line"
 #                cat .gitmodules
 #                exit 1
               fi
