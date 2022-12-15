@@ -200,7 +200,6 @@ function convert_revision(){
         rm -f .gitmodules
         if [[ ! ${repo_submodules} == "" ]]; then
             touch .gitmodules
-            git add ./.gitmodules # make sure we have a clean start for every revision - do not use the .gitmodules as we also need to be able to remove some
         fi
         ccm_submodules4part="$(ccm query "is_member_of('${ccm_4part}') and name!='${ccm_name}' and type='project'" -u -f "%objectname" )" || exit_code=$?
     fi
