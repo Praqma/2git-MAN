@@ -162,11 +162,6 @@ function convert_revision(){
         git add ${file}
     done
 
-    rm -f .gitmodules
-    if [[ ! ${repo_submodules} == "" ]]; then
-        touch .gitmodules
-        git add ./.gitmodules # make sure we have a clean start for every revision - do not use the .gitmodules as we also need to be able to remove some
-    fi
     exit_code=0
     if [[ ${submodules_from_baseline_obj:-} == true ]] ; then
       ccm_submodules4part="$(ccm query "is_project_in_baseline_of(has_project_in_baseline('${ccm_4part}')) and not ( name='${repo_name}' )" -u -f "%objectname" )" || exit_code=$?
@@ -202,7 +197,12 @@ function convert_revision(){
         fi
       fi
     else
-      ccm_submodules4part="$(ccm query "is_member_of('${ccm_4part}') and name!='${ccm_name}' and type='project'" -u -f "%objectname" )" || exit_code=$?
+        rm -f .gitmodules
+        if [[ ! ${repo_submodules} == "" ]]; then
+            touch .gitmodules
+            git add ./.gitmodules # make sure we have a clean start for every revision - do not use the .gitmodules as we also need to be able to remove some
+        fi
+        ccm_submodules4part="$(ccm query "is_member_of('${ccm_4part}') and name!='${ccm_name}' and type='project'" -u -f "%objectname" )" || exit_code=$?
     fi
     if [[ $exit_code -ne 0 ]]; then
       if [[ $exit_code -eq 6 ]]; then
@@ -421,7 +421,11 @@ function convert_revision(){
     echo "git commit content of ${repo_convert_rev_tag}"
     git commit -C ${repo_convert_rev_tag} --reset-author || ( echo "Empty commit.." )
 
-    git submodule status
+    git submodule status || {
+        exit_code=$?
+        cat .gitmodules
+        exit $exit_code
+    }
     git status
 
     set +x
