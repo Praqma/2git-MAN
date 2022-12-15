@@ -178,7 +178,7 @@ function convert_revision(){
           if git restore .gitmodules ; then
             regex_submodule_line='^160000 commit ([0-9a-f]\{40\})[[:space:]](.*)$'
             IFS=$'\n\r'
-            for submodule_line in $(git ls-tree HEAD | grep -e '^160000 commit [0-9a-f]\{40\}[[:space:]].*$'); do
+            for submodule_line in $(git ls-tree -r HEAD | grep -e '^160000 commit [0-9a-f]\{40\}[[:space:]].*$'); do
               if [[ ${submodule_line} =~ ${regex_submodule_line} ]] ; then
                 local submodule_sha1=${BASH_REMATCH[1]}
                 local submodule_path=${BASH_REMATCH[2]}
