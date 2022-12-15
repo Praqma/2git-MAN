@@ -178,7 +178,7 @@ function convert_revision(){
           if git restore .gitmodules ; then
             regex_submodule_line='^160000 commit ([0-9a-f]\{40\})[[:space:]](.+)$'
             IFS=$'\n\r'
-            for submodule_line in $(git ls-tree HEAD | grep -e '^160000 commit [0-9a-f]\{40\}[[:space:]].*'); do
+            for submodule_line in $(git ls-tree HEAD | grep -e '^160000 commit [0-9a-f]\{40\}[[:space:]].+$'); do
               if [[ ${submodule_line} =~ ${regex_submodule_line} ]] ; then
                 local submodule_sha1=${BASH_REMATCH[1]}
                 local submodule_path=${BASH_REMATCH[2]}
@@ -186,10 +186,10 @@ function convert_revision(){
                 #git update-index --add --replace --cacheinfo "160000,${submodule_sha1},${submodule_path}"
                 unset submodule_sha1
                 unset submodule_path
-              else
-                echo "ERROR: .gitmodules exists, not commited modules found.."
-                cat .gitmodules
-                exit 1
+#              else
+#                echo "ERROR: .gitmodules exists, not commited modules found.."
+#                cat .gitmodules
+#                exit 1
               fi
             done
           else
