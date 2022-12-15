@@ -321,6 +321,7 @@ function convert_revision(){
                 if [[ ! $(git submodule update --init --recursive --force ${repo_submodule}) ]] ; then
                      git rm -rf  ${git_submodule_path} --cached || echo "Good already  - never mind"
                      rm -rf  ${git_submodule_path}
+                     touch .gitmodules && git add .gitmodules
                      if [[ ! $(git submodule add --force --name "${repo_submodule}" "../${repo_submodule}.git" "${git_submodule_path}") ]] ; then
                        cd ${git_submodule_path}
                        git remote -v
