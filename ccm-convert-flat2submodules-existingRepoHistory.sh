@@ -257,7 +257,7 @@ function convert_revision(){
               exit 1
             }
             _tmp_path_dirname=$(dirname $(git cat-file -p ${repo_convert_rev_tag}:$(git ls-tree -r --name-only ${repo_convert_rev_tag} | grep '^.*/shared_config.txt$') \
-                                              | grep -E "^${ccm_submodule_name}~.*$" -e "^.*\\${ccm_submodule_name}~.*$" | sed -e 's/\\/\//g'))
+                                              | grep -E "^${ccm_submodule_name}~.+$|^\.\.\\\\(.+\\\\)*${ccm_submodule_name}~.+$" | sed -e 's/\\/\//g'))
             if [[ ${_tmp_path_dirname:-} == "${ccm_submodule_name}" || ${_tmp_path_dirname:-} == "" || ${_tmp_path_dirname:-} == "." ]]; then
               echo "The path was not explicitly specified in the shared_config file or module not found - add it to the dir of the shared_config.txt"
               git_submodule_path="$(dirname "${shared_config_file}" )/${repo_submodule}"
