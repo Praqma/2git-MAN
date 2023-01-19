@@ -250,15 +250,14 @@ function convert_revision(){
           }
           if [[ "${shared_config_file:-}" != "" ]]; then
             echo "[INFO]: shared_config.txt found in the git tag ${repo_convert_rev_tag}"
-            git cat-file -p ${repo_convert_rev_tag}:$(git ls-tree -r --name-only ${repo_convert_rev_tag} | grep '^.*/shared_config.txt$' ) | grep -E "^${ccm_submodule_name}~.+$|^\.\.\\\\(.+\\\\)*${ccm_submodule_name}~.+$" || {
-              echo "ERROR: Something is wrong - the submodule is not to be found in shared_config_file -  please investigate"
-              git cat-file -p ${repo_convert_rev_tag}:$(git ls-tree -r --name-only ${repo_convert_rev_tag} | grep '^.*/shared_config.txt$' )
-              submodule_commit=$(git ls-tree HEAD ./${ccm_submodule_name}/ | grep -E '^160000 commit [0-9a-f]\{40\}[[:space:]]${ccm_submodule_name}')
-              exit 1
-            }
-            _tmp_path_dirname=$(dirname $(git cat-file -p ${repo_convert_rev_tag}:$(git ls-tree -r --name-only ${repo_convert_rev_tag} | grep '^.*/shared_config.txt$') \
+            if ! git cat-file -p ${repo_convert_rev_tag}:$(git ls-tree -r --name-only ${repo_convert_rev_tag} | grep '^.*/shared_config.txt$' ) | grep -E "^${ccm_submodule_name}~.+$|^\.\.\\\\(.+\\\\)*${ccm_submodule_name}~.+$" ; then
+              echo "WARNING: The submodule is not to be found in shared_config_file - fall-back to default"
+              _tmp_path_dirname="."
+            else
+              _tmp_path_dirname=$(dirname $(git cat-file -p ${repo_convert_rev_tag}:$(git ls-tree -r --name-only ${repo_convert_rev_tag} | grep '^.*/shared_config.txt$') \
                                               | grep -E "^${ccm_submodule_name}~.+$|^\.\.\\\\(.+\\\\)*${ccm_submodule_name}~.+$" | sed -e 's/\\/\//g'))
-            if [[ ${_tmp_path_dirname:-} == "${ccm_submodule_name}" || ${_tmp_path_dirname:-} == "" || ${_tmp_path_dirname:-} == "." ]]; then
+            fi
+            if [[ ${_tmp_path_dirname:-} == "${ccm_submodule_name}" || ${_tmp_path_dirname:-} == "." ]]; then
               echo "The path was not explicitly specified in the shared_config file or module not found - add it to the dir of the shared_config.txt"
               git_submodule_path="$(dirname "${shared_config_file}" )/${repo_submodule}"
             else
