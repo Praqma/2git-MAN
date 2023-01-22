@@ -252,18 +252,20 @@ function convert_revision(){
             echo "[INFO]: shared_config.txt found in the git tag ${repo_convert_rev_tag}"
             if ! git cat-file -p ${repo_convert_rev_tag}:$(git ls-tree -r --name-only ${repo_convert_rev_tag} | grep '^.*/shared_config.txt$' ) | grep -E "^${ccm_submodule_name}~.+$|^\.\.\\\\(.+\\\\)*${ccm_submodule_name}~.+$" ; then
               echo "WARNING: The submodule is not to be found in shared_config_file - fall-back to default"
-              _tmp_path_dirname="."
+              _path_from_shared_config_file="."
             else
-              _tmp_path_dirname=$(dirname $(git cat-file -p ${repo_convert_rev_tag}:$(git ls-tree -r --name-only ${repo_convert_rev_tag} | grep '^.*/shared_config.txt$') \
+              # The submodule reference found in shared_config file - convert to unix slashes
+              _path_from_shared_config_file=$(dirname $(git cat-file -p ${repo_convert_rev_tag}:$(git ls-tree -r --name-only ${repo_convert_rev_tag} | grep '^.*/shared_config.txt$') \
                                               | grep -E "^${ccm_submodule_name}~.+$|^\.\.\\\\(.+\\\\)*${ccm_submodule_name}~.+$" | sed -e 's/\\/\//g'))
             fi
-            if [[ ${_tmp_path_dirname:-} == "${ccm_submodule_name}" || ${_tmp_path_dirname:-} == "." ]]; then
+            if [[ ${_path_from_shared_config_file} == "${ccm_submodule_name}" || ${_path_from_shared_config_file} == "." ]]; then
               echo "The path was not explicitly specified in the shared_config file or module not found - add it to the dir of the shared_config.txt"
-              git_submodule_path="$(dirname "${shared_config_file}" )/${repo_submodule}"
+              git_submodule_path="$(dirname "${shared_config_file}" | sed -e 's/\\/\//g' )/${repo_submodule}"
             else
-              _tmp_path=$(basename ${_tmp_path_dirname})
-              echo "Use the found path from ${shared_config_file}: ${_tmp_path}"
-              git_submodule_path="${_tmp_path}/${repo_submodule}"
+              # We found a qualified path for the submodule in the shared_config file
+              echo "Use the found path from ${shared_config_file}: ${_path_from_shared_config_file}"
+              git_submodule_path=$( realpath -m --relative-to=./ $(dirname ${shared_config_file})/${_path_from_shared_config_file})
+              echo "Set path of submodule to $git_submodule_path in root folder"
             fi
           else
             echo "Place the submodule in the root folder as fall-back"
