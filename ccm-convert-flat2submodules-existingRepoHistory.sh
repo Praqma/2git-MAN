@@ -264,7 +264,7 @@ function convert_revision(){
             else
               # We found a qualified path for the submodule in the shared_config file
               echo "Use the found path from ${shared_config_file}: ${_path_from_shared_config_file}"
-              git_submodule_path=$( realpath -m --relative-to=./ $(dirname ${shared_config_file})/${_path_from_shared_config_file})
+              git_submodule_path="$( realpath -m --relative-to=./ $(dirname ${shared_config_file})/${_path_from_shared_config_file})/${repo_submodule}"
               echo "Set path of submodule to $git_submodule_path in root folder"
             fi
           else
