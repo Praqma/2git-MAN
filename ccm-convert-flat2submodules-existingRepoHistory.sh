@@ -133,8 +133,12 @@ function convert_revision(){
     else
         local repo_baseline_rev_tag_wcomponent_wstatus="${repo_name}/${repo_init_tag}/${repo_init_tag}"
     fi
+    repo_baseline_rev_tag_wcomponent_wstatus_gitnormalized=""
+    byref_translate_from_ccm_version2git_tag "${repo_baseline_rev_tag_wcomponent_wstatus}" repo_baseline_rev_tag_wcomponent_wstatus
 
     local repo_convert_rev_tag_wcomponent_wstatus="${repo_name}/${ccm_release}/${repo_convert_rev_tag}"
+    repo_convert_rev_tag_wcomponent_wstatus_gitnormalized=""
+    byref_translate_from_ccm_version2git_tag "${repo_convert_rev_tag_wcomponent_wstatus}" repo_convert_rev_tag_wcomponent_wstatus_gitnormalized
 
     # Get the right content
     if [ `git describe ${repo_convert_rev_tag}`  ] ; then
@@ -152,9 +156,9 @@ function convert_revision(){
         exit 1
     fi
 
-    [[ ${repo_baseline_rev_tag_wcomponent_wstatus} == "" ]] &&  exit 1
+    [[ ${repo_baseline_rev_tag_wcomponent_wstatus_gitnormalized} == "" ]] &&  exit 1
     # Move the workarea pointer to the 'baseline' tag
-    git reset -q --mixed ${repo_baseline_rev_tag_wcomponent_wstatus} > /dev/null 2>&1
+    git reset -q --mixed ${repo_baseline_rev_tag_wcomponent_wstatus_gitnormalized} > /dev/null 2>&1
 
     # get the .gitignore files from init commit
     for file in $(git ls-tree --name-only -r ${repo_name}/init/init^{}); do
@@ -353,13 +357,13 @@ function convert_revision(){
 
                 if [[ ${push_tags_in_submodules} == "true" ]]; then
                     # root project tag handling
-                    if [[ ! `git describe ${repo_convert_rev_tag_wcomponent_wstatus}` ]] ; then
+                    if [[ ! `git describe ${repo_convert_rev_tag_wcomponent_wstatus_gitnormalized}` ]] ; then
                         # it was not found try and fetch to make 100% sure for whatever reason it is not here..
                         git fetch ${git_remote_submodule_to_use} --tags +refs/heads/*:refs/remotes/origin/*
                     fi
-                    if [[ `git describe ${repo_convert_rev_tag_wcomponent_wstatus}` ]] ; then
+                    if [[ `git describe ${repo_convert_rev_tag_wcomponent_wstatus_gitnormalized}` ]] ; then
                         # we already have the correct tag, so just set it and move on..
-                        git reset -q --hard ${repo_convert_rev_tag_wcomponent_wstatus}
+                        git reset -q --hard ${repo_convert_rev_tag_wcomponent_wstatus_gitnormalized}
                         git clean -xffd
                         unset repo_submodule_rev
                         unset ccm_submodule_inst
@@ -382,8 +386,8 @@ function convert_revision(){
                 fi
 
                 if [[ ${push_tags_in_submodules} == "true" ]]; then
-                    git tag -f -a -m "Please see tag in master repo for info: ${repo_convert_rev_tag_wcomponent_wstatus}" "${repo_convert_rev_tag_wcomponent_wstatus}"
-                    git push ${git_remote_submodule_to_use} --recurse-submodules=no -f "${repo_convert_rev_tag_wcomponent_wstatus}"
+                    git tag -f -a -m "Please see tag in master repo for info: ${repo_convert_rev_tag_wcomponent_wstatus_gitnormalized}" "${repo_convert_rev_tag_wcomponent_wstatus_gitnormalized}"
+                    git push ${git_remote_submodule_to_use} --recurse-submodules=no -f "${repo_convert_rev_tag_wcomponent_wstatus_gitnormalized}"
                 fi
 
                 cd ${root_dir}
@@ -453,14 +457,14 @@ function convert_revision(){
     echo "Get tag content of: ${repo_convert_rev_tag}"
     git tag -l --format '%(contents)' "${repo_convert_rev_tag}" > ./tag_meta_data.txt
     echo "git commit content of ${repo_convert_rev_tag}"
-    echo "git tag ${repo_convert_rev_tag_wcomponent_wstatus} based on ${repo_convert_rev_tag}"
-    git tag -a -F ./tag_meta_data.txt "${repo_convert_rev_tag_wcomponent_wstatus}"
+    echo "git tag ${repo_convert_rev_tag_wcomponent_wstatus_gitnormalized} based on ${repo_convert_rev_tag}"
+    git tag -a -F ./tag_meta_data.txt "${repo_convert_rev_tag_wcomponent_wstatus_gitnormalized}"
     rm -f ./tag_meta_data.txt
 
     # Do not consider submodules
     if [[ ${push_to_remote_during_conversion:-} == "true" ]]; then
-        echo "INFO: Configured to push to remote:  git push ${git_remote_to_use} --recurse-submodules=no -f ${repo_convert_rev_tag_wcomponent_wstatus}"
-        git push ${git_remote_to_use} --recurse-submodules=no -f "${repo_convert_rev_tag_wcomponent_wstatus}"
+        echo "INFO: Configured to push to remote:  git push ${git_remote_to_use} --recurse-submodules=no -f ${repo_convert_rev_tag_wcomponent_wstatus_gitnormalized}"
+        git push ${git_remote_to_use} --recurse-submodules=no -f "${repo_convert_rev_tag_wcomponent_wstatus_gitnormalized}"
     else
         echo "INFO: Skip push to remote"
     fi
@@ -481,7 +485,9 @@ function convert_revision(){
     unset tag_to_convert
     unset repo_convert_rev_tag
     unset repo_convert_rev_tag_wcomponent_wstatus
+    unset repo_convert_rev_tag_wcomponent_wstatus_gitnormalized
     unset repo_baseline_rev_tag_wcomponent_wstatus
+    unset repo_baseline_rev_tag_wcomponent_wstatus_gitnormalized
     unset ccm_repo_convert_rev_tag
     # From subfunction
     unset proj_name
