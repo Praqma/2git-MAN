@@ -382,8 +382,8 @@ function convert_revision(){
                 fi
 
                 if [[ ${push_tags_in_submodules} == "true" ]]; then
-                    git tag -f -a -m "Please see tag in master repo for info: ${repo_convert_rev_tag_wcomponent_wstatus}" ${repo_convert_rev_tag_wcomponent_wstatus}
-                    git push ${git_remote_submodule_to_use} --recurse-submodules=no -f ${repo_convert_rev_tag_wcomponent_wstatus}
+                    git tag -f -a -m "Please see tag in master repo for info: ${repo_convert_rev_tag_wcomponent_wstatus}" "${repo_convert_rev_tag_wcomponent_wstatus}"
+                    git push ${git_remote_submodule_to_use} --recurse-submodules=no -f "${repo_convert_rev_tag_wcomponent_wstatus}"
                 fi
 
                 cd ${root_dir}
@@ -445,22 +445,22 @@ function convert_revision(){
     [[ ${debug:-} == "true" ]] && set -x
 
     # reset the committer to get the correct set for the commiting the tag. There is no author of the tag
-    export GIT_AUTHOR_DATE=$(git tag -l --format="%(taggerdate:iso8601)" ${repo_convert_rev_tag} | awk -F" " '{print $1 " " $2}') && [[ -z ${GIT_AUTHOR_DATE} ]] && return 1
+    export GIT_AUTHOR_DATE=$(git tag -l --format="%(taggerdate:iso8601)" "${repo_convert_rev_tag}" | awk -F" " '{print $1 " " $2}') && [[ -z ${GIT_AUTHOR_DATE} ]] && return 1
     export GIT_COMMITTER_DATE=${GIT_AUTHOR_DATE}
-    export GIT_COMMITTER_NAME=$(git tag -l --format="%(taggername)" ${repo_convert_rev_tag} ) && [[ -z ${GIT_COMMITTER_NAME} ]] && return 1
-    export GIT_COMMITTER_EMAIL=$(git tag -l --format="%(taggeremail)" ${repo_convert_rev_tag} ) && [[ -z ${GIT_COMMITTER_EMAIL} ]] && return 1
+    export GIT_COMMITTER_NAME=$(git tag -l --format="%(taggername)" "${repo_convert_rev_tag}" ) && [[ -z ${GIT_COMMITTER_NAME} ]] && return 1
+    export GIT_COMMITTER_EMAIL=$(git tag -l --format="%(taggeremail)" "${repo_convert_rev_tag}" ) && [[ -z ${GIT_COMMITTER_EMAIL} ]] && return 1
 
     echo "Get tag content of: ${repo_convert_rev_tag}"
-    git tag -l --format '%(contents)' ${repo_convert_rev_tag} > ./tag_meta_data.txt
+    git tag -l --format '%(contents)' "${repo_convert_rev_tag}" > ./tag_meta_data.txt
     echo "git commit content of ${repo_convert_rev_tag}"
     echo "git tag ${repo_convert_rev_tag_wcomponent_wstatus} based on ${repo_convert_rev_tag}"
-    git tag -a -F ./tag_meta_data.txt ${repo_convert_rev_tag_wcomponent_wstatus}
+    git tag -a -F ./tag_meta_data.txt "${repo_convert_rev_tag_wcomponent_wstatus}"
     rm -f ./tag_meta_data.txt
 
     # Do not consider submodules
     if [[ ${push_to_remote_during_conversion:-} == "true" ]]; then
         echo "INFO: Configured to push to remote:  git push ${git_remote_to_use} --recurse-submodules=no -f ${repo_convert_rev_tag_wcomponent_wstatus}"
-        git push ${git_remote_to_use} --recurse-submodules=no -f ${repo_convert_rev_tag_wcomponent_wstatus}
+        git push ${git_remote_to_use} --recurse-submodules=no -f "${repo_convert_rev_tag_wcomponent_wstatus}"
     else
         echo "INFO: Skip push to remote"
     fi
