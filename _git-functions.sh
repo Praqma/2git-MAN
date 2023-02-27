@@ -87,6 +87,7 @@ function git_set_execute_bit_in_index_of_unix_tool_file_executable() {
     # PRE: you are in the repo
     set +x
     echo "Based on file reporting 'executable' or 'interpreter' - set execute bit in the repo on following files:"
+    IFS=$'\r\n'
     for git_ls_file in `git ls-files`; do
       if file ${git_ls_file} |grep executable 2>&1 > /dev/null; then
         _git_set_execute_bit

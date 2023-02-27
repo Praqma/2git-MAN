@@ -17,6 +17,10 @@ function byref_translate_from_ccm_name2git_repo() {
 }
 
 function byref_translate_from_ccm_version2git_tag() {
+# https://stackoverflow.com/questions/26382234/what-names-are-valid-git-tags
+#Disallowed characters: '~', '^', ':', '', '?', '[', '*'
+#Disallowed sequences ".." and "@{"
+#Disallowed Also tag cannot contain " " (whitespace)
   if [[ -z ${1} ]]; then
     echo "${FUNCNAME[0]}: Parameter 1  - by value - cannot be empty" && exit 1
   else
