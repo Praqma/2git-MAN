@@ -135,10 +135,12 @@ function convert_revision(){
     fi
     repo_baseline_rev_tag_wcomponent_wstatus_gitnormalized=""
     byref_translate_from_ccm_version2git_tag "${repo_baseline_rev_tag_wcomponent_wstatus}" repo_baseline_rev_tag_wcomponent_wstatus
+    echo "repo_baseline_rev_tag_wcomponent_wstatus_gitnormalized=${repo_baseline_rev_tag_wcomponent_wstatus_gitnormalized}"
 
     local repo_convert_rev_tag_wcomponent_wstatus="${repo_name}/${ccm_release}/${repo_convert_rev_tag}"
     repo_convert_rev_tag_wcomponent_wstatus_gitnormalized=""
     byref_translate_from_ccm_version2git_tag "${repo_convert_rev_tag_wcomponent_wstatus}" repo_convert_rev_tag_wcomponent_wstatus_gitnormalized
+    echo "repo_convert_rev_tag_wcomponent_wstatus_gitnormalized=${repo_convert_rev_tag_wcomponent_wstatus_gitnormalized}"
 
     # Get the right content
     if [ `git describe ${repo_convert_rev_tag}`  ] ; then
@@ -156,7 +158,10 @@ function convert_revision(){
         exit 1
     fi
 
-    [[ ${repo_baseline_rev_tag_wcomponent_wstatus_gitnormalized} == "" ]] &&  exit 1
+    [[ ${repo_baseline_rev_tag_wcomponent_wstatus_gitnormalized} == "" ]] &&   {
+      echo "ERROR: repo_baseline_rev_tag_wcomponent_wstatus_gitnormalized is empty -  something is wrong"
+      exit 1
+    }
     # Move the workarea pointer to the 'baseline' tag
     git reset -q --mixed ${repo_baseline_rev_tag_wcomponent_wstatus_gitnormalized} > /dev/null 2>&1
 
