@@ -134,7 +134,7 @@ function convert_revision(){
         local repo_baseline_rev_tag_wcomponent_wstatus="${repo_name}/${repo_init_tag}/${repo_init_tag}"
     fi
     repo_baseline_rev_tag_wcomponent_wstatus_gitnormalized=""
-    byref_translate_from_ccm_version2git_tag "${repo_baseline_rev_tag_wcomponent_wstatus}" repo_baseline_rev_tag_wcomponent_wstatus
+    byref_translate_from_ccm_version2git_tag "${repo_baseline_rev_tag_wcomponent_wstatus}" repo_baseline_rev_tag_wcomponent_wstatus_gitnormalized
     echo "repo_baseline_rev_tag_wcomponent_wstatus_gitnormalized=${repo_baseline_rev_tag_wcomponent_wstatus_gitnormalized}"
 
     local repo_convert_rev_tag_wcomponent_wstatus="${repo_name}/${ccm_release}/${repo_convert_rev_tag}"
