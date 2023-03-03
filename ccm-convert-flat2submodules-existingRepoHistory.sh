@@ -133,8 +133,8 @@ function convert_revision(){
     else
         # lookup in the baseline history rewrite file
         local repo_baseline_rev_tag_wcomponent_wstatus="${repo_name}/${repo_init_tag}/${repo_init_tag}"
-        if [[ -f ${ccm_db}_gitfiles/baseline_history_rewrite.txt ]]; then
-          repo_baseline_rev_tag_wcomponent_wstatus=$(grep -E "^${repo_name}@.+/.+/.+$" ${ccm_db}_gitfiles/baseline_history_rewrite.txt | cut -d @ -f 2- ) || { echo "INFO: No rewriting baseline found - skip" ; }
+        if [[ -f ${root_dir}/${ccm_db}_gitfiles/baseline_history_rewrite.txt ]]; then
+          repo_baseline_rev_tag_wcomponent_wstatus=$(grep -E "^${repo_name}@.+/.+/.+$" ${root_dir}/${ccm_db}_gitfiles/baseline_history_rewrite.txt | cut -d @ -f 2- ) || { echo "INFO: No rewriting baseline found - skip" ; }
           https_remote_common=$(echo ${git_remote_to_use} | sed -e "s|/{repo_name}.git|/${git_common_target_repo}.git|")
           git fetch ${https_remote_common} refs/tags/${repo_baseline_rev_tag_wcomponent_wstatus}:refs/tags/${repo_baseline_rev_tag_wcomponent_wstatus} || {
             echo "ERROR: Cannot fetch tag from common remote repo - please investigate"
