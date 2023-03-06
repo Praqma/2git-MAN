@@ -131,16 +131,19 @@ function convert_revision(){
             fi
         fi
     else
-        # lookup in the baseline history rewrite file
         local repo_baseline_rev_tag_wcomponent_wstatus="${repo_name}/${repo_init_tag}/${repo_init_tag}"
-        if [[ -f ${execution_root_directory}/${ccm_db}_gitfiles/baseline_history_rewrite.txt ]]; then
-          repo_baseline_rev_tag_wcomponent_wstatus=$(grep -E "^${repo_name}@.+/.+/.+$" ${execution_root_directory}/${ccm_db}_gitfiles/baseline_history_rewrite.txt | cut -d @ -f 2- ) || { echo "INFO: No rewriting baseline found - skip" ; }
-          https_remote_common=$(echo ${git_remote_to_use} | sed -e "s|/${repo_name}.git|/${git_common_target_repo}.git|")
-          git fetch ${https_remote_common} -f --no-tags +refs/tags/${repo_baseline_rev_tag_wcomponent_wstatus}:refs/tags/${repo_baseline_rev_tag_wcomponent_wstatus} || {
-            echo "ERROR: Cannot fetch tag from common remote repo - please investigate"
-            exit 1
-          }
-        fi
+    fi
+    if [[ -f ${execution_root_directory}/${ccm_db}_gitfiles/baseline_history_rewrite.txt ]]; then
+      # lookup in the baseline history rewrite file
+      repo_baseline_rev_tag_wcomponent_wstatus_lookup=$(grep -E "^${repo_baseline_rev_tag_wcomponent_wstatus}@.+/.+/.+$" ${execution_root_directory}/${ccm_db}_gitfiles/baseline_history_rewrite.txt | cut -d @ -f 2- ) || { echo "INFO: No rewriting baseline found - skip" ; }
+      if [[ ${repo_baseline_rev_tag_wcomponent_wstatus_lookup:-} != "" ]]; then
+        https_remote_common=$(echo ${git_remote_to_use} | sed -e "s|/${repo_name}.git|/${git_common_target_repo}.git|")
+        git fetch ${https_remote_common} -f --no-tags +refs/tags/${repo_baseline_rev_tag_wcomponent_wstatus_lookup}:refs/tags/${repo_baseline_rev_tag_wcomponent_wstatus_lookup} || {
+          echo "ERROR: Cannot fetch tag from common remote repo - please investigate"
+          exit 1
+        }
+        repo_baseline_rev_tag_wcomponent_wstatus=${repo_baseline_rev_tag_wcomponent_wstatus_lookup}
+      fi
     fi
     repo_baseline_rev_tag_wcomponent_wstatus_gitnormalized=""
     byref_translate_from_ccm_version2git_tag "${repo_baseline_rev_tag_wcomponent_wstatus}" repo_baseline_rev_tag_wcomponent_wstatus_gitnormalized
