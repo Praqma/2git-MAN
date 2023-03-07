@@ -223,9 +223,5 @@ else
     fi
 
 fi
-if [[ "${debug:-}" == "true" ]]; then
-    echo "debug mode - do not verbose output_file and delete it"
-else
-    cat ${output_file}
-    rm -f ${output_file}
-fi
+cat ${output_file}
+rm -f ${output_file}
