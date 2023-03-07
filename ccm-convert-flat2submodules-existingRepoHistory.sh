@@ -176,6 +176,10 @@ function convert_revision(){
     }
     # Move the workarea pointer to the 'baseline' tag
     git reset -q --mixed ${repo_baseline_rev_tag_wcomponent_wstatus_gitnormalized} > /dev/null 2>&1
+    if [[ "${repo_baseline_rev_tag_wcomponent_wstatus_lookup:-}" != "" ]]; then
+      # we dont the tag after we have reset to it - delete it again to avoid push confusion
+      git tag --delete "${repo_baseline_rev_tag_wcomponent_wstatus_lookup}"
+    fi
 
     # get the .gitignore files from init commit
     for file in $(git ls-tree --name-only -r ${repo_name}/init/init^{}); do
@@ -504,6 +508,7 @@ function convert_revision(){
     unset repo_convert_rev_tag_wcomponent_wstatus
     unset repo_convert_rev_tag_wcomponent_wstatus_gitnormalized
     unset repo_baseline_rev_tag_wcomponent_wstatus
+    unset repo_baseline_rev_tag_wcomponent_wstatus_lookup
     unset repo_baseline_rev_tag_wcomponent_wstatus_gitnormalized
     unset ccm_repo_convert_rev_tag
     # From subfunction
