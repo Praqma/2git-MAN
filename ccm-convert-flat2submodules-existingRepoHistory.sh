@@ -56,7 +56,14 @@ export git_https_remote=$(echo ${git_ssh_remote} | sed -e "s/ssh:\/\/git@/https:
 export git_https_remote_orig=$(echo ${git_ssh_remote_orig} | sed -e "s/ssh:\/\/git@/https:\/\/${http_remote_credentials}/" -e 's/7999/7990\/scm/' | sed -e 's/ssh-//' | sed -e 's/:7990//' )
 export git_remote_to_use=${git_https_remote}
 export git_remote_to_use_orig=${git_https_remote_orig}
-echo "Use remote : ${git_remote_to_use} and ${git_remote_to_use_orig}"
+echo "INFO: Use remote : ${git_remote_to_use} and ${git_remote_to_use_orig}"
+
+if [[ "${git_common_target_repo}" != "" ]]; then
+   https_remote_common=$(echo ${git_remote_to_use} | sed -e "s|/${repo_name}.git|/${git_common_target_repo}.git|")
+   echo "INFO: Configured to common repo: ${git_common_target_repo} : ${https_remote_common} "
+   echo  "     - consider to enable 'push_to_remote_during_conversion=true'"
+   echo  "       to avoid false failed fetch of tags in case of history rewrite"
+fi
 
 function convert_revision(){
     local root_dir=$(pwd)
@@ -138,10 +145,26 @@ function convert_revision(){
       repo_baseline_rev_tag_wcomponent_wstatus_lookup=$(grep -E "^${repo_baseline_rev_tag_wcomponent_wstatus}@.+/.+/.+$" ${execution_root_directory}/${ccm_db}_gitfiles/baseline_history_rewrite.txt | cut -d @ -f 2- ) || { echo "INFO: No rewriting baseline found - skip" ; }
       if [[ ${repo_baseline_rev_tag_wcomponent_wstatus_lookup:-} != "" ]]; then
         https_remote_common=$(echo ${git_remote_to_use} | sed -e "s|/${repo_name}.git|/${git_common_target_repo}.git|")
-        git fetch ${https_remote_common} -f --no-tags +refs/tags/${repo_baseline_rev_tag_wcomponent_wstatus_lookup}:refs/tags/${repo_baseline_rev_tag_wcomponent_wstatus_lookup} || {
-          echo "ERROR: Cannot fetch tag from common remote repo - please investigate"
-          exit 1
-        }
+        local tag_found=false
+        local tag_fetch_continue=true
+        while $tag_fetch_continue ; do
+          if git fetch ${https_remote_common} -f --no-tags +refs/tags/${repo_baseline_rev_tag_wcomponent_wstatus_lookup}:refs/tags/${repo_baseline_rev_tag_wcomponent_wstatus_lookup} ; then
+            echo "All good - we got the tag"
+            tag_found=true
+            tag_fetch_continue=false
+          else
+            echo "INFO: detect for remote activity - do we have hope that the tag eventually become avilable with 300 second interval"
+            remote_common_tags_init=$(git ls-remote ${https_remote_common} --tags )
+            sleep 300
+            remote_common_tags_updated=$(git ls-remote ${https_remote_common} --tags )
+            if [[ "$remote_common_tags_init" == "$remote_common_tags_updated" ]]; then
+              tag_fetch_continue=false
+              echo "ERROR: We have been waiting for internal of 300 second and now there is no activity"
+              echo "       It is a good idea to enable push while converting to optimizing and avoid false failures"
+              exit 1
+            fi
+          fi
+        done
         repo_baseline_rev_tag_wcomponent_wstatus=${repo_baseline_rev_tag_wcomponent_wstatus_lookup}
       fi
     fi
@@ -486,6 +509,9 @@ function convert_revision(){
     if [[ ${push_to_remote_during_conversion:-} == "true" ]]; then
         echo "INFO: Configured to push to remote:  git push ${git_remote_to_use} --recurse-submodules=no -f ${repo_convert_rev_tag_wcomponent_wstatus_gitnormalized}"
         git push ${git_remote_to_use} --recurse-submodules=no -f "${repo_convert_rev_tag_wcomponent_wstatus_gitnormalized}"
+        if [[ ${https_remote_common:-} != ""  ]]; then
+          git push ${https_remote_common} --recurse-submodules=no -f "${repo_convert_rev_tag_wcomponent_wstatus_gitnormalized}"
+        fi
     else
         echo "INFO: Skip push to remote"
     fi
