@@ -58,7 +58,7 @@ export git_remote_to_use=${git_https_remote}
 export git_remote_to_use_orig=${git_https_remote_orig}
 echo "INFO: Use remote : ${git_remote_to_use} and ${git_remote_to_use_orig}"
 
-if [[ "${git_common_target_repo}" != "" ]]; then
+if [[ "${git_common_target_repo:-}" != "" ]]; then
    https_remote_common=$(echo ${git_remote_to_use} | sed -e "s|/${repo_name}.git|/${git_common_target_repo}.git|")
    echo "INFO: Configured to common repo: ${git_common_target_repo} : ${https_remote_common} "
    echo  "     - consider to enable 'push_to_remote_during_conversion=true'"
