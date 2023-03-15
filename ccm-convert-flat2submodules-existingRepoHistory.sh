@@ -156,7 +156,7 @@ function convert_revision(){
             echo "INFO: detect for remote activity - do we have hope that the tag eventually become avilable with 300 second interval"
             remote_common_tags_init=$(git ls-remote --tags ${https_remote_common} )
             sleep 300
-            remote_common_tags_updated=$(git ls-remote --tasgs ${https_remote_common} )
+            remote_common_tags_updated=$(git ls-remote --tags ${https_remote_common} )
             if [[ "$remote_common_tags_init" == "$remote_common_tags_updated" ]]; then
               tag_fetch_continue=false
               echo "ERROR: We have been waiting for internal of 300 second and now there is no activity"
