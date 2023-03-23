@@ -12,8 +12,5 @@ S1_LB_DF_4_6_1/init/init@S1_LB_DF_4_6_0/4.6.1/bl_S1_LB_DF_4_6_1_I2020101402_pub
 S1_LB_Visu_3.01.17.00.00_AUR/2021.1/1_int@S1_LB_Visu_AUR/2021.1/3.01.18.00.00_X2-Series_Integration_AUR_int
 S1_LB_Visu_3.01.18.00.00_AUR/2021.1/1_int@S1_LB_Visu_AUR/2021.1/3.01.18.00.00_X2-Series_Integration_AUR_int
 
-bl_S1_LB_Visu_SW_3.0.12.0_Int_20150915_pub@S1_LB_Visu/init/init
-S1_LB_Visu_3.00.13_T100/init/init@3.00.12_T100_Integration_20200728_rel
-1_20200727_pub@3.00.12_T100_Integration_20200728_rel
-3.00.14_T100_Integration_20200727_pub@3.00.14_Integration_20200727_pub
-S1_LB_Visu_/init/init@3.00.14_Integration_20200727_pub
+S1_LB_Visu_3.00.13_T100/init/init@S1_LB_Visu/3.0.12/3.00.12_T100_Integration_20200728_rel
+S1_LB_Visu_/init/init@S1_LB_Visu_3.00.13_T100/3.00.14/3.00.14_Integration_20200727_pub
