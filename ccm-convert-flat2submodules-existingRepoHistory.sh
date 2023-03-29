@@ -158,10 +158,20 @@ function convert_revision(){
             sleep 300
             remote_common_tags_updated=$(git ls-remote --tags ${https_remote_common} )
             if [[ "$remote_common_tags_init" == "$remote_common_tags_updated" ]]; then
-              tag_fetch_continue=false
-              echo "ERROR: We have been waiting for internal of 300 second and now there is no activity"
-              echo "       It is a good idea to enable push while converting to optimizing and avoid false failures"
-              exit 1
+              echo "sleep did not solve it - try sleeping again"
+              sleep 300
+              remote_common_tags_updated=$(git ls-remote --tags ${https_remote_common} )
+              if [[ "$remote_common_tags_init" == "$remote_common_tags_updated" ]]; then
+                echo "sleep did not solve it - try sleeping again"
+                sleep 300
+                remote_common_tags_updated=$(git ls-remote --tags ${https_remote_common} )
+                if [[ "$remote_common_tags_init" == "$remote_common_tags_updated" ]]; then
+                  tag_fetch_continue=false
+                  echo "ERROR: We have been waiting for internal of 300 second and now there is no activity"
+                  echo "       It is a good idea to enable push while converting to optimizing and avoid false failures"
+                  exit 1
+                fi
+              fi
             fi
           fi
         done
