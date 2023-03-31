@@ -47,7 +47,7 @@ fi
 
 ccm_current_db=`ccm status -f "%database %current_session" | grep TRUE | awk -F " " '{print $1}'`
 case ${ccm_current_db} in
-    /data/ccmdb/db_functionDevelopment|/data/ccmdb/db_automation|/data/ccmdb/db_module|/data/ccmdb/db_application)
+    /data/ccmdb/db_functionDevelopment|/data/ccmdb/db_automation|/data/ccmdb/db_module|/data/ccmdb/db_application|/data/ccmdb/db_hardware_ng)
         epic_level_header="Change Requests: (CR)"
         epic_level_release_attr="TargetRelease"
         epic_level_epic2story_relation="associatedWP"
