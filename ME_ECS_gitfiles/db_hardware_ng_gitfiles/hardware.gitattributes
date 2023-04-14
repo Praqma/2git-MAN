@@ -1,0 +1,221 @@
+# ------------ Defaults 2023-04 -------------------------
+
+# Images
+*.[pP][nN][gG] filter=lfs diff=lfs merge=lfs -text lockable
+*.[pP][dD][nN] filter=lfs diff=lfs merge=lfs -text lockable
+*.[jJ][pP][gG] filter=lfs diff=lfs merge=lfs -text lockable
+*.[gG][iI][fF] filter=lfs diff=lfs merge=lfs -text lockable
+*.[bB][mM][pP] filter=lfs diff=lfs merge=lfs -text lockable
+*.[tT][tT][fF] filter=lfs diff=lfs merge=lfs -text lockable
+
+# Documents
+*.[pP][dD][fF] filter=lfs diff=lfs merge=lfs -text lockable
+*.[dD][oO][cC] filter=lfs diff=lfs merge=lfs -text lockable
+*.[dD][oO][cC][xX] filter=lfs diff=lfs merge=lfs -text lockable
+*.[xX][lL][sS] filter=lfs diff=lfs merge=lfs -text lockable
+*.[xX][lL][sS][xX] filter=lfs diff=lfs merge=lfs -text lockable
+*.[xX][sS][lL][mM] filter=lfs diff=lfs merge=lfs -text lockable
+*.[pP][pP][tT] filter=lfs diff=lfs merge=lfs -text lockable
+*.[pP][pP][tT][xX] filter=lfs diff=lfs merge=lfs -text lockable
+*.[vV][sS][dD] filter=lfs diff=lfs merge=lfs -text lockable
+*.[vV][sS][dD][xX] filter=lfs diff=lfs merge=lfs -text lockable
+*.[oO][dD][gG] filter=lfs diff=lfs merge=lfs -text lockable
+
+# Binaries and Executables
+*.[eE][xX][eE] filter=lfs diff=lfs merge=lfs -text lockable
+*.[dD][lL][lL] filter=lfs diff=lfs merge=lfs -text lockable
+*.[jJ][aA][rR] filter=lfs diff=lfs merge=lfs -text lockable
+*.[bB][iI][nN] filter=lfs diff=lfs merge=lfs -text lockable
+*.[mM][aA][tT] filter=lfs diff=lfs merge=lfs -text lockable
+
+# Compressed
+*.[rR][aA][rR] filter=lfs diff=lfs merge=lfs -text lockable
+*.[zZ][iI][pP] filter=lfs diff=lfs merge=lfs -text lockable
+*.7[zZ] filter=lfs diff=lfs merge=lfs -text lockable
+*.[bB][zZ]2 filter=lfs diff=lfs merge=lfs -text lockable
+*.[gG][zZ] filter=lfs diff=lfs merge=lfs -text lockable
+*.[tT][aA][rR] filter=lfs diff=lfs merge=lfs -text lockable
+*.[tT][aA][rR].[gG][zZ] filter=lfs diff=lfs merge=lfs -text lockable
+*.[tT][gG][zZ] filter=lfs diff=lfs merge=lfs -text lockable
+
+# System Images
+*.[iI][sS][oO] filter=lfs diff=lfs merge=lfs -text lockable
+
+# Media
+*.[mM][pP]3 filter=lfs diff=lfs merge=lfs -text lockable
+*.[mM][pP]4 filter=lfs diff=lfs merge=lfs -text lockable
+*.[aA][vV][iI] filter=lfs diff=lfs merge=lfs -text lockable
+*.[mM][oO][vV] filter=lfs diff=lfs merge=lfs -text lockable
+*.[mM][kK][vV] filter=lfs diff=lfs merge=lfs -text lockable
+
+# ------------ Defaults 2023-04 -------------------------
+
+
+# Mentor files 
+**/database/icdb.dat filter=lfs diff=lfs merge=lfs -text lockable
+*.vwd filter=lfs diff=lfs merge=lfs -text
+*.psk filter=lfs diff=lfs merge=lfs -text
+*.pdb filter=lfs diff=lfs merge=lfs -text
+*.cah filter=lfs diff=lfs merge=lfs -text
+*.lgc filter=lfs diff=lfs merge=lfs -text
+*.npr filter=lfs diff=lfs merge=lfs -text
+*.ncl filter=lfs diff=lfs merge=lfs -text
+*.cbf filter=lfs diff=lfs merge=lfs -text
+*.jpf filter=lfs diff=lfs merge=lfs -text
+*.lyt filter=lfs diff=lfs merge=lfs -text
+*.llm filter=lfs diff=lfs merge=lfs -text
+*.gdt filter=lfs diff=lfs merge=lfs -text
+*.cel filter=lfs diff=lfs merge=lfs -text
+*.dpc filter=lfs diff=lfs merge=lfs -text
+*.upf filter=lfs diff=lfs merge=lfs -text
+*.dat filter=lfs diff=lfs merge=lfs -text
+*.rdt filter=lfs diff=lfs merge=lfs -text
+*.cpd filter=lfs diff=lfs merge=lfs -text
+*.mdb filter=lfs diff=lfs merge=lfs -text
+*.lmc filter=lfs diff=lfs merge=lfs -text
+*.idx filter=lfs diff=lfs merge=lfs -text
+*.easm filter=lfs diff=lfs merge=lfs -text
+*.ccz filter=lfs diff=lfs merge=lfs -text
+*.slb filter=lfs diff=lfs merge=lfs -text
+*.mdl filter=lfs diff=lfs merge=lfs -text
+*.hkp filter=lfs diff=lfs merge=lfs -text
+*.js filter=lfs diff=lfs merge=lfs -text
+*.xtda filter=lfs diff=lfs merge=lfs -text
+*.mdc filter=lfs diff=lfs merge=lfs -text
+*.db filter=lfs diff=lfs merge=lfs -text
+*.proj filter=lfs diff=lfs merge=lfs -text
+*.emp filter=lfs diff=lfs merge=lfs -text
+*.step filter=lfs diff=lfs merge=lfs -text
+*.emn filter=lfs diff=lfs merge=lfs -text
+*.ipl filter=lfs diff=lfs merge=lfs -text
+*.lck filter=lfs diff=lfs merge=lfs -text
+*.dbc filter=lfs diff=lfs merge=lfs -text
+*.fsc filter=lfs diff=lfs merge=lfs -text
+*.jpf filter=lfs diff=lfs merge=lfs -text
+*.dat filter=lfs diff=lfs merge=lfs -text
+*.pcb filter=lfs diff=lfs merge=lfs -text
+*.wsp filter=lfs diff=lfs merge=lfs -text
+*.pcd filter=lfs diff=lfs merge=lfs -text
+*.oga filter=lfs diff=lfs merge=lfs -text
+*.dcs filter=lfs diff=lfs merge=lfs -text
+*.gmf filter=lfs diff=lfs merge=lfs -text
+*.dsf filter=lfs diff=lfs merge=lfs -text
+*.hkp filter=lfs diff=lfs merge=lfs -text
+*.eccz filter=lfs diff=lfs merge=lfs -text
+*.ext filter=lfs diff=lfs merge=lfs -text
+*.drc filter=lfs diff=lfs merge=lfs -text
+*.eocf filter=lfs diff=lfs merge=lfs -text
+*.gpf filter=lfs diff=lfs merge=lfs -text
+*.ogd filter=lfs diff=lfs merge=lfs -text
+*.paf filter=lfs diff=lfs merge=lfs -text
+*.egpf filter=lfs diff=lfs merge=lfs -text
+*.caf filter=lfs diff=lfs merge=lfs -text
+*.edxf filter=lfs diff=lfs merge=lfs -text
+*.e2e filter=lfs diff=lfs merge=lfs -text
+*.idf filter=lfs diff=lfs merge=lfs -text
+*.ocf filter=lfs diff=lfs merge=lfs -text
+*.idxs filter=lfs diff=lfs merge=lfs -text
+*.ecp filter=lfs diff=lfs merge=lfs -text
+*.aug filter=lfs diff=lfs merge=lfs -text
+*.prj filter=lfs diff=lfs merge=lfs -text
+*.cf1 filter=lfs diff=lfs merge=lfs -text
+*.bam filter=lfs diff=lfs merge=lfs -text
+*.chs filter=lfs diff=lfs merge=lfs -text
+*.pus filter=lfs diff=lfs merge=lfs -text
+*.cce filter=lfs diff=lfs merge=lfs -text
+*.stp filter=lfs diff=lfs merge=lfs -text
+*.gdo filter=lfs diff=lfs merge=lfs -text
+*.ncd filter=lfs diff=lfs merge=lfs -text
+*.cad filter=lfs diff=lfs merge=lfs -text
+*.gbr filter=lfs diff=lfs merge=lfs -text
+*.drl filter=lfs diff=lfs merge=lfs -text
+*.ipc filter=lfs diff=lfs merge=lfs -text
+*.cah filter=lfs diff=lfs merge=lfs -text
+*.xrg filter=lfs diff=lfs merge=lfs -text
+*.wb filter=lfs diff=lfs merge=lfs -text
+*.pkg filter=lfs diff=lfs merge=lfs -text
+*.mdf filter=lfs diff=lfs merge=lfs -text
+*.pnl filter=lfs diff=lfs merge=lfs -text
+*.prp filter=lfs diff=lfs merge=lfs -text
+*.upd filter=lfs diff=lfs merge=lfs -text
+*.tsh filter=lfs diff=lfs merge=lfs -text
+*.tna filter=lfs diff=lfs merge=lfs -text
+*.tfn filter=lfs diff=lfs merge=lfs -text
+*.tpa filter=lfs diff=lfs merge=lfs -text
+*.igs filter=lfs diff=lfs merge=lfs -text
+*.kyn filter=lfs diff=lfs merge=lfs -text
+*.def filter=lfs diff=lfs merge=lfs -text
+*.docx filter=lfs diff=lfs merge=lfs -text
+*.RPT filter=lfs diff=lfs merge=lfs -text
+*.ITD filter=lfs diff=lfs merge=lfs -text
+*.MSD filter=lfs diff=lfs merge=lfs -text
+*.lim filter=lfs diff=lfs merge=lfs -text
+*.dif filter=lfs diff=lfs merge=lfs -text
+*.fab filter=lfs diff=lfs merge=lfs -text
+*.dxf filter=lfs diff=lfs merge=lfs -text
+*.rs2 filter=lfs diff=lfs merge=lfs -text
+*.pnp filter=lfs diff=lfs merge=lfs -text
+*.PAR filter=lfs diff=lfs merge=lfs -text
+*.spn filter=lfs diff=lfs merge=lfs -text
+*.PHL filter=lfs diff=lfs merge=lfs -text
+*.DRW filter=lfs diff=lfs merge=lfs -text
+*.shp filter=lfs diff=lfs merge=lfs -text
+*.PPR filter=lfs diff=lfs merge=lfs -text
+*.PSC filter=lfs diff=lfs merge=lfs -text
+*.PKO filter=lfs diff=lfs merge=lfs -text
+*.LTP filter=lfs diff=lfs merge=lfs -text
+*.sym filter=lfs diff=lfs merge=lfs -text
+*.PKC filter=lfs diff=lfs merge=lfs -text
+*.PIN filter=lfs diff=lfs merge=lfs -text
+*.NST filter=lfs diff=lfs merge=lfs -text
+*.PSP filter=lfs diff=lfs merge=lfs -text
+*.PKP filter=lfs diff=lfs merge=lfs -text
+*.elf filter=lfs diff=lfs merge=lfs -text
+*.pnt filter=lfs diff=lfs merge=lfs -text
+*.TPS filter=lfs diff=lfs merge=lfs -text
+*.PSH filter=lfs diff=lfs merge=lfs -text
+*.prt filter=lfs diff=lfs merge=lfs -text
+*.lio filter=lfs diff=lfs merge=lfs -text
+*.MEC filter=lfs diff=lfs merge=lfs -text
+*.SCH filter=lfs diff=lfs merge=lfs -text
+*.idx filter=lfs diff=lfs merge=lfs -text
+*.pho filter=lfs diff=lfs merge=lfs -text
+*.nfs filter=lfs diff=lfs merge=lfs -text
+*.dff filter=lfs diff=lfs merge=lfs -text
+*.TFI filter=lfs diff=lfs merge=lfs -text
+*.TMH filter=lfs diff=lfs merge=lfs -text
+*.TDC filter=lfs diff=lfs merge=lfs -text
+*.CMO filter=lfs diff=lfs merge=lfs -text
+*.TNP filter=lfs diff=lfs merge=lfs -text
+*.TTR filter=lfs diff=lfs merge=lfs -text
+*.MMO filter=lfs diff=lfs merge=lfs -text
+*.TCP filter=lfs diff=lfs merge=lfs -text
+*.TST filter=lfs diff=lfs merge=lfs -text
+*.TBO filter=lfs diff=lfs merge=lfs -text
+*.TVP filter=lfs diff=lfs merge=lfs -text
+*.TTE filter=lfs diff=lfs merge=lfs -text
+*.TUC filter=lfs diff=lfs merge=lfs -text
+*.TSO filter=lfs diff=lfs merge=lfs -text
+*.TNC filter=lfs diff=lfs merge=lfs -text
+*.TCO filter=lfs diff=lfs merge=lfs -text
+*.SNC filter=lfs diff=lfs merge=lfs -text
+*.TNL filter=lfs diff=lfs merge=lfs -text
+*.TPL filter=lfs diff=lfs merge=lfs -text
+*.TPD filter=lfs diff=lfs merge=lfs -text
+*.TNT filter=lfs diff=lfs merge=lfs -text
+*.TPI filter=lfs diff=lfs merge=lfs -text
+*.TCM filter=lfs diff=lfs merge=lfs -text
+*.TCV filter=lfs diff=lfs merge=lfs -text
+*.TBI filter=lfs diff=lfs merge=lfs -text
+*.ECF filter=lfs diff=lfs merge=lfs -text
+*.TNV filter=lfs diff=lfs merge=lfs -text
+*.TTP filter=lfs diff=lfs merge=lfs -text
+*.TMT filter=lfs diff=lfs merge=lfs -text
+*.TVI filter=lfs diff=lfs merge=lfs -text
+*.TSP filter=lfs diff=lfs merge=lfs -text
+*.awr filter=lfs diff=lfs merge=lfs -text
+*.raw filter=lfs diff=lfs merge=lfs -text
+*.iges filter=lfs diff=lfs merge=lfs -text
+*.plt filter=lfs diff=lfs merge=lfs -text
+*.itb filter=lfs diff=lfs merge=lfs -text
+*.trc filter=lfs diff=lfs merge=lfs -text
