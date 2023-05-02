@@ -1,4 +1,4 @@
-# ------------ Defaults 2023-04 -------------------------
+# ------------ Defaults 2023-05 -------------------------
 
 # Images
 *.[pP][nN][gG] filter=lfs diff=lfs merge=lfs -text lockable
@@ -48,7 +48,11 @@
 *.[mM][oO][vV] filter=lfs diff=lfs merge=lfs -text lockable
 *.[mM][kK][vV] filter=lfs diff=lfs merge=lfs -text lockable
 
-# ------------ Defaults 2023-04 -------------------------
+# SystemAutomation
+*.[eE][sS][oO][sS] filter=lfs diff=lfs merge=lfs -text lockable
+*.[sS][dD][iI] filter=lfs diff=lfs merge=lfs -text lockable
+
+# ------------ Defaults 2023-05 -------------------------
 
 
 # Mentor files 
