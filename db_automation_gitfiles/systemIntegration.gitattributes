@@ -1,0 +1,62 @@
+# ------------ Defaults 2023-05 -------------------------
+
+# Images
+*.[pP][nN][gG] filter=lfs diff=lfs merge=lfs -text lockable
+*.[pP][dD][nN] filter=lfs diff=lfs merge=lfs -text lockable
+*.[jJ][pP][gG] filter=lfs diff=lfs merge=lfs -text lockable
+*.[gG][iI][fF] filter=lfs diff=lfs merge=lfs -text lockable
+*.[bB][mM][pP] filter=lfs diff=lfs merge=lfs -text lockable
+*.[tT][tT][fF] filter=lfs diff=lfs merge=lfs -text lockable
+
+# Documents
+*.[pP][dD][fF] filter=lfs diff=lfs merge=lfs -text lockable
+*.[dD][oO][cC] filter=lfs diff=lfs merge=lfs -text lockable
+*.[dD][oO][cC][xX] filter=lfs diff=lfs merge=lfs -text lockable
+*.[xX][lL][sS] filter=lfs diff=lfs merge=lfs -text lockable
+*.[xX][lL][sS][xX] filter=lfs diff=lfs merge=lfs -text lockable
+*.[xX][sS][lL][mM] filter=lfs diff=lfs merge=lfs -text lockable
+*.[pP][pP][tT] filter=lfs diff=lfs merge=lfs -text lockable
+*.[pP][pP][tT][xX] filter=lfs diff=lfs merge=lfs -text lockable
+*.[vV][sS][dD] filter=lfs diff=lfs merge=lfs -text lockable
+*.[vV][sS][dD][xX] filter=lfs diff=lfs merge=lfs -text lockable
+*.[oO][dD][gG] filter=lfs diff=lfs merge=lfs -text lockable
+
+# Binaries and Executables
+*.[eE][xX][eE] filter=lfs diff=lfs merge=lfs -text lockable
+*.[dD][lL][lL] filter=lfs diff=lfs merge=lfs -text lockable
+*.[jJ][aA][rR] filter=lfs diff=lfs merge=lfs -text lockable
+*.[bB][iI][nN] filter=lfs diff=lfs merge=lfs -text lockable
+*.[mM][aA][tT] filter=lfs diff=lfs merge=lfs -text lockable
+
+# Compressed
+*.[rR][aA][rR] filter=lfs diff=lfs merge=lfs -text lockable
+*.[zZ][iI][pP] filter=lfs diff=lfs merge=lfs -text lockable
+*.7[zZ] filter=lfs diff=lfs merge=lfs -text lockable
+*.[bB][zZ]2 filter=lfs diff=lfs merge=lfs -text lockable
+*.[gG][zZ] filter=lfs diff=lfs merge=lfs -text lockable
+*.[tT][aA][rR] filter=lfs diff=lfs merge=lfs -text lockable
+*.[tT][aA][rR].[gG][zZ] filter=lfs diff=lfs merge=lfs -text lockable
+*.[tT][gG][zZ] filter=lfs diff=lfs merge=lfs -text lockable
+
+# System Images
+*.[iI][sS][oO] filter=lfs diff=lfs merge=lfs -text lockable
+
+# Media
+*.[mM][pP]3 filter=lfs diff=lfs merge=lfs -text lockable
+*.[mM][pP]4 filter=lfs diff=lfs merge=lfs -text lockable
+*.[aA][vV][iI] filter=lfs diff=lfs merge=lfs -text lockable
+*.[mM][oO][vV] filter=lfs diff=lfs merge=lfs -text lockable
+*.[mM][kK][vV] filter=lfs diff=lfs merge=lfs -text lockable
+
+# SystemAutomation
+*.[eE][sS][oO][sS] filter=lfs diff=lfs merge=lfs -text lockable
+*.[eE][dD][xX] filter=lfs diff=lfs merge=lfs -text lockable
+*.[eE][dD][xX][xX] filter=lfs diff=lfs merge=lfs -text lockable
+*.[sS][dD][iI] filter=lfs diff=lfs merge=lfs -text lockable
+
+# Codesys files
+*.[pP][rR][oO] filter=lfs diff=lfs merge=lfs -text lockable
+*.[cC][iI] filter=lfs diff=lfs merge=lfs -text
+*.[rR][iI] filter=lfs diff=lfs merge=lfs -text
+
+# ------------ Defaults 2023-05 -------------------------
