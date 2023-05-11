@@ -150,6 +150,7 @@ function convert_revision(){
         while $tag_fetch_continue ; do
           if git fetch ${https_remote_common} -f --no-tags +refs/tags/${repo_baseline_rev_tag_wcomponent_wstatus_lookup}:refs/tags/${repo_baseline_rev_tag_wcomponent_wstatus_lookup} ; then
             echo "All good - we got the tag"
+            git lfs fetch ${https_remote_common} refs/tags/${repo_baseline_rev_tag_wcomponent_wstatus_lookup}
             tag_found=true
             tag_fetch_continue=false
           else
