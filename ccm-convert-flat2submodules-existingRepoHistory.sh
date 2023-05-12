@@ -150,7 +150,9 @@ function convert_revision(){
         while $tag_fetch_continue ; do
           if git fetch ${https_remote_common} -f --no-tags +refs/tags/${repo_baseline_rev_tag_wcomponent_wstatus_lookup}:refs/tags/${repo_baseline_rev_tag_wcomponent_wstatus_lookup} ; then
             echo "All good - we got the tag"
-            git lfs fetch ${https_remote_common} refs/tags/${repo_baseline_rev_tag_wcomponent_wstatus_lookup}
+            [[ -d .git/lfs ]] && {
+              git lfs fetch ${https_remote_common} refs/tags/${repo_baseline_rev_tag_wcomponent_wstatus_lookup}
+            }
             tag_found=true
             tag_fetch_continue=false
           else
@@ -521,7 +523,12 @@ function convert_revision(){
         echo "INFO: Configured to push to remote:  git push ${git_remote_to_use} --recurse-submodules=no -f ${repo_convert_rev_tag_wcomponent_wstatus_gitnormalized}"
         git push ${git_remote_to_use} --recurse-submodules=no -f "${repo_convert_rev_tag_wcomponent_wstatus_gitnormalized}"
         if [[ ${https_remote_common:-} != ""  ]]; then
-          git push ${https_remote_common} --recurse-submodules=no -f "${repo_convert_rev_tag_wcomponent_wstatus_gitnormalized}"
+          git push ${https_remote_common} --recurse-submodules=no -f "${repo_convert_rev_tag_wcomponent_wstatus_gitnormalized}" || {
+            [[ -d .git/lfs ]] && {
+              git lfs fetch ${https_remote_common} --all
+              git push ${git_remote_submodule_to_use} --recurse-submodules=no -f "${repo_convert_rev_tag_wcomponent_wstatus_gitnormalized}"
+            }
+          }
         fi
     else
         echo "INFO: Skip push to remote"
