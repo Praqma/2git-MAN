@@ -521,7 +521,16 @@ function convert_revision(){
     # Do not consider submodules
     if [[ ${push_to_remote_during_conversion:-} == "true" ]]; then
         echo "INFO: Configured to push to remote:  git push ${git_remote_to_use} --recurse-submodules=no -f ${repo_convert_rev_tag_wcomponent_wstatus_gitnormalized}"
-        git push ${git_remote_to_use} --recurse-submodules=no -f "${repo_convert_rev_tag_wcomponent_wstatus_gitnormalized}"
+        git push ${git_remote_to_use} --recurse-submodules=no -f "${repo_convert_rev_tag_wcomponent_wstatus_gitnormalized}" || {
+          if [[ ${https_remote_common:-} != ""  ]]; then
+            [[ -d .git/lfs ]] && {
+              git lfs fetch ${https_remote_common} --all
+            }
+            git push ${git_remote_to_use} --recurse-submodules=no -f "${repo_convert_rev_tag_wcomponent_wstatus_gitnormalized}"
+          else
+            echo "ERROR: something when wrong in pushing... and it is not due to use of common repo"
+          fi
+        }
         if [[ ${https_remote_common:-} != ""  ]]; then
           git push ${https_remote_common} --recurse-submodules=no -f "${repo_convert_rev_tag_wcomponent_wstatus_gitnormalized}" || {
             [[ -d .git/lfs ]] && {
