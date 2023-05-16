@@ -151,7 +151,8 @@ function convert_revision(){
           if git fetch ${https_remote_common} -f --no-tags +refs/tags/${repo_baseline_rev_tag_wcomponent_wstatus_lookup}:refs/tags/${repo_baseline_rev_tag_wcomponent_wstatus_lookup} ; then
             echo "All good - we got the tag"
             [[ -d .git/lfs ]] && {
-              git lfs fetch ${https_remote_common} refs/tags/${repo_baseline_rev_tag_wcomponent_wstatus_lookup}
+              git lfs fetch ${git_remote_to_use} --all
+              git lfs fetch ${https_remote_common} --all
             }
             tag_found=true
             tag_fetch_continue=false
@@ -524,6 +525,7 @@ function convert_revision(){
         git push ${git_remote_to_use} --recurse-submodules=no -f "${repo_convert_rev_tag_wcomponent_wstatus_gitnormalized}" || {
           if [[ ${https_remote_common:-} != ""  ]]; then
             [[ -d .git/lfs ]] && {
+              git lfs fetch ${git_remote_to_use} --all
               git lfs fetch ${https_remote_common} --all
             }
             git push ${git_remote_to_use} --recurse-submodules=no -f "${repo_convert_rev_tag_wcomponent_wstatus_gitnormalized}"
@@ -534,6 +536,7 @@ function convert_revision(){
         if [[ ${https_remote_common:-} != ""  ]]; then
           git push ${https_remote_common} --recurse-submodules=no -f "${repo_convert_rev_tag_wcomponent_wstatus_gitnormalized}" || {
             [[ -d .git/lfs ]] && {
+              git lfs fetch ${git_remote_to_use} --all
               git lfs fetch ${https_remote_common} --all
               git push ${git_remote_submodule_to_use} --recurse-submodules=no -f "${repo_convert_rev_tag_wcomponent_wstatus_gitnormalized}"
             }
