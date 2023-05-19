@@ -15,6 +15,6 @@ S1_LB_Visu_3.00.13_T100/init/init@S1_LB_Visu/3.0.12/3.00.12_T100_Integration_202
 S1_LB_Visu_/init/init@S1_LB_Visu_3.00.13_T100/3.00.14/3.00.14_Integration_20200727_pub
 S1SB_GS_DFL/init/init@S1_SB_GS_DFL/init/init
 S1_SBGS_DFL/init/init@S1_SB_GS_DFL/1.3.6/bl_S1_SBGS_DFL_1.3.6_Int_20210709_pub
-S1_SBGS_DFL_Build/init/init@S1_SBGS_DFL/1.3.6.1/bl_S1_SBGS_DFL_1.3.6.1_I2022072101_pub														 
+S1_SBGS_DFL_Build/init/init@S1_SBGS_DFL/1.3.6.1/bl_S1_SBGS_DFL_1.3.6.1_I2022072101_pub
 VTA_Standalone_2.0.1/init/init@Vta/2.0.1/bl_Vta_2.0.1_I2011040602_rel
 S1_VTA_Standalone/init/init@VTA_Standalone_2.0.1/2.0.1/bl_VTA_SW_Ctrl_2.0.1_Int_20190201_pub
