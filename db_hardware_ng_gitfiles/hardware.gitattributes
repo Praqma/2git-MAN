@@ -1,67 +1,118 @@
-# ------------ Defaults 2023-08 -------------------------
+# ------------ Defaults 2023-08 -------------------------		
+# ATTENTION
+# we have issues when lockable is in the same line as the filter=lfs information
+# when a file > 2 MB is added via Sourcetree to a repo, a dialog shows up.
+# It warns that the file should be added to LFS, even though we already assigned it to LFS here within .gitattributes
+# therefore we moved the lockable part to a new line
+#
 
-# Images
-*.png filter=lfs diff=lfs merge=lfs -text lockable
-*.pdn filter=lfs diff=lfs merge=lfs -text lockable
-*.jpg filter=lfs diff=lfs merge=lfs -text lockable
-*.gif filter=lfs diff=lfs merge=lfs -text lockable
-*.bmp filter=lfs diff=lfs merge=lfs -text lockable
-*.tif filter=lfs diff=lfs merge=lfs -text lockable
-*.tiff filter=lfs diff=lfs merge=lfs -text lockable
-
-# Documents
-*.pdf filter=lfs diff=lfs merge=lfs -text lockable
-*.doc filter=lfs diff=lfs merge=lfs -text lockable
-*.docx filter=lfs diff=lfs merge=lfs -text lockable
-*.xls filter=lfs diff=lfs merge=lfs -text lockable
-*.xlsx filter=lfs diff=lfs merge=lfs -text lockable
-*.xlsm filter=lfs diff=lfs merge=lfs -text lockable
-*.ppt filter=lfs diff=lfs merge=lfs -text lockable
-*.pptx filter=lfs diff=lfs merge=lfs -text lockable
-*.vsd filter=lfs diff=lfs merge=lfs -text lockable
-*.vsdx filter=lfs diff=lfs merge=lfs -text lockable
-*.odg filter=lfs diff=lfs merge=lfs -text lockable
-*.odt filter=lfs diff=lfs merge=lfs -text lockable
-
-# Binaries and Executables
-*.exe filter=lfs diff=lfs merge=lfs -text lockable
-*.dll filter=lfs diff=lfs merge=lfs -text lockable
-*.jar filter=lfs diff=lfs merge=lfs -text lockable
-*.bin filter=lfs diff=lfs merge=lfs -text lockable
-*.mat filter=lfs diff=lfs merge=lfs -text lockable
-
-# Compressed
-*.rar filter=lfs diff=lfs merge=lfs -text lockable
-*.zip filter=lfs diff=lfs merge=lfs -text lockable
-*.7z filter=lfs diff=lfs merge=lfs -text lockable
-*.bz2 filter=lfs diff=lfs merge=lfs -text lockable
-*.gz filter=lfs diff=lfs merge=lfs -text lockable
-*.tar filter=lfs diff=lfs merge=lfs -text lockable
-*.tar.gz filter=lfs diff=lfs merge=lfs -text lockable
-*.tgz filter=lfs diff=lfs merge=lfs -text lockable
-
-# System Images
-*.iso filter=lfs diff=lfs merge=lfs -text lockable
-
-# Media
-*.mp3 filter=lfs diff=lfs merge=lfs -text lockable
-*.mp4 filter=lfs diff=lfs merge=lfs -text lockable
-*.avi filter=lfs diff=lfs merge=lfs -text lockable
-*.mov filter=lfs diff=lfs merge=lfs -text lockable
-*.mkv filter=lfs diff=lfs merge=lfs -text lockable
-
-# SystemAutomation
-*.esos filter=lfs diff=lfs merge=lfs -text lockable
-*.edx filter=lfs diff=lfs merge=lfs -text lockable
-*.edxx filter=lfs diff=lfs merge=lfs -text lockable
-*.sdi filter=lfs diff=lfs merge=lfs -text lockable
-
-# Codesys files
-*.pro filter=lfs diff=lfs merge=lfs -text lockable
-*.ci filter=lfs diff=lfs merge=lfs -text
-*.ri filter=lfs diff=lfs merge=lfs -text
-
-# ------------ Defaults 2023-08 -------------------------
+# Images		
+*.png filter=lfs diff=lfs merge=lfs -text 
+*.png lockable	
+*.pdn filter=lfs diff=lfs merge=lfs -text 
+*.pdn lockable	
+*.jpg filter=lfs diff=lfs merge=lfs -text 
+*.jpg lockable	
+*.gif filter=lfs diff=lfs merge=lfs -text 
+*.gif lockable	
+*.bmp filter=lfs diff=lfs merge=lfs -text 
+*.bmp lockable	
+*.tif filter=lfs diff=lfs merge=lfs -text 
+*.tif lockable	
+*.tiff filter=lfs diff=lfs merge=lfs -text 
+*.tiff lockable	
+		
+# Documents		
+*.pdf filter=lfs diff=lfs merge=lfs -text 
+*.pdf lockable	
+*.doc filter=lfs diff=lfs merge=lfs -text 
+*.doc lockable	
+*.docx filter=lfs diff=lfs merge=lfs -text 
+*.docx lockable	
+*.xls filter=lfs diff=lfs merge=lfs -text 
+*.xls lockable	
+*.xlsx filter=lfs diff=lfs merge=lfs -text 
+*.xlsx lockable	
+*.xlsm filter=lfs diff=lfs merge=lfs -text 
+*.xlsm lockable	
+*.ppt filter=lfs diff=lfs merge=lfs -text 
+*.ppt lockable	
+*.pptx filter=lfs diff=lfs merge=lfs -text 
+*.pptx lockable	
+*.vsd filter=lfs diff=lfs merge=lfs -text 
+*.vsd lockable	
+*.vsdx filter=lfs diff=lfs merge=lfs -text 
+*.vsdx lockable	
+*.odg filter=lfs diff=lfs merge=lfs -text 
+*.odg lockable	
+*.odt filter=lfs diff=lfs merge=lfs -text 
+*.odt lockable	
+		
+# Binaries and Executables		
+*.exe filter=lfs diff=lfs merge=lfs -text 
+*.exe lockable	
+*.dll filter=lfs diff=lfs merge=lfs -text 
+*.dll lockable	
+*.jar filter=lfs diff=lfs merge=lfs -text 
+*.jar lockable	
+*.bin filter=lfs diff=lfs merge=lfs -text 
+*.bin lockable	
+*.mat filter=lfs diff=lfs merge=lfs -text 
+*.mat lockable	
+		
+# Compressed		
+*.rar filter=lfs diff=lfs merge=lfs -text 
+*.rar lockable	
+*.zip filter=lfs diff=lfs merge=lfs -text 
+*.zip lockable	
+*.7z filter=lfs diff=lfs merge=lfs -text 
+*.7z lockable	
+*.bz2 filter=lfs diff=lfs merge=lfs -text 
+*.bz lockable	
+*.gz filter=lfs diff=lfs merge=lfs -text 
+*.gz lockable	
+*.tar filter=lfs diff=lfs merge=lfs -text 
+*.tar lockable	
+*.tar.gz filter=lfs diff=lfs merge=lfs -text 
+*.tar lockable	
+*.tgz filter=lfs diff=lfs merge=lfs -text 
+*.tgz lockable	
+		
+# System Images		
+*.iso filter=lfs diff=lfs merge=lfs -text 
+*.iso lockable	
+		
+# Media		
+*.mp3 filter=lfs diff=lfs merge=lfs -text 
+*.mp3 lockable	
+*.mp4 filter=lfs diff=lfs merge=lfs -text 
+*.mp4 lockable	
+*.avi filter=lfs diff=lfs merge=lfs -text 
+*.avi lockable	
+*.mov filter=lfs diff=lfs merge=lfs -text 
+*.mov lockable	
+*.mkv filter=lfs diff=lfs merge=lfs -text 
+*.mkv lockable	
+		
+# SystemAutomation		
+*.esos filter=lfs diff=lfs merge=lfs -text 
+*.esos lockable	
+*.edx filter=lfs diff=lfs merge=lfs -text 
+*.edx lockable	
+*.edxx filter=lfs diff=lfs merge=lfs -text 
+*.edxx lockable	
+*.sdi filter=lfs diff=lfs merge=lfs -text 
+*.sdi lockable	
+		
+# Codesys files		
+*.pro filter=lfs diff=lfs merge=lfs -text 
+*.pro lockable	
+*.ci filter=lfs diff=lfs merge=lfs -text	
+*.ci lockable	
+*.ri filter=lfs diff=lfs merge=lfs -text	
+*.ri lockable	
+		
+# ------------ Defaults 2023-08 -------------------------		
 
 # Mentor files 
 **/database/icdb.dat filter=lfs diff=lfs merge=lfs -text lockable
