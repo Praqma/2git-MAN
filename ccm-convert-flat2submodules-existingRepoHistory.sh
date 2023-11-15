@@ -58,8 +58,23 @@ export git_remote_to_use=${git_https_remote}
 export git_remote_to_use_orig=${git_https_remote_orig}
 echo "INFO: Use remote : ${git_remote_to_use} and ${git_remote_to_use_orig}"
 
+function resolve_git_common_target_repo {
+  local dir_name_from_git_common_target_repo=$(dirname ${git_common_target_repo} )
+  if [[ $dir_name_from_git_common_target_repo == "." ]]; then
+    echo "The git_common_target_repo does not include relative prefix - use it directly - i.e. same project - replace repo <repo>"
+    local server_base_url=$(dirname "$git_remote_to_use")
+    export https_remote_common=${server_base_url}/${git_common_target_repo}
+  else
+    echo "The git_common_target_repo contains relative prefix - use it directly with <project>/<repo> - i.e. same project"
+    local server_base_url=$(dirname $(dirname "$git_remote_to_use"))
+    export https_remote_common="${server_base_url}/${git_common_target_repo}"
+  fi
+}
+
 if [[ "${git_common_target_repo:-}" != "" ]]; then
-   https_remote_common=$(echo ${git_remote_to_use} | sed -e "s|/${repo_name}.git|/${git_common_target_repo}.git|")
+
+   resolve_git_common_target_repo
+
    echo "INFO: Configured to common repo: ${git_common_target_repo} : ${https_remote_common} "
    echo  "     - consider to enable 'push_to_remote_during_conversion=true'"
    echo  "       to avoid false failed fetch of tags in case of history rewrite"
@@ -144,7 +159,6 @@ function convert_revision(){
       # lookup in the baseline history rewrite file
       repo_baseline_rev_tag_wcomponent_wstatus_lookup=$(grep -E "^${repo_baseline_rev_tag_wcomponent_wstatus}@.+/.+/.+$" ${execution_root_directory}/${ccm_db}_gitfiles/baseline_history_rewrite.txt | cut -d @ -f 2- ) || { echo "INFO: No rewriting baseline found - skip" ; }
       if [[ ${repo_baseline_rev_tag_wcomponent_wstatus_lookup:-} != "" ]]; then
-        https_remote_common=$(echo ${git_remote_to_use} | sed -e "s|/${repo_name}.git|/${git_common_target_repo}.git|")
         local tag_found=false
         local tag_fetch_continue=true
         while $tag_fetch_continue ; do
