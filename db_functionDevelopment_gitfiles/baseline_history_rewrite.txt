@@ -1,6 +1,7 @@
-SaCoS_one_CSG/0.0.0/0.0.0_SystemTesting_20150120_rel@S1_SW_GovConv/1.0.3/bl_S1_SW_GovConv_1.0.3_I2012032801_pub
-SaCoS_one_IM_PPN/1.0.13/1.0.13_SystemTesting_20150120_rel@S1_SW_GovPPN/1.0.13/1.0.13_SystemTesting_20141030_rel
-SaCoS_one_IM_PPN/1.0.13/1.0.13_IntegrationTesting_20150120_pub@S1_SW_GovPPN/1.0.13/1.0.13_SystemTesting_20141030_rel
+SaCoS_one_CSG/SaCoS_one_CSG/1.0.4/1.0.4_SystemTesting_20150120_rel@S1_SW_GovConv/1.0.3/bl_S1_SW_GovConv_1.0.3_I2012032801_pub
+SaCoS_one_CSG/SaCoS_one_CSG/1.0.4/1.0.4_IntegrationTesting_20150120_pub@S1_SW_GovConv/1.0.3/bl_S1_SW_GovConv_1.0.3_I2012032801_pub
+SaCoS_one_IM_PPN/SaCoS_one_IM_PPN/1.0.13/1.0.13_SystemTesting_20150120_rel@S1_SW_GovPPN/1.0.13/1.0.13_SystemTesting_20141030_rel
+SaCoS_one_IM_PPN/SaCoS_one_IM_PPN/1.0.13/1.0.13_IntegrationTesting_20150120_pub@S1_SW_GovPPN/1.0.13/1.0.13_SystemTesting_20141030_rel
 SaCoS_one_IM_CR/SaCoS_one_IM_CR/1.3.7.2/1.3.7.2_IntegrationTesting_20150917_pub@S1_SW_GovCR/1.3.6/S1_SW_GovCR_Sys_aaheyu_20141028_1_rel
 SaCoS_one_IM_CR/SaCoS_one_IM_CR/1.3.7.2/1.3.7.2_SystemTesting_20150917_rel@S1_SW_GovCR/1.3.6/S1_SW_GovCR_Sys_aaheyu_20141028_1_rel
 SaCoS_one_IM_CR/SaCoS_one_IM_CR/1.4.0/1.4.0_IntegrationTesting_20150120_pub@S1_SW_GovCR/1.3.6/S1_SW_GovCR_Sys_aaheyu_20141028_1_rel
