@@ -141,8 +141,8 @@
 *.eds filter=lfs diff=lfs merge=lfs -text
 *.eds lockable
 
-APPLICATION/Hardware/**/Backup/ filter=lfs diff=lfs merge=lfs -text
-APPLICATION/Hardware/**/Backup/ lockable
+APPLICATION/Hardware/**/Backup/* filter=lfs diff=lfs merge=lfs -text
+APPLICATION/Hardware/**/Backup/* lockable
 
 
 
