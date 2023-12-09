@@ -69,6 +69,9 @@
 *.msi lockable
 *.msp filter=lfs diff=lfs merge=lfs -text
 *.msp lockable
+*.img filter=lfs diff=lfs merge=lfs -text
+*.img lockable
+
 
 # Compressed
 *.rar filter=lfs diff=lfs merge=lfs -text
@@ -138,8 +141,8 @@
 *.eds filter=lfs diff=lfs merge=lfs -text
 *.eds lockable
 
-APPLICATION/Hardware/WAGO_ML110_Scr234Lines/Backup/* filter=lfs diff=lfs merge=lfs -text
-APPLICATION/Hardware/WAGO_ML110_Scr234Lines/Backup/* lockable
+APPLICATION/Hardware/**/Backup/ filter=lfs diff=lfs merge=lfs -text
+APPLICATION/Hardware/**/Backup/ lockable
 
 
 
