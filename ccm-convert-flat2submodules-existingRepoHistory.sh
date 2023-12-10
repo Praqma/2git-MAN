@@ -179,6 +179,7 @@ function convert_revision(){
               exit 1
             fi
             echo "Sleep: ${sleep_sec} sec of total allowed: ${sleep_total_wait} sec ( 24 hours )"
+            sleep $sleep_sec
             total_sleep_sec=$(( total_sleep_sec + sleep_sec))
           fi
         done
