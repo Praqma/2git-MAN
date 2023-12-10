@@ -161,6 +161,9 @@ function convert_revision(){
       if [[ ${repo_baseline_rev_tag_wcomponent_wstatus_lookup:-} != "" ]]; then
         local tag_found=false
         local tag_fetch_continue=true
+        local total_sleep_sec=0
+        local sleep_sec=300
+        local sleep_total_wait=86400 # 24 hours
         while $tag_fetch_continue ; do
           if git fetch ${https_remote_common} -f --no-tags refs/tags/${repo_baseline_rev_tag_wcomponent_wstatus_lookup}:refs/tags/${repo_baseline_rev_tag_wcomponent_wstatus_lookup} ; then
             echo "All good - we got the tag"
@@ -171,26 +174,12 @@ function convert_revision(){
             tag_found=true
             tag_fetch_continue=false
           else
-            echo "INFO: detect for remote activity - do we have hope that the tag eventually become avilable with 300 second interval"
-            remote_common_tags_init=$(git ls-remote --tags ${https_remote_common} )
-            sleep 300
-            remote_common_tags_updated=$(git ls-remote --tags ${https_remote_common} )
-            if [[ "$remote_common_tags_init" == "$remote_common_tags_updated" ]]; then
-              echo "sleep did not solve it - try sleeping again"
-              sleep 300
-              remote_common_tags_updated=$(git ls-remote --tags ${https_remote_common} )
-              if [[ "$remote_common_tags_init" == "$remote_common_tags_updated" ]]; then
-                echo "sleep did not solve it - try sleeping again"
-                sleep 300
-                remote_common_tags_updated=$(git ls-remote --tags ${https_remote_common} )
-                if [[ "$remote_common_tags_init" == "$remote_common_tags_updated" ]]; then
-                  tag_fetch_continue=false
-                  echo "ERROR: We have been waiting for internal of 300 second and now there is no activity"
-                  echo "       It is a good idea to enable push while converting to optimizing and avoid false failures"
-                  exit 1
-                fi
-              fi
+            if [[ ${total_sleep_sec} -gt ${sleep_total_wait} ]]; then
+              echo "ERROR: We waited for 24 hours - stop - exit"
+              exit 1
             fi
+            echo "Sleep: ${sleep_sec} sec of total allowed: ${sleep_total_wait} sec ( 24 hours )"
+            total_sleep_sec=$(( total_sleep_sec + sleep_sec))
           fi
         done
         repo_baseline_rev_tag_wcomponent_wstatus=${repo_baseline_rev_tag_wcomponent_wstatus_lookup}
