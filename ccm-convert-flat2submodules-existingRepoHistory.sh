@@ -165,6 +165,7 @@ function convert_revision(){
         local sleep_sec=300
         local sleep_total_wait=86400 # 24 hours
         while $tag_fetch_continue ; do
+          # TODO: consider to check if the baseline has changed state like pub -> rel
           if git fetch ${https_remote_common} -f --no-tags refs/tags/${repo_baseline_rev_tag_wcomponent_wstatus_lookup}:refs/tags/${repo_baseline_rev_tag_wcomponent_wstatus_lookup} ; then
             echo "All good - we got the tag"
             [[ -d .git/lfs ]] && {
