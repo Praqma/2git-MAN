@@ -14,6 +14,7 @@ function byref_translate_from_ccm_name2git_repo() {
     local -n _toString=${2}
   fi
   _toString="${_fromString// /-}"
+  _toString="${_toString//&/-}"
 }
 
 function byref_translate_from_ccm_version2git_tag() {
@@ -32,6 +33,7 @@ function byref_translate_from_ccm_version2git_tag() {
     local -n _toString=${2}
   fi
   _toString="${_fromString// /-}"
+  _toString="${_toString//&/-}"
 }
 
 function byref_translate_from_git_repo2ccm_name_query() {
