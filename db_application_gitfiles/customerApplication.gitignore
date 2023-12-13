@@ -1,0 +1,18 @@
+# ------------ Defaults 2023-05 -------------------------
+
+# System Files
+.DS_Store
+Thumbs.db
+
+# Temporary Files
+**/~*.*
+**/*.BAK
+
+# ------------ Defaults 2023-05 -------------------------
+
+# Codesys files
+**/DEFAULT.DFR
+**/*.ci
+**/*.ri
+**/*.sym
+**/*.sdb
