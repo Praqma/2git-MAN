@@ -25,6 +25,7 @@ function byref_translate_from_ccm_name2git_repo() {
   _toString="${_toString//ü/-}"
   _toString="${_toString//ö/-}"
   _toString="${_toString//ø/-}"
+  _toString="${_toString//,/-}"
 }
 
 function byref_translate_from_ccm_version2git_tag() {
