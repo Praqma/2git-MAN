@@ -18,6 +18,13 @@ function byref_translate_from_ccm_name2git_repo() {
   _toString="${_toString//#/-}"
   _toString="${_toString//(/-}"
   _toString="${_toString//)/-}"
+  _toString="${_toString//ü/-}"
+  _toString="${_toString//ä/-}"
+  _toString="${_toString//æ/-}"
+  _toString="${_toString//å/-}"
+  _toString="${_toString//ü/-}"
+  _toString="${_toString//ö/-}"
+  _toString="${_toString//ø/-}"
 }
 
 function byref_translate_from_ccm_version2git_tag() {
