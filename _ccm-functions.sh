@@ -46,8 +46,8 @@ function byref_translate_from_ccm_version2git_tag() {
   _toString="${_fromString// /-}"
   _toString="${_toString//&/-}"
   _toString="${_toString//#/-}"
-#  _toString="${_toString//(/-}"
-#  _toString="${_toString//)/-}"
+  _toString="${_toString//(/-}"
+  _toString="${_toString//)/-}"
 }
 
 function byref_translate_from_git_repo2ccm_name_query() {
