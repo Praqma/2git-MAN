@@ -18,14 +18,31 @@ function byref_translate_from_ccm_name2git_repo() {
   _toString="${_toString//#/-}"
   _toString="${_toString//(/-}"
   _toString="${_toString//)/-}"
-  _toString="${_toString//ü/--}"
-  _toString="${_toString//ä/--}"
-  _toString="${_toString//æ/--}"
-  _toString="${_toString//å/--}"
-  _toString="${_toString//ü/--}"
-  _toString="${_toString//ö/--}"
-  _toString="${_toString//ø/--}"
+  _toString="${_toString//ü/ue}"
+  _toString="${_toString//ä/ae}"
+  _toString="${_toString//æ/ae}"
+  _toString="${_toString//å/aa}"
+  _toString="${_toString//ö/oe}"
+  _toString="${_toString//ø/oe}"
   _toString="${_toString//,/-}"
+}
+
+function byref_translate_from_git_repo2ccm_name_query() {
+  if [[ -z ${1} ]]; then
+    echo "${FUNCNAME[0]}: Parameter 1  - by value - cannot be empty" && exit 1
+  else
+    local _fromString=${1}
+  fi
+  if [[ -z ${2} ]]; then
+    echo "${FUNCNAME[0]}: Parameter 2  - by ref - cannot be empty" && exit 1
+  else
+    local -n _toString=${2}
+  fi
+  _toString="${_fromString//-/?}"
+  _toString="${_toString//ue/??}"
+  _toString="${_toString//ae/??}"
+  _toString="${_toString//aa/??}"
+  _toString="${_toString//oe/??}"
 }
 
 function byref_translate_from_ccm_version2git_tag() {
@@ -48,20 +65,6 @@ function byref_translate_from_ccm_version2git_tag() {
   _toString="${_toString//#/-}"
   _toString="${_toString//(/-}"
   _toString="${_toString//)/-}"
-}
-
-function byref_translate_from_git_repo2ccm_name_query() {
-  if [[ -z ${1} ]]; then
-    echo "${FUNCNAME[0]}: Parameter 1  - by value - cannot be empty" && exit 1
-  else
-    local _fromString=${1}
-  fi
-  if [[ -z ${2} ]]; then
-    echo "${FUNCNAME[0]}: Parameter 2  - by ref - cannot be empty" && exit 1
-  else
-    local -n _toString=${2}
-  fi
-  _toString="${_fromString//-/?}"
 }
 
 function byref_translate_from_git_tag2ccm_version_query() {
