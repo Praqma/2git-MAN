@@ -13,7 +13,9 @@ function byref_translate_from_ccm_name2git_repo() {
   else
     local -n _toString=${2}
   fi
-  _toString="${_fromString// /-}"
+  _toString="${_fromString}"
+  _toString="${_toString//ener Tam/ener-Tam}"
+  _toString="${_toString// /-}"
   _toString="${_toString//&/-}"
   _toString="${_toString//#/-}"
   _toString="${_toString//(/-}"
@@ -38,7 +40,9 @@ function byref_translate_from_git_repo2ccm_name_query() {
   else
     local -n _toString=${2}
   fi
-  _toString="${_fromString//-/?}"
+  _toString="${_fromString}"
+  _toString="${_toString//ener-Tam/ener Tam}"
+  _toString="${_toString//-/?}"
   _toString="${_toString//ue/??}"
   _toString="${_toString//ae/??}"
   _toString="${_toString//aa/??}"
