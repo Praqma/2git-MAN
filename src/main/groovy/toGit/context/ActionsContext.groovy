@@ -36,12 +36,12 @@ class ActionsContext implements Context, HasActions {
                 def targetDir = new File(expandedTarget)
                 if (! targetDir.exists() ) throw new Exception ("ERROR: Target directory:" + targetDir + " does not exist")
                 log.info ("Copy from: $expandedSource")
-                log.info ("To: $expandedTarget")
+                log.info ("To - perserving dates: $expandedTarget")
                 sourceDir.listFiles().each { file ->
                     if (file.isDirectory())
                         FileUtils.copyDirectoryToDirectory(file, targetDir)
                     else
-                        FileUtils.copyFileToDirectory(file, targetDir, true)
+                        FileUtils.copyFileToDirectory(file, targetDir, true )
                 }
             }
         })
