@@ -1,4 +1,4 @@
-# ------------ Defaults 2023-12 -------------------------
+# ------------ Defaults 2024-01 -------------------------
 # ATTENTION
 # we have issues when lockable is in the same line as the filter=lfs information
 # when a file > 2 MB is added via Sourcetree to a repo, a dialog shows up.
@@ -124,6 +124,35 @@
 *.project lockable
 *.projectarchive filter=lfs diff=lfs merge=lfs -text
 *.projectarchive lockable
+*.ci filter=lfs diff=lfs merge=lfs -text
+*.ci lockable
+*.ri filter=lfs diff=lfs merge=lfs -text
+*.ri lockable
+
+*.dat filter=lfs diff=lfs merge=lfs -text
+*.dat lockable
+*.app filter=lfs diff=lfs merge=lfs -text
+*.app lockable
+*.library filter=lfs diff=lfs merge=lfs -text
+*.library lockable
+*.itb filter=lfs diff=lfs merge=lfs -text
+*.itb lockable
+*.elf filter=lfs diff=lfs merge=lfs -text
+*.elf lockable
+*.hex filter=lfs diff=lfs merge=lfs -text
+*.hex lockable
+*.srec filter=lfs diff=lfs merge=lfs -text
+*.srec lockable
+*.blob filter=lfs diff=lfs merge=lfs -text
+*.blob lockable
+*.art filter=lfs diff=lfs merge=lfs -text
+*.art lockable
+*.xz filter=lfs diff=lfs merge=lfs -text
+*.xz lockable
+*.package filter=lfs diff=lfs merge=lfs -text
+*.package lockable
+*.vsdm filter=lfs diff=lfs merge=lfs -text
+*.vsdm lockable
 
 *.compileinfo filter=lfs diff=lfs merge=lfs -text
 *.compileinfo lockable
@@ -138,4 +167,4 @@
 *.eds filter=lfs diff=lfs merge=lfs -text
 *.eds lockable
 
-# ------------ Defaults 2023-12 -------------------------
+# ------------ Defaults 2024-01 -------------------------
