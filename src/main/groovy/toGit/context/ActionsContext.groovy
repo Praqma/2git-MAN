@@ -41,7 +41,7 @@ class ActionsContext implements Context, HasActions {
                     if (file.isDirectory())
                         FileUtils.copyDirectoryToDirectory(file, targetDir)
                     else
-                        FileUtils.copyFileToDirectory(file, targetDir)
+                        FileUtils.copyFileToDirectory(file, targetDir, true)
                 }
             }
         })
